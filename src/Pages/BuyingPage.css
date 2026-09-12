@@ -1,0 +1,137 @@
+.buying-page {
+  font-family: Arial, Helvetica, sans-serif;
+  color: #1a1a1a;
+}
+
+.buying-header {
+  padding: 24px 32px 16px 32px;
+}
+
+.buying-header h1 {
+  font-size: 26px;
+  font-weight: 800;
+  margin: 0 0 4px 0;
+}
+
+.buying-header p {
+  font-size: 13px;
+  color: #888;
+  margin: 0;
+}
+
+.buying-empty {
+  text-align: center;
+  padding: 60px 24px;
+  color: #999;
+  font-size: 14px;
+}
+
+.buying-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 0 32px 40px 32px;
+}
+
+.buying-card {
+  background: #f4f4f4;
+  border-radius: 10px;
+  padding: 24px;
+}
+
+.buying-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.buying-reference-label {
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: #999;
+  text-transform: uppercase;
+}
+
+.buying-status {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 14px;
+  border-radius: 20px;
+  background: #fff;
+  border: 1px solid #eee;
+}
+
+.buying-status.pending {
+  color: #d97706;
+}
+
+.buying-status.paid {
+  color: #16a34a;
+}
+
+.buying-status.delivered {
+  color: #2563eb;
+}
+
+.buying-status.cancelled {
+  color: #dc2626;
+}
+
+.buying-reference-number {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 4px 0 2px 0;
+}
+
+.buying-date {
+  font-size: 12px;
+  color: #999;
+  margin: 0 0 16px 0;
+}
+
+.buying-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid #e5e5e5;
+}
+
+.buying-item img {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 6px;
+  background: #e5e5e5;
+}
+
+.buying-item-info {
+  flex: 1;
+}
+
+.buying-item-name {
+  font-size: 13px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.buying-item-qty {
+  font-size: 11px;
+  color: #999;
+  margin: 2px 0 0 0;
+}
+
+.buying-item-price {
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.buying-total-row {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 700;
+  font-size: 14px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #e5e5e5;
+}

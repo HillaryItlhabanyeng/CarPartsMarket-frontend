@@ -1,0 +1,1025 @@
+/* =========================================================
+   UNiTRADE PROFILE PAGE
+========================================================= */
+
+* {
+  box-sizing: border-box;
+}
+
+.profile-page {
+  --navy: #1E3A5F;
+  --navy-dark: #142C49;
+
+  --teal: #16B3A5;
+  --teal-dark: #0E988D;
+
+  --gold: #F5A623;
+
+  --background: #ffffff;
+  --card: #f3f3f3;
+
+  --text: #151515;
+  --muted: #777777;
+
+  --danger: #df1010;
+
+  width: 100%;
+  min-height: 100vh;
+
+  background: #ffffff;
+
+  color: var(--text);
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+}
+
+
+/* =========================================================
+   CONTENT AREA
+========================================================= */
+
+.profile-page-content {
+  /* margin-left: 166px;
+  width: calc(100% - 166px);
+  min-height: 100vh; */
+  background: #ffffff;
+}
+
+
+/* =========================================================
+   MAIN
+========================================================= */
+
+.profile-main {
+  width: 100%;
+  min-height: 100vh;
+}
+
+
+/* =========================================================
+   TOP BAR
+========================================================= */
+
+.profile-topbar {
+  height: 64px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 0 27px;
+
+  background: #ffffff;
+
+  border-bottom: 1px solid #dddddd;
+}
+
+
+/* =========================================================
+   BACK BUTTON
+========================================================= */
+
+.profile-back-button {
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  border: none;
+
+  background: transparent;
+
+  color: #111111;
+
+  font-size: 16px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  padding: 5px 0;
+}
+
+.profile-back-button svg {
+  font-size: 14px;
+}
+
+.profile-back-button:hover {
+  color: var(--navy);
+}
+
+
+/* =========================================================
+   TOP ACTIONS
+========================================================= */
+
+.profile-top-actions {
+  display: flex;
+
+  align-items: center;
+
+  gap: 18px;
+}
+
+
+/* =========================================================
+   TOP ICON BUTTON
+========================================================= */
+
+.profile-action-button {
+  position: relative;
+
+  width: 38px;
+  height: 38px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+
+  background: transparent;
+
+  color: var(--navy);
+
+  cursor: pointer;
+
+  font-size: 17px;
+
+  border-radius: 50%;
+
+  transition: 0.2s ease;
+}
+
+.profile-action-button:hover {
+  background: #f1f1f1;
+}
+
+.profile-action-button svg {
+  font-size: 17px;
+}
+
+
+/* =========================================================
+   NOTIFICATION DOT
+========================================================= */
+
+.notification-dot {
+  position: absolute;
+
+  width: 7px;
+  height: 7px;
+
+  top: 5px;
+  right: 6px;
+
+  background: var(--teal);
+
+  border-radius: 50%;
+
+  border: 1px solid #ffffff;
+}
+
+
+/* =========================================================
+   SIPHO TOP AVATAR
+========================================================= */
+
+.top-avatar {
+  width: 40px;
+  height: 40px;
+
+  padding: 0;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+
+  border-radius: 50%;
+
+  border: 2px solid var(--navy);
+
+  background: #e5e5e5;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+.top-avatar:hover {
+  transform: scale(1.04);
+}
+
+.top-avatar img {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+
+  display: block;
+}
+
+.top-avatar .profile-image-fallback {
+  width: 100%;
+  height: 100%;
+}
+
+
+/* =========================================================
+   IMAGE FALLBACK
+========================================================= */
+
+.profile-image-fallback {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  background: var(--navy);
+
+  color: #ffffff;
+
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   PROFILE BANNER
+========================================================= */
+
+.profile-banner {
+  position: relative;
+
+  height: 150px;
+
+  margin: 27px 27px 0;
+
+  border-radius: 10px;
+
+  overflow: hidden;
+
+  background:
+    linear-gradient(
+      105deg,
+      #112e3d 0%,
+      #112e3d 35%,
+      #112e3d 60%,
+      #112e3d 100%
+    );
+
+  box-shadow:
+    0 2px 5px rgba(0, 0, 0, 0.08);
+}
+
+
+/* =========================================================
+   BANNER LIGHT EFFECT
+========================================================= */
+
+.profile-banner::before {
+  content: "";
+
+  position: absolute;
+
+  width: 65%;
+  height: 180px;
+
+  top: -80px;
+  right: -50px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,255,255,0.22),
+      rgba(255,255,255,0)
+    );
+
+  transform: rotate(-15deg);
+
+  pointer-events: none;
+}
+
+
+/* =========================================================
+   EDIT PROFILE
+========================================================= */
+
+.edit-profile-button {
+  position: absolute;
+
+  top: 10px;
+  right: 10px;
+
+  z-index: 5;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 6px;
+
+  padding: 8px 12px;
+
+  border: none;
+
+  border-radius: 5px;
+
+  background: #a67b5b;
+
+  color: #ffffff;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.edit-profile-button:hover {
+  background: var(--navy-dark);
+}
+
+.edit-profile-button svg {
+  font-size: 10px;
+}
+
+
+/* =========================================================
+   PROFILE CONTENT
+========================================================= */
+
+.profile-content {
+  position: relative;
+
+  z-index: 10;
+
+  display: grid;
+
+  grid-template-columns: 285px minmax(0, 1fr);
+
+  gap: 25px;
+
+  margin-top: -56px;
+
+  padding: 0 27px 40px;
+}
+
+
+/* =========================================================
+   LEFT PROFILE CARD
+========================================================= */
+
+.profile-card {
+  width: 100%;
+  min-height: 455px;
+  padding: 0 16px 20px;
+  background: #ffffff;
+  border-radius: 9px;
+  border: 1px solid #dedede;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-left: 25px;
+}
+
+
+/* =========================================================
+   PROFILE PHOTO
+   NOTE: .profile-photo-wrapper clips its content so the
+   large avatar can never overflow into the text below it,
+   even if an unexpectedly large source image is used.
+========================================================= */
+
+.profile-photo-wrapper {
+  width: 100px;
+  height: 100px;
+
+  margin-top: -1px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+
+  border-radius: 50%;
+
+  flex-shrink: 0;
+}
+
+.profile-photo {
+  width: 86px;
+  height: 86px;
+
+  object-fit: cover;
+
+  border-radius: 50%;
+
+  border: 3px solid #ffffff;
+
+  box-shadow:
+    0 2px 7px rgba(0,0,0,0.18);
+
+  display: block;
+}
+
+.profile-photo-fallback {
+  width: 86px;
+  height: 86px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: var(--navy);
+
+  color: #ffffff;
+
+  font-weight: 700;
+  font-size: 30px;
+
+  border: 3px solid #ffffff;
+
+  box-shadow:
+    0 2px 7px rgba(0,0,0,0.18);
+}
+
+
+/* =========================================================
+   NAME
+========================================================= */
+
+.profile-user-name {
+  margin: 12px 0 5px;
+
+  color: #111111;
+
+  font-size: 15px;
+
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   ROLE
+========================================================= */
+
+.profile-role {
+  margin: 0 0 10px;
+
+  color: #777777;
+
+  font-size: 10px;
+}
+
+
+/* =========================================================
+   BIO
+========================================================= */
+
+.profile-bio {
+  max-width: 220px;
+  margin: 0 auto 20px;
+  color: #777777;
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+
+
+/* =========================================================
+   PRODUCT RANKING
+========================================================= */
+
+.product-ranking {
+  width: 100%;
+
+  margin-bottom: 17px;
+}
+
+.product-ranking h2 {
+  margin: 0 0 7px;
+
+  color: var(--navy);
+
+  font-size: 26px;
+
+  line-height: 1.15;
+
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   RANKING STARS
+========================================================= */
+
+.ranking-stars {
+  display: flex;
+
+  justify-content: center;
+
+  gap: 3px;
+
+  margin-bottom: 4px;
+}
+
+.ranking-star {
+  color: #dddddd;
+
+  font-size: 16px;
+}
+
+.ranking-star-filled {
+  color: var(--gold);
+}
+
+
+/* =========================================================
+   RATING TEXT
+========================================================= */
+
+.rating-text {
+  display: block;
+
+  color: #222222;
+
+  font-size: 11px;
+}
+
+
+/* =========================================================
+   MY PRODUCTS
+========================================================= */
+
+.my-products-button {
+  width: 100%;
+  min-height: 31px;
+  margin-bottom: 8px;
+  border: none;
+  border-radius: 18px;
+  background: #a67b5b;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.my-products-button:hover {
+  background: var(--teal-dark);
+}
+
+
+/* =========================================================
+   DELETE ACCOUNT
+========================================================= */
+
+.delete-account-button {
+  width: 100%;
+  min-height: 31px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: none;
+  border-radius: 18px;
+  background: var(--danger);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.delete-account-button:hover {
+  background: #b90000;
+}
+
+.delete-account-button svg {
+  font-size: 9px;
+}
+
+
+/* =========================================================
+   RIGHT COLUMN
+========================================================= */
+
+.profile-right {
+  min-width: 0;
+  padding-top: 67px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-left: 25px;
+}
+
+
+/* =========================================================
+   DETAILS CARD
+========================================================= */
+
+.details-card,
+.brands-card {
+  width: 100%;
+
+  padding: 17px 18px;
+
+  background: #f3f3f3;
+
+  border-radius: 8px;
+
+  box-shadow:
+    0 2px 4px rgba(0,0,0,0.15);
+}
+
+
+/* =========================================================
+   DETAILS HEADER
+========================================================= */
+
+.profile-section-heading {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  margin-bottom: 15px;
+}
+
+.profile-section-heading h2 {
+  margin: 0;
+
+  color: var(--navy);
+
+  font-size: 28px;
+
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   SETTINGS BUTTON
+========================================================= */
+
+.settings-button {
+  width: 35px;
+  height: 35px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+
+  border-radius: 8px;
+
+  background: #ffffff;
+
+  color: #111111;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 2px 4px rgba(0,0,0,0.08);
+
+  font-size: 17px;
+}
+
+.settings-button:hover {
+  background: #eeeeee;
+}
+
+
+/* =========================================================
+   DETAILS LIST
+========================================================= */
+
+.details-list {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 12px;
+}
+
+.detail-row {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  color: #222222;
+  font-size: 12px;
+}
+
+.detail-icon {
+  width: 14px;
+
+  flex-shrink: 0;
+
+  color: #111111;
+
+  font-size: 11px;
+}
+
+.detail-content {
+  display: flex;
+
+  gap: 5px;
+}
+
+.detail-label {
+  font-weight: 400;
+}
+
+.detail-value {
+  font-weight: 400;
+}
+
+
+/* =========================================================
+   BRANDS HEADER
+========================================================= */
+
+.brands-heading h2 {
+  margin: 0 0 13px;
+
+  color: var(--navy);
+
+  font-size: 18px;
+
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   BRANDS
+========================================================= */
+
+.brands-row {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  gap: 12px;
+}
+
+.brand-logo {
+  height: 72px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 8px;
+
+  background: #ffffff;
+
+  border-radius: 7px;
+
+  box-shadow:
+    0 2px 3px rgba(0,0,0,0.15);
+}
+
+.brand-logo img {
+  display: block;
+
+  max-width: 90%;
+  max-height: 50px;
+
+  width: auto;
+  height: auto;
+
+  object-fit: contain;
+}
+
+
+/* =========================================================
+   PROFILE INFO
+========================================================= */
+
+.profile-info-card {
+  width: 100%;
+
+  display: grid;
+
+  grid-template-columns:
+    1fr auto 1fr auto 1fr;
+
+  align-items: center;
+
+  gap: 15px;
+
+  padding: 18px 15px;
+
+  background: #ffffff;
+
+  border: 1px solid #e3e3e3;
+
+  border-radius: 8px;
+
+  box-shadow:
+    0 2px 4px rgba(0,0,0,0.06);
+}
+
+
+/* =========================================================
+   INFO ITEM
+========================================================= */
+
+.info-item {
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  gap: 7px;
+
+  text-align: center;
+}
+
+.info-item strong {
+  color: var(--navy);
+
+  font-size: 15px;
+}
+
+.info-item span {
+  color: #777777;
+
+  font-size: 13px;
+}
+
+
+/* =========================================================
+   DIVIDER
+========================================================= */
+
+.info-divider {
+  width: 1px;
+
+  height: 45px;
+
+  background: #dddddd;
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 1000px) {
+
+  .profile-content {
+    grid-template-columns:
+      245px minmax(0, 1fr);
+
+    gap: 18px;
+
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .profile-banner {
+    margin-left: 20px;
+    margin-right: 20px;
+  }
+
+  .profile-topbar {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+}
+
+
+/* =========================================================
+   SMALL LAPTOP
+========================================================= */
+
+@media (max-width: 850px) {
+
+  .profile-content {
+    grid-template-columns: 1fr;
+
+    margin-top: 20px;
+  }
+
+  .profile-right {
+    padding-top: 0;
+  }
+
+  .profile-card {
+    max-width: 330px;
+
+    margin: 0 auto;
+  }
+
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 700px) {
+
+  .profile-page-content {
+    margin-left: 0;
+
+    width: 100%;
+  }
+
+  .profile-topbar {
+    height: 58px;
+
+    padding: 0 15px;
+  }
+
+  .profile-banner {
+    height: 125px;
+
+    margin: 15px;
+  }
+
+  .profile-content {
+    padding: 0 15px 30px;
+
+    margin-top: 15px;
+  }
+
+  .profile-card {
+    max-width: 100%;
+  }
+
+  .brands-row {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-info-card {
+    grid-template-columns: 1fr;
+
+    gap: 12px;
+  }
+
+  .info-divider {
+    width: 100%;
+
+    height: 1px;
+  }
+
+}
+
+
+/* =========================================================
+   VERY SMALL SCREEN
+========================================================= */
+
+@media (max-width: 450px) {
+
+  .profile-top-actions {
+    gap: 5px;
+  }
+
+  .profile-action-button {
+    width: 32px;
+    height: 32px;
+  }
+
+  .top-avatar {
+    width: 36px;
+    height: 36px;
+  }
+
+  .profile-banner {
+    height: 110px;
+  }
+
+  .edit-profile-button {
+    font-size: 9px;
+
+    padding: 6px 9px;
+  }
+
+  .profile-section-heading h2 {
+    font-size: 22px;
+  }
+
+  .product-ranking h2 {
+    font-size: 22px;
+  }
+
+}

@@ -1,0 +1,377 @@
+/* Base Reset & Variables */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f8f9fa;
+}
+
+/* Layout Structure */
+.listing-app-container {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Sidebar */
+.listing-sidebar {
+  width: 240px;
+  background-color: #1a2639; /* Dark Slate Blue */
+  color: #b0b8c8;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  flex-shrink: 0;
+}
+
+.listing-logo-area {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 40px;
+  color: #fff;
+}
+
+.listing-listingLogo{
+  width: 200px;
+  
+}
+
+
+/* Main Content */
+.listing-main-content {
+  flex: 1;
+  background-color: #f4f6f8;
+  display: flex;
+  margin-left: 250px;
+  flex-direction: column;
+  /* overflow: hidden; */
+}
+
+.listing-top-header {
+  background-color: #f4f6f8;
+  padding: 15px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e0e4e8;
+}
+
+.listing-header-left {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.listing-close-btn {
+  background: none;
+  border: none;
+  font-size: 28px;
+  color: #333;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.listing-header-left h1 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #222;
+}
+
+.listing-header-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.listing-icon-btn {
+  cursor: pointer;
+}
+
+.listing-notification{
+  width: 18px;
+  height: 18px;
+  color: #1a2639;
+  cursor: pointer;
+}
+
+.listing-settings{
+  width: 24x;
+  height: 24px;
+  color: #1a2639;
+  cursor: pointer;
+}
+
+.listing-profile {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  cursor: pointer;
+}
+
+.listing-scrollable-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 30px 30px 30px;
+}
+
+/* Action Bar */
+.listing-action-bar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.listing-btn-draft {
+  background: transparent;
+  border: 1px solid #3ca19f;
+  color: #3ca19f;
+  font-weight: 600;
+  border-radius: 20px;
+  padding: 10px 24px;
+  cursor: pointer;
+  
+}
+
+.listing-btn-list {
+  background: #3ca19f;
+  color: #fff;
+  font-weight: 600;
+  border-radius: 20px;
+  padding: 10px 24px;
+  border: none;
+  cursor: pointer;
+}
+
+.listing-btn-draft:hover {
+  background-color: #3ca19f;
+  color: #1a2a45;
+  /* opacity: 0.9; */
+}
+
+.listing-btn-list:hover {
+  background-color: #1a2639;
+  /* opacity: 0.9; */
+}
+
+/* Form Grid & Cards */
+.listing-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 350px;
+  gap: 20px;
+}
+
+.listing-form-column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.listing-card {
+  background: #1a2a45; /* Dark Navy */
+  border-radius: 12px;
+  padding: 20px;
+  color: #e0e6ed;
+}
+
+.listing-card-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: #ffffff;
+}
+
+.listing-form-group {
+  margin-bottom: 15px;
+}
+
+.listing-form-group label {
+  display: block;
+  font-size: 13px;
+  color: #c0c8d8;
+  margin-bottom: 6px;
+}
+
+.listing-form-input, .listing-form-select {
+  width: 100%;
+  background: #253653;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 15px;
+  color: #fff;
+  font-size: 14px;
+  outline: none;
+}
+
+.listing-form-input:focus, .listing-form-select:focus {
+  box-shadow: 0 0 0 2px #3ca19f;
+}
+
+.listing-form-select option {
+  background: #1a2a45;
+}
+
+.listing-radio-group {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.listing-radio-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.listing-radio-label input[type="radio"] {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #3ca19f;
+  border-radius: 50%;
+  outline: none;
+  cursor: pointer;
+  position: relative;
+}
+
+.listing-radio-label input[type="radio"]:checked::after {
+  content: '';
+  width: 8px;
+  height: 8px;
+  background: #3ca19f;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.listing-price-stock-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+/* Upload Image Card */
+.listing-upload-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 450px;
+  background: #97999c;
+}
+
+/* second box */
+.listing-main-image-preview {
+  flex: 1;
+  background: #101f33;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 15px;
+  min-height: 220px;
+  position: relative;
+}
+
+/* CSS-only Rubik's Cube visualization for the placeholder */
+.listing-rubiks-cube-placeholder {
+  width: 120px;
+  height: 120px;
+  background: #222;
+  position: relative;
+  transform: rotateX(-20deg) rotateY(30deg);
+  transform-style: preserve-3d;
+}
+.listing-rubiks-cube-placeholder .face {
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  background: #111;
+  border: 2px solid #333;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr;
+  gap: 2px;
+}
+/* Face colors */
+.r { background: red; transform: translateZ(60px); }
+.g { background: green; transform: rotateY(90deg) translateZ(60px); }
+.y { background: yellow; transform: rotateY(-90deg) translateZ(60px); }
+.b { background: blue; transform: rotateX(90deg) translateZ(60px); }
+.w { background: white; transform: rotateX(-90deg) translateZ(60px); }
+.o { background: orange; transform: rotateY(180deg) translateZ(60px); }
+
+.listing-thumbnail-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.listing-thumbnail {
+  width: 50px;
+  height: 50px;
+  background: #101f33;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 2px solid transparent;
+}
+
+.listing-thumbnail.active {
+  border-color: #3ca19f;
+}
+
+.listing-mini-cube {
+  width: 30px;
+  height: 30px;
+  background: #222;
+  border: 1px solid #555;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr;
+  gap: 1px;
+}
+
+.listing-add-image-btn {
+  width: 50px;
+  height: 50px;
+  background: #253653;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.listing-add-image-btn:hover {
+  background: #3ca19f;
+}
+
+.listing-card-upload-card{
+  background: #1a2a45; /* Dark Navy */
+  border-radius: 12px;
+  padding: 20px;
+  color: #e0e6ed;
+  height: 456px;
+}
+
+/* Media Query for small screens */
+@media (max-width: 1024px) {
+  .listing-form-grid {
+    grid-template-columns: 1fr;
+  }
+}

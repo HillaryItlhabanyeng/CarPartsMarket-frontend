@@ -1,0 +1,190 @@
+.bb-page {
+  font-family: Arial, Helvetica, sans-serif;
+  color: #1a1a1a;
+}
+
+.bb-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 24px 32px 16px 32px;
+}
+
+.bb-page-header h1 {
+  font-size: 26px;
+  font-weight: 800;
+  margin: 0 0 4px 0;
+}
+
+.bb-page-header p {
+  font-size: 13px;
+  color: #888;
+  margin: 0;
+  max-width: 480px;
+}
+
+.bb-post-btn {
+  background: #14b8a6;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  height: fit-content;
+  white-space: nowrap;
+}
+
+.bb-post-btn:hover {
+  background: #0d9488;
+}
+
+/* Filter chips */
+.bb-filter-bar {
+  display: flex;
+  gap: 10px;
+  padding: 0 32px 20px 32px;
+  flex-wrap: wrap;
+}
+
+.bb-filter-chip {
+  border: 1px solid #ddd;
+  background: #fff;
+  border-radius: 20px;
+  padding: 7px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #555;
+  cursor: pointer;
+}
+
+.bb-filter-chip:hover {
+  background: #f5f5f5;
+}
+
+.bb-filter-chip.bb-active {
+  background: #1e3a5f;
+  border-color: #1e3a5f;
+  color: #fff;
+}
+
+/* Post list */
+.bb-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 0 32px 40px 32px;
+  max-width: 800px;
+}
+
+.bb-post-card {
+  display: flex;
+  gap: 14px;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  padding: 16px;
+  background: #fff;
+}
+
+.bb-post-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.bb-post-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bb-post-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #999;
+}
+
+.bb-post-author {
+  font-weight: 700;
+  color: #333;
+}
+
+.bb-post-dot {
+  color: #ccc;
+}
+
+.bb-tag {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: 20px;
+  color: #fff;
+}
+
+.bb-tag-announcement {
+  background: #1e3a5f;
+}
+
+.bb-tag-lostfound {
+  background: #e11d48;
+}
+
+.bb-tag-studygroup {
+  background: #14b8a6;
+}
+
+.bb-tag-event {
+  background: #f59e0b;
+}
+
+.bb-post-title {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0;
+  color: #111;
+}
+
+.bb-post-body {
+  font-size: 13px;
+  color: #555;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.bb-post-replies {
+  align-self: flex-start;
+  margin-top: 6px;
+  background: none;
+  border: none;
+  color: #14b8a6;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+
+.bb-post-replies:hover {
+  text-decoration: underline;
+}
+
+/* Empty state */
+.bb-empty {
+  padding: 60px 0;
+  text-align: center;
+  color: #888;
+  font-size: 14px;
+}
+
+@media (max-width: 700px) {
+  .bb-page-header {
+    flex-direction: column;
+    gap: 12px;
+  }
+}

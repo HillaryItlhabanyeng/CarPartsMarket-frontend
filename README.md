@@ -1,56 +1,16 @@
-# CarPartMarket Frontend
+# Project Idea & Problem Statement
 
-React + Vite + Tailwind template wired up for the CarPartMarket Spring Boot backend.
+## Problem Statement
+Students, vendors and residents often face challenges when trying to buy or sell goods within their community. The platforms that exist now are unstructured, lack trust and they do not provide secure payment options. Many buyers and sellers are left to rely on informal channels such as social media groups or word of mouth, which offer no verification of who they are dealing with and no protection if something goes wrong. This results in unreliable transactions, limited accessibility and an increase in the risk of fraud, ultimately discouraging community members from engaging in trade that could otherwise benefit them.
 
-## Setup
+## Proposed Solution
+The Community Store Project proposes a mobile first marketplace that provides a centralized, secure and user-friendly platform for buying and selling goods and services within the community. Rather than relying on scattered, informal platforms, users are brought together into one trusted space where every account is verified, every payment is processed securely, and every transaction contributes to a visible reputation through a rating system. This combination of verified user accounts, secure payment integration and a rating system works together to enhance trust and usability, making it easier for students, vendors and residents to buy and sell with confidence.
 
-```bash
-npm install
-npm run dev
-```
+## Business Justification
+The Community Store Project will improve access to affordable goods for students, giving them a reliable place to find what they need without overpaying or dealing with unverified sellers. It will also provide vendors with a targeted marketplace where they can reach a community of buyers who are actively looking to purchase. By reducing fraud through secure authentication and payment, the platform builds the kind of trust that encourages more people to participate. On top of this, the project promotes sustainability through secondhand trading, giving goods a longer lifespan and reducing unnecessary waste within the community.
 
-The dev server runs on `http://localhost:5173` and proxies any request to
-`/api/*` through to your Spring Boot backend on `http://localhost:8080`
-(see `vite.config.js` — change the target port if yours differs).
+## Expected Benefits
+By bringing students and vendors together on one platform, the project is expected to increase community engagement, creating a more connected local marketplace. Because transactions are backed by verified accounts and secure payments, users can expect safer and more reliable transactions overall. For students specifically, this translates into real cost savings, since affordable and secondhand options become easier to find and trust. Vendors, in turn, gain new business opportunities by reaching a dedicated audience within their own community that they may not have had access to before.
 
-## What's included
-
-- **Routing** — `react-router-dom`, routes defined in `src/App.jsx`
-- **Auth** — `src/context/AuthContext.jsx`, role-based (`buyer` / `seller` / `admin`),
-  session persisted to `localStorage`
-- **Protected routes** — `src/components/ProtectedRoute.jsx`, optionally restrict by role
-- **API layer** — `src/api/` — one file per resource (`authApi`, `orderApi`, `vehicleApi`,
-  `transactionApi`), all going through the shared `client.js` fetch wrapper
-- **Pages** — `src/pages/` — `HomePage`, `LoginPage`, `RegisterPage`,
-  `VehiclePage`, `OrderPage`, `TransactionPage` (list + create + delete, ready to extend)
-- **Theme** — beige/white palette, Cormorant Garamond (display) + DM Sans (body),
-  tokens defined in `tailwind.config.js`
-
-## Things to double-check against your backend
-
-- **Endpoint paths** — `orderApi.js`, `vehicleApi.js`, `transactionApi.js` currently
-  guess at REST conventions (`/order/getAll`, `/order/create`, etc.). Update these to
-  match your actual `@RequestMapping`/`@GetMapping` paths in each Controller.
-- **Auth response shape** — `AuthContext.login()` expects the login endpoint to return
-  an object containing at least `email` and `role`. Adjust `loginRequest` / the shape
-  saved to `localStorage` if your `AuthController` returns something different.
-- **Register payload shape** — `RegisterPage.jsx` builds a payload matching the
-  `Name` embeddable (`firstName`/`lastName`) plus each subclass's extra field
-  (`buyingPart`, `sellingPart`, `role`/`permissions`). Adjust field names if your
-  Builders expect different JSON keys.
-- **IDs** — since you're mid-migration from `Long` to `String` ids, the table `key`s
-  fall back between `xId` and `id` — once migration is done you can simplify those.
-
-## Structure
-
-```
-src/
-  api/            fetch wrappers, one file per resource
-  components/     shared components (Navbar, ProtectedRoute)
-  context/        AuthContext
-  layouts/        MainLayout (Navbar + page content)
-  pages/          route-level pages
-  App.jsx         route definitions
-  main.jsx        entry point, providers
-  index.css       Tailwind + design tokens
-```
+## Tech Stack
+React + TypeScript + Vite
