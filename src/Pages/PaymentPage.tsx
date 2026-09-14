@@ -4,6 +4,7 @@ import Navbar from "../Components/Navbar";
 import CheckoutSteps from "../Components/CheckoutSteps";
 import { useCart } from "../Components/useCart";
 import { useOrders } from "../Components/useOrders";
+import { FaCcVisa } from "react-icons/fa";
 import "./PaymentPage.css";
 
 const DELIVERY_FEE = 50;
@@ -94,9 +95,11 @@ export default function PaymentPage() {
 
         <div className="payfast-card">
           <div className="payfast-header">
-            <span className="payfast-icon">💳</span>
+            <span className="payfast-icon">
+              <FaCcVisa />
+            </span>
             <div>
-              <p className="payfast-title">PayFast</p>
+              <p className="payfast-title">Visa</p>
               <p className="payfast-subtitle">Secure checkout gateway</p>
             </div>
           </div>
