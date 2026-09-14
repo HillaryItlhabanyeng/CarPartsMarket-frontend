@@ -20,17 +20,35 @@ type Props = {
   showLinks?: boolean;
 };
 
+type CurrentUser = {
+  name?: string;
+  role?: string;
+};
+
+function readCurrentUser(): CurrentUser | null {
+  try {
+    const raw = window.localStorage.getItem("marketplace_current_user");
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
 export default function Navbar({
   userName = "Sipho",
   showLinks = true,
 }: Props) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [currentUser] = useState<CurrentUser | null>(() => readCurrentUser());
 
   const navigate = useNavigate();
   const { itemCount } = useCart();
 
   const menuRef = useRef<HTMLDivElement>(null);
+
+  const isSeller = currentUser?.role === "Seller";
+  const displayName = currentUser?.name || userName;
 
   /* =====================================================
      CLOSE PROFILE MENU WHEN CLICKING OUTSIDE
@@ -96,7 +114,7 @@ export default function Navbar({
         {/* ADDRESS - now next to the logo */}
 
         <Link
-          to="/address"
+          to="/addresses"
           className="nav-action"
         >
           <FiMapPin className="action-icon" />
@@ -162,33 +180,35 @@ export default function Navbar({
           </Link>
 
 
-          {/* CART */}
+          {/* CART - buyers only */}
 
-          <Link
-            to="/cart"
-            className="nav-action nav-cart-action"
-          >
+          {!isSeller && (
+            <Link
+              to="/cart"
+              className="nav-action nav-cart-action"
+            >
 
-            <span className="icon-wrapper">
+              <span className="icon-wrapper">
 
-              <FiShoppingCart className="action-icon" />
+                <FiShoppingCart className="action-icon" />
 
-              {itemCount > 0 && (
-                <span
-                  className="cart-count"
-                  aria-label={`${itemCount} items in cart`}
-                >
-                  {itemCount}
-                </span>
-              )}
+                {itemCount > 0 && (
+                  <span
+                    className="cart-count"
+                    aria-label={`${itemCount} items in cart`}
+                  >
+                    {itemCount}
+                  </span>
+                )}
 
-            </span>
+              </span>
 
-            <span className="action-label">
-              Cart
-            </span>
+              <span className="action-label">
+                Cart
+              </span>
 
-          </Link>
+            </Link>
+          )}
 
 
           {/* =================================================
@@ -215,7 +235,7 @@ export default function Navbar({
               </span>
 
               <span className="profile-name">
-                {userName}
+                {displayName}
               </span>
 
               <FiChevronDown
@@ -250,7 +270,7 @@ export default function Navbar({
 
 
                 <Link
-                  to="/switch-user"
+                  to="/login"
                   className="profile-dropdown-item"
                   onClick={() =>
                     setIsMenuOpen(false)
@@ -272,8 +292,8 @@ export default function Navbar({
                   onClick={() => {
                     setIsMenuOpen(false);
 
-                    // Add your logout logic here
-                    console.log("Logging out...");
+                    window.localStorage.removeItem("marketplace_current_user");
+                    navigate("/login");
                   }}
                 >
 
@@ -302,45 +322,97 @@ export default function Navbar({
       {showLinks && (
         <nav className="nav-links-row">
 
-          <NavLink
-            to="/home"
-            end
-            className={({ isActive }) =>
-              isActive ? "active" : ""
-            }
-          >
-            Home
-          </NavLink>
+          {isSeller ? (
+            <>
+              <NavLink
+                to="/dashboard"
+                className={({ isActive }) =>
+                  isActive ? "active" : ""
+                }
+              >
+                Dashboard
+              </NavLink>
+
+              <NavLink
+                to="/list-product"
+                className={({ isActive }) =>
+                  isActive ? "active" : ""
+                }
+              >
+                List a Product
+              </NavLink>
+
+              <NavLink
+                to="/my-listings"
+                className={({ isActive }) =>
+                  isActive ? "active" : ""
+                }
+              >
+                My Listings
+              </NavLink>
+
+              <NavLink
+                to="/contact"
+                className={({ isActive }) =>
+                  isActive ? "active" : ""
+                }
+              >
+                Contact
+              </NavLink>
+            </>
+          ) : (
+            <>
+              <NavLink
+                to="/home"
+                end
+                className={({ isActive }) =>
+                  isActive ? "active" : ""
+                }
+              >
+                Home
+              </NavLink>
 
 
-          <NavLink
-            to="/shop"
-            className={({ isActive }) =>
-              isActive ? "active" : ""
-            }
-          >
-            Browse Listings
-          </NavLink>
+              <NavLink
+                to="/shop"
+                className={({ isActive }) =>
+                  isActive ? "active" : ""
+                }
+              >
+                Browse Listings
+              </NavLink>
 
 
-          <NavLink
-            to="/categories"
-            className={({ isActive }) =>
-              isActive ? "active" : ""
-            }
-          >
-            Categories
-          </NavLink>
+              <NavLink
+                to="/categories"
+                className={({ isActive }) =>
+                  isActive ? "active" : ""
+                }
+              >
+                Categories
+              </NavLink>
 
 
-          <NavLink
-            to="/contact"
-            className={({ isActive }) =>
-              isActive ? "active" : ""
-            }
-          >
-            Contact
-          </NavLink>
+              <NavLink
+                to="/list-product"
+                className={({ isActive }) =>
+                  isActive ? "active" : ""
+                }
+              >
+                Sell
+              </NavLink>
+
+
+              <NavLink
+                to="/contact"
+                className={({ isActive }) =>
+                  isActive ? "active" : ""
+                }
+              >
+                Contact
+              </NavLink>
+            </>
+          )}
 
         </nav>
       )}

@@ -3,7 +3,7 @@ import type { CSSProperties, FC } from "react";
 import { useNavigate } from "react-router-dom";
 
 import Navbar from "../Components/Navbar";
-import "./RatingsReviewsPage.css";
+import "./RatingsreviewsPage.css";
 
 import {
   FaChevronDown,

@@ -1,26 +1,28 @@
 .image-uploader-dark {
   width: 100%;
   max-width: 350px; /* Matches the column width in the screenshot */
-  background-color: #1a2a45; /* Dark Navy Background */
+  background-color: #ffffff;
   border-radius: 12px;
-  padding: 20px;
+  padding: 24px;
   box-sizing: border-box;
-  color: #fff;
+  color: #0d2b45;
+  box-shadow: 0 2px 10px rgba(13, 43, 69, 0.06);
 }
 
 .upload-title {
-  font-size: 18px;
-  font-weight: 600;
-  margin: 0 0 20px 0;
-  color: #ffffff;
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 18px;
+  color: #0d2b45;
 }
 
 /* Main Large Preview */
 .main-preview {
   width: 100%;
   height: 220px;
-  background-color: #101f33; /* Slightly darker navy for the box */
-  border-radius: 12px;
+  background-color: #f8f9fa;
+  border: 1px solid #e5e9ec;
+  border-radius: 10px;
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -35,7 +37,7 @@
 }
 
 .empty-main-preview {
-  color: #8e96a8;
+  color: #6b7a7f;
   font-size: 14px;
 }
 
@@ -49,12 +51,12 @@
 .thumbnail-card {
   width: 50px;
   height: 50px;
-  border-radius: 10px;
+  border-radius: 8px;
   overflow: hidden;
   position: relative;
   cursor: pointer;
-  background-color: #101f33;
-  border: 2px solid transparent;
+  background-color: #f8f9fa;
+  border: 2px solid #e5e9ec;
   transition: border-color 0.2s ease;
 }
 
@@ -66,7 +68,7 @@
 
 /* Active Thumbnail Border */
 .active-thumbnail {
-  border-color: #3ca19f; /* Teal Border */
+  border-color: #a67b5b; /* Brand accent */
 }
 
 /* Delete Badge */
@@ -76,7 +78,7 @@
   right: 2px;
   width: 16px;
   height: 16px;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: rgba(13, 43, 69, 0.7);
   color: #fff;
   border: none;
   border-radius: 50%;
@@ -90,16 +92,16 @@
 }
 
 .delete-badge:hover {
-  background-color: #ff4d4f;
+  background-color: #c0392b;
 }
 
 /* Add Button */
 .add-image-button {
   width: 50px;
   height: 50px;
-  background-color: #253653;
+  background-color: #0d2b45;
   border: 2px solid transparent;
-  border-radius: 10px;
+  border-radius: 8px;
   color: #fff;
   font-size: 28px;
   font-weight: 300;
@@ -111,7 +113,7 @@
 }
 
 .add-image-button:hover {
-  background-color: #3ca19f;
+  background-color: #a67b5b;
 }
 
 .add-image-button:disabled {
@@ -121,7 +123,7 @@
 
 .upload-limit-info {
   margin-top: 15px;
-  color: #8e96a8;
+  color: #6b7a7f;
   font-size: 12px;
   text-align: center;
 }
