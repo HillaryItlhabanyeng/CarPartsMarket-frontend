@@ -1,0 +1,82 @@
+.marketPlaceContainer{
+  min-height: 100vh;
+}
+
+.marketplaceHeader{
+  height: 50vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  /* background-color: antiquewhite; */
+  background-image: url(headlights1.jpg);
+  background-repeat: no-repeat;
+  background-size: cover;
+  border-radius: 20px;
+  margin: 20px;
+  align-items: center;
+  padding: 10px;
+}
+
+.marketplaceHeader h1{
+  color: #dedede;
+  /* background: linear-gradient(to right, #a67b5b, #a67b5b);
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent; */
+  color: liner;
+  font-size: 50px;
+  margin: 10px;
+}
+
+.marketplaceHeader p{
+  color: #dededebe;
+  font-size: 20px;
+  margin: 10px;
+  margin-bottom: 20px;
+}
+
+.filtercontainer{
+  display: flex;
+  flex-direction: row;
+  gap: 15px;
+}
+
+.filter-form-group {
+  margin-bottom: 15px;
+}
+
+.filter-form-group label {
+  display: block;
+  font-size: 13px;
+  color: #c0c8d8;
+  margin-bottom: 6px;
+}
+
+.filter-form-input, .filter-form-select {
+  width: 100%;
+  background: #253653;
+  border: none;
+  border-radius: 20px;
+  padding: 10px;
+  color: #fff;
+  font-size: 14px;
+  outline: none;
+  height: 41px
+}
+
+.filter-form-input:focus, .filter-form-select:focus {
+  box-shadow: 0 0 0 2px #a67b5b;
+}
+
+.filter-form-select option {
+  background: #1a2a45;
+}
+
+/* .marketplaceSearch{
+  background-color: #ffff;
+  border:1px solid #a67b5b;
+  border-radius: 50px;
+  margin-bottom: 50px;
+  width: 350px;
+  height: 50px;
+
+} */

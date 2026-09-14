@@ -1,0 +1,289 @@
+/* =========================================================
+   UNiTRADE SIDE NAVIGATION
+========================================================= */
+
+.listing-side-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 250px;
+  display: flex;
+  flex-direction: column;
+  background: #1E3A5F;
+  color: #ffffff;
+  z-index: 1000;
+  overflow-y: auto;
+}
+
+
+/* =========================================================
+   LOGO
+========================================================= */
+
+.listing-side-nav-logo {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 22px 12px 30px;
+  box-sizing: border-box;
+}
+
+
+/* Actual UniTrade logo */
+
+.listing-unitrade-logo {
+  display: block;
+  width: 200px;
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+
+/* =========================================================
+   NAVIGATION
+========================================================= */
+
+.listing-side-nav-menu {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 0 0 15px;
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   MAIN NAVIGATION ITEM
+========================================================= */
+
+.listing-side-nav-item {
+  width: 100%;
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 8px 15px;
+  border: none;
+  background: transparent;
+  color: #ffffff;
+  /* font-family: Arial, Helvetica, sans-serif; */
+  font-size: 18px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+
+/* Icon */
+
+.listing-side-nav-icon {
+  width: 14px;
+  flex-shrink: 0;
+  font-size: 13px;
+}
+
+
+/* Hover */
+
+.listing-side-nav-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+
+/* Active item */
+
+.listing-side-nav-item.active {
+  background: #16b3a5;
+  color: #ffffff;
+  border-radius: 0 18px 18px 0;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   PARENT NAVIGATION
+========================================================= */
+
+.listing-side-nav-parent {
+  justify-content: space-between;
+}
+
+
+.listing-side-nav-item-left {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+
+.listing-side-nav-arrow {
+  width: 10px;
+  margin-right: 2px;
+  font-size: 9px;
+}
+
+
+/* =========================================================
+   SUBMENU
+========================================================= */
+
+.listing-side-nav-submenu {
+  display: flex;
+  flex-direction: column;
+  padding: 2px 0 6px 35px;
+  box-sizing: border-box;
+}
+
+
+/* Submenu buttons */
+
+.listing-submenu-item {
+  min-height: 30px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.76);
+  /* font-family: Arial, Helvetica, sans-serif; */
+  font-size: 15px;
+  text-align: left;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition:
+    color 0.2s ease,
+    background 0.2s ease;
+}
+
+
+/* Submenu hover */
+
+.listing-submenu-item:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+
+/* Submenu active */
+
+.listing-submenu-item.active {
+  color: #16b3a5;
+  font-weight: 700;
+}
+
+
+/* Submenu icons */
+
+.listing-submenu-item svg {
+  width: 10px;
+
+  font-size: 9px;
+}
+
+
+/* =========================================================
+   LOGOUT
+========================================================= */
+
+.listing-side-nav-bottom {
+  margin-top: auto;
+  padding: 18px 15px 25px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  box-sizing: border-box;
+}
+
+
+.listing-side-nav-logout {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border: none;
+  background: transparent;
+  color: #ffffff;
+  /* font-family: Arial, Helvetica, sans-serif; */
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+
+.listing-side-nav-logout:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 7px;
+}
+
+.listing-side-nav-logout svg {
+  width: 60px;
+  font-size: 35px;
+  color: #16b3a5;
+}
+
+.listing-side-nav-logout span {
+  font-size: 20px;
+  font-weight: bold;
+  color: #16b3a5;
+}
+
+
+/* =========================================================
+   SCROLLBAR
+========================================================= */
+
+.listing-side-nav::-webkit-scrollbar {
+  width: 4px;
+}
+
+
+.listing-side-nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+
+.listing-side-nav::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+
+  border-radius: 10px;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 800px) {
+
+  .listing-side-nav {
+    width: 145px;
+  }
+
+  .listing-side-nav-logo {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .listing-unitrade-logo {
+    width: 125px;
+  }
+
+  .listing-side-nav-item {
+    padding-left: 12px;
+    padding-right: 10px;
+  }
+
+  .listing-side-nav-submenu {
+    padding-left: 28px;
+  }
+}
