@@ -1,20 +1,66 @@
 /* =========================================================
-   NAVBAR
+   AUT0MARKET / WEBSITE NAVBAR
+========================================================= */
+
+:root {
+  --primary: #a67b5b;
+  --primary-dark: #9d7338;
+  --primary-light: #c9a66b;
+
+  --black: #222222;
+  --text: #333333;
+  --muted: #777777;
+
+  --border: #e8e8e8;
+  --background: #ffffff;
+  --soft-background: #faf9f7;
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.site-header {
+  width: 100%;
+
+  background: var(--background);
+
+  font-family:
+    Inter,
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  position: relative;
+
+  z-index: 1000;
+}
+
+
+/* =========================================================
+   MAIN NAVBAR
 ========================================================= */
 
 .navbar {
   width: 100%;
-  min-height: 64px;
+
+  min-height: 72px;
+
   display: flex;
   align-items: center;
-  gap: 28px;
-  padding: 8px 32px;
+
+  padding: 10px 5%;
+
+  gap: 32px;
+
+  background: var(--background);
+
+  border-bottom: 1px solid var(--border);
+
   box-sizing: border-box;
-
-  background: #1e3a5f;
-
-  font-family: Arial, Helvetica, sans-serif;
 }
+
 
 /* =========================================================
    LOGO
@@ -22,161 +68,273 @@
 
 .navbar-logo {
   display: flex;
+
   align-items: center;
+
   flex-shrink: 0;
+
   text-decoration: none;
 }
 
 .navbar-logo-image {
-  width: 145px;
+  width: 155px;
+
   height: auto;
+
   max-height: 52px;
+
   object-fit: contain;
+
   display: block;
 }
 
+
 /* =========================================================
-   SEARCH
+   SEARCH BAR
 ========================================================= */
 
 .navbar-search {
   flex: 1;
-  max-width: 470px;
-  height: 38px;
+
+  max-width: 520px;
+
+  height: 40px;
 
   display: flex;
-  align-items: stretch;
 
-  margin-left: 74px;
+  align-items: center;
+
+  position: relative;
+
+  background: #ffffff;
+
+  border: 1px solid #dddddd;
+
+  border-radius: 5px;
+
+  overflow: hidden;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
+
+.navbar-search:focus-within {
+  border-color: var(--primary);
+
+  box-shadow:
+    0 0 0 3px rgba(184, 137, 69, 0.08);
+}
+
+
+/* Search icon */
+
+.search-icon {
+  width: 17px;
+
+  height: 17px;
+
+  margin-left: 14px;
+
+  flex-shrink: 0;
+
+  color: #999999;
+}
+
+
+/* Input */
 
 .navbar-search input {
   flex: 1;
+
+  width: 100%;
+
   min-width: 0;
-  padding: 0 15px;
+
+  height: 100%;
+
   border: none;
+
   outline: none;
-  background: #ffffff;
-  border-radius: 25px 0 0 25px;
-  color: #1e3a5f;
-  font-size: 13px;
+
+  padding: 0 12px;
+
+  background: transparent;
+
+  color: var(--black);
+
+  font-size: 12px;
+
+  font-family: inherit;
 }
 
 .navbar-search input::placeholder {
-  color: #64748b;
+  color: #999999;
 }
 
+
+/* Search button */
+
 .navbar-search button {
-  width: 48px;
+  height: 100%;
+
+  min-width: 70px;
+
+  padding: 0 18px;
 
   border: none;
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: var(--primary);
 
-  background: #a67b5b;
   color: #ffffff;
 
-  border-radius: 0 25px 25px 0;
+  font-family: inherit;
+
+  font-size: 11px;
+
+  font-weight: 600;
 
   cursor: pointer;
 
   transition:
-    background 0.2s ease,
-    transform 0.2s ease;
+    background 0.2s ease;
 }
 
 .navbar-search button:hover {
-  background: #a67b5b;
+  background: var(--primary-dark);
 }
 
-.navbar-search button:active {
-  transform: scale(0.96);
-}
 
 /* =========================================================
-   TOP NAV ACTIONS
+   RIGHT NAVIGATION
 ========================================================= */
 
 .navbar-actions {
   margin-left: auto;
 
   display: flex;
+
   align-items: center;
 
-  gap: 26px;
+  gap: 24px;
+
+  flex-shrink: 0;
 }
 
+
 /* =========================================================
-   ACTION BUTTONS
+   NAV ACTION
 ========================================================= */
 
 .nav-action {
   position: relative;
-  min-width: 48px;
+
+  min-width: 52px;
 
   display: flex;
+
   flex-direction: column;
+
   align-items: center;
+
   justify-content: center;
 
   gap: 4px;
 
-  color: #ffffff;
-
   text-decoration: none;
 
-  font-size: 10px;
-  font-weight: 600;
+  color: var(--black);
 
   transition:
-    color 0.2s ease,
-    transform 0.2s ease;
+    color 0.2s ease;
 }
 
 .nav-action:hover {
-  color: #a67b5b;
-  transform: translateY(-1px);
+  color: var(--primary);
 }
 
-.nav-action-address {
+
+/* =========================================================
+   ACTION ICON
+========================================================= */
+
+.action-icon {
+  width: 19px;
+
+  height: 19px;
+
+  stroke-width: 1.7;
+}
+
+
+/* =========================================================
+   ACTION LABEL
+========================================================= */
+
+.action-label {
+  font-size: 10px;
+
+  font-weight: 500;
+
+  line-height: 1;
+
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   CART
+========================================================= */
+
+.nav-cart-action {
   position: relative;
-  min-width: 48px;
+}
+
+.icon-wrapper {
+  position: relative;
 
   display: flex;
-  flex-direction: row;
+
   align-items: center;
+
+  justify-content: center;
+}
+
+
+/* Cart badge */
+
+.cart-count {
+  position: absolute;
+
+  top: -8px;
+
+  right: -9px;
+
+  min-width: 16px;
+
+  height: 16px;
+
+  padding: 0 4px;
+
+  display: flex;
+
+  align-items: center;
+
   justify-content: center;
 
-  gap: 4px;
+  border-radius: 50%;
+
+  background: var(--primary);
 
   color: #ffffff;
 
-  text-decoration: none;
+  font-size: 8px;
 
-  font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
 
-  transition:
-    color 0.2s ease,
-    transform 0.2s ease;
-  margin-left: 50px
+  line-height: 1;
 }
 
-.action-icon {
-  width: 18px;
-  height: 18px;
-
-  font-size: 18px;
-}
-
-.action-icon-address{
-  width: 30px;
-  height: 30px;
-
-  font-size: 18px;
-}
 
 /* =========================================================
    PROFILE
@@ -188,133 +346,202 @@
 
 .nav-profile {
   display: flex;
+
   align-items: center;
 
-  gap: 10px;
+  gap: 7px;
 
-  padding-left: 4px;
+  padding: 5px 0;
 
-  color: #ffffff;
-
-  background: none;
   border: none;
 
+  background: transparent;
+
+  color: var(--black);
+
   cursor: pointer;
+
+  font-family: inherit;
+
+  transition:
+    color 0.2s ease;
 }
 
-.nav-profile:hover .profile-name {
-  color: #a67b5b;
+.nav-profile:hover {
+  color: var(--primary);
 }
 
-/* Real Sipho image */
 
-.profile-avatar-image {
-  width: 40px;
-  height: 40px;
+/* User icon */
+
+.profile-icon {
+  width: 27px;
+
+  height: 27px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border: 1px solid #dddddd;
 
   border-radius: 50%;
 
-  object-fit: cover;
+  color: var(--black);
 
-  border: 2px solid #ffffff;
+  font-size: 13px;
 
-  background: #ffffff;
-
-  display: block;
+  transition:
+    border-color 0.2s ease,
+    color 0.2s ease;
 }
 
-.profile-name {
-  font-size: 14px;
-  font-weight: 700;
+.nav-profile:hover .profile-icon {
+  border-color: var(--primary);
 
-  color: wheat;
+  color: var(--primary);
+}
+
+
+/* Profile name */
+
+.profile-name {
+  font-size: 11px;
+
+  font-weight: 600;
 
   white-space: nowrap;
 }
 
+
+/* Chevron */
+
 .profile-chevron {
-  width: 10px;
-  height: 10px;
+  width: 11px;
 
-  color: #ffffff;
+  height: 11px;
 
-  transition: transform 0.2s ease;
+  transition:
+    transform 0.2s ease;
 }
 
 .profile-chevron.open {
   transform: rotate(180deg);
 }
 
+
 /* =========================================================
-   PROFILE DROPDOWN MENU
+   PROFILE DROPDOWN
 ========================================================= */
 
 .profile-dropdown {
   position: absolute;
+
   top: calc(100% + 12px);
+
   right: 0;
 
-  min-width: 190px;
+  width: 190px;
+
+  padding: 6px 0;
 
   background: #ffffff;
 
-  border-radius: 8px;
+  border: 1px solid var(--border);
 
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+  border-radius: 6px;
+
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.10);
 
   overflow: hidden;
 
-  z-index: 100;
-
-  font-family: Arial, Helvetica, sans-serif;
+  animation:
+    dropdownIn 0.15s ease;
 }
+
+@keyframes dropdownIn {
+  from {
+    opacity: 0;
+
+    transform: translateY(-5px);
+  }
+
+  to {
+    opacity: 1;
+
+    transform: translateY(0);
+  }
+}
+
+
+/* Dropdown item */
 
 .profile-dropdown-item {
   width: 100%;
 
   display: flex;
-  align-items: center;
-  gap: 10px;
 
-  padding: 11px 16px;
+  align-items: center;
+
+  gap: 12px;
+
+  padding: 12px 16px;
 
   border: none;
-  background: none;
 
-  color: #1e3a5f;
+  background: transparent;
+
+  color: var(--text);
 
   text-decoration: none;
+
   text-align: left;
 
-  font-size: 13px;
-  font-weight: 600;
+  font-family: inherit;
+
+  font-size: 12px;
+
+  font-weight: 500;
 
   cursor: pointer;
 
-  transition: background 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.profile-dropdown-item svg {
+  width: 15px;
+
+  height: 15px;
 }
 
 .profile-dropdown-item:hover {
-  background: #f1f5f9;
-  color: #a67b5b;
+  background: #f7f3ed;
+
+  color: var(--primary);
 }
 
+
+/* Logout */
+
 .profile-dropdown-item.logout {
-  color: #c0392b;
-  border-top: 1px solid #e5e9ee;
+  color: #a45f5f;
+
+  border-top: 1px solid var(--border);
+
+  margin-top: 5px;
 }
 
 .profile-dropdown-item.logout:hover {
-  background: #fdecea;
-  color: #c0392b;
+  background: #faf2f2;
+
+  color: #9a4444;
 }
 
-.dropdown-icon {
-  width: 14px;
-  height: 14px;
-
-  font-size: 14px;
-}
 
 /* =========================================================
    SECOND NAVIGATION
@@ -323,24 +550,25 @@
 .nav-links-row {
   width: 100%;
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  gap: 34px;
-
-  padding: 0 32px;
-
   height: 44px;
 
-  box-sizing: border-box;
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 42px;
+
+  padding: 0 5%;
 
   background: #ffffff;
 
-  border-bottom: 1px solid #dbe2e8;
+  border-bottom: 1px solid var(--border);
 
-  font-family: Arial, Helvetica, sans-serif;
+  box-sizing: border-box;
 }
+
 
 /* =========================================================
    SECOND NAV LINKS
@@ -352,17 +580,17 @@
   height: 44px;
 
   display: flex;
+
   align-items: center;
 
   padding: 0 2px;
 
-  box-sizing: border-box;
-
-  color: #1e3a5f;
+  color: #333333;
 
   text-decoration: none;
 
-  font-size: 13px;
+  font-size: 11px;
+
   font-weight: 500;
 
   white-space: nowrap;
@@ -372,15 +600,17 @@
 }
 
 .nav-links-row a:hover {
-  color: #a67b5b;
+  color: var(--primary);
 }
 
+
 /* =========================================================
-   ACTIVE LINK
+   ACTIVE NAV LINK
 ========================================================= */
 
 .nav-links-row a.active {
-  color: #a67b5b;
+  color: var(--primary);
+
   font-weight: 700;
 }
 
@@ -390,74 +620,202 @@
   position: absolute;
 
   left: 0;
+
   right: 0;
+
   bottom: 0;
 
   height: 2px;
 
-  background: #a67b5b;
+  background: var(--primary);
+
+  border-radius: 2px 2px 0 0;
 }
 
+
 /* =========================================================
-   RESPONSIVE
+   TABLET
 ========================================================= */
 
 @media (max-width: 1100px) {
+
   .navbar {
+    padding: 10px 3%;
+
+    gap: 20px;
+  }
+
+  .navbar-logo-image {
+    width: 135px;
+  }
+
+  .navbar-search {
+    max-width: 420px;
+  }
+
+  .navbar-actions {
     gap: 16px;
-    padding: 8px 20px;
+  }
+
+  .nav-links-row {
+    gap: 30px;
+
+    padding: 0 3%;
+  }
+}
+
+
+/* =========================================================
+   SMALL TABLET
+========================================================= */
+
+@media (max-width: 850px) {
+
+  .navbar {
+    gap: 15px;
+  }
+
+  .navbar-logo-image {
+    width: 120px;
+  }
+
+  .navbar-search {
+    max-width: none;
+  }
+
+  .navbar-actions {
+    gap: 12px;
+  }
+
+  .profile-name {
+    display: none;
+  }
+
+  .nav-links-row {
+    justify-content: flex-start;
+
+    overflow-x: auto;
+
+    gap: 25px;
+
+    padding: 0 20px;
+
+    scrollbar-width: none;
+  }
+
+  .nav-links-row::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 650px) {
+
+  .navbar {
+    min-height: auto;
+
+    flex-wrap: wrap;
+
+    padding: 12px 16px;
+
+    gap: 12px;
   }
 
   .navbar-logo-image {
     width: 125px;
   }
 
-  .navbar-search {
-    max-width: 360px;
+  .navbar-actions {
+    margin-left: auto;
+
+    gap: 10px;
   }
 
-  .navbar-actions {
-    gap: 16px;
+  .nav-action {
+    min-width: 38px;
+  }
+
+  .action-label {
+    font-size: 8px;
+  }
+
+  .action-icon {
+    width: 17px;
+
+    height: 17px;
+  }
+
+  .navbar-search {
+    order: 3;
+
+    flex-basis: 100%;
+
+    max-width: none;
+
+    height: 38px;
+  }
+
+  .navbar-search button {
+    min-width: 55px;
+
+    padding: 0 12px;
+
+    font-size: 10px;
   }
 
   .nav-links-row {
-    gap: 22px;
-    padding: 0 20px;
+    height: 42px;
+
+    gap: 24px;
+  }
+
+  .nav-links-row a {
+    height: 42px;
+
+    font-size: 10px;
   }
 }
 
-@media (max-width: 850px) {
-  .profile-name,
-  .profile-chevron {
+
+/* =========================================================
+   VERY SMALL PHONES
+========================================================= */
+
+@media (max-width: 400px) {
+
+  .navbar-logo-image {
+    width: 105px;
+  }
+
+  .navbar-actions {
+    gap: 7px;
+  }
+
+  .nav-action {
+    min-width: 32px;
+  }
+
+  .action-label {
     display: none;
   }
 
-  .navbar-actions {
-    gap: 14px;
+  .action-icon {
+    width: 18px;
+
+    height: 18px;
   }
 
-  .navbar-search {
-    max-width: 300px;
+  .profile-icon {
+    width: 25px;
+
+    height: 25px;
   }
 
-  .nav-links-row {
-    overflow-x: auto;
-    justify-content: flex-start;
+  .profile-chevron {
+    display: none;
   }
-}
-
-.cart-count {
-  position: absolute;
-  top: -7px;
-  right: 2px;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 4px;
-  border-radius: 10px;
-  background: #2db7c3;
-  color: #fff;
-  font-size: 10px;
-  font-weight: 800;
-  line-height: 18px;
-  text-align: center;
 }

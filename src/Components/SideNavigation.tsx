@@ -2,10 +2,17 @@ import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
 import {
-  FaSignOutAlt,
-  FaChevronDown,
-  FaChevronUp,
-} from "react-icons/fa";
+  FiHome,
+  FiShoppingBag,
+  FiHeart,
+  FiPackage,
+  FiMapPin,
+  FiUser,
+  FiSettings,
+  FiLogOut,
+  FiChevronDown,
+  FiChevronUp,
+} from "react-icons/fi";
 
 import "./SideNavigation.css";
 
@@ -13,8 +20,7 @@ export default function SideNav() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [myProductsOpen, setMyProductsOpen] = useState(true);
-  const [communityOpen, setCommunityOpen] = useState(true);
+  const [accountOpen, setAccountOpen] = useState(true);
 
   const isActive = (path: string) => {
     return location.pathname === path;
@@ -33,173 +39,219 @@ export default function SideNav() {
   return (
     <aside className="listing-side-nav">
 
-      {/* =========================================
+      {/* =================================================
           LOGO
-      ========================================== */}
+      ================================================= */}
 
       <div className="listing-side-nav-logo">
+
         <img
-          src="UniTrade logo 2.png"
-          alt="UniTrade Campus Marketplace"
-          className="listing-unitrade-logo"
+          src="/automarket-logo.png"
+          alt="AutoMarket"
+          className="listing-automarket-logo"
         />
+
       </div>
 
 
-      {/* =========================================
+      {/* =================================================
           NAVIGATION
-      ========================================== */}
+      ================================================= */}
 
       <nav className="listing-side-nav-menu">
 
-        {/* HOME */}
+
+        {/* DASHBOARD */}
 
         <button
           type="button"
-          className={`listing-side-nav-item ${isActive("/home") ? "active" : ""}`}onClick={() => navigate("/home")}>
-          {/* <FaHome className="listing-side-nav-icon" /> */}
-          <span>Home</span>
+          className={`listing-side-nav-item ${
+            isActive("/dashboard") ? "active" : ""
+          }`}
+          onClick={() => navigate("/dashboard")}
+        >
+
+          <FiHome className="listing-side-nav-icon" />
+
+          <span>Dashboard</span>
+
         </button>
 
 
-        {/* =========================================
-            MY PRODUCTS
-        ========================================== */}
+        {/* MY ORDERS */}
 
         <button
           type="button"
-          className="listing-side-nav-item listing-side-nav-parent" onClick={() =>setMyProductsOpen(!myProductsOpen)}>
-          <span className="listing-side-nav-item-left">
-            {/* <FaBoxOpen className="listing-side-nav-icon" /> */}
-            <span>My products</span>
-          </span>
+          className={`listing-side-nav-item ${
+            isActive("/orders") ? "active" : ""
+          }`}
+          onClick={() => navigate("/orders")}
+        >
 
-          {myProductsOpen ? (
-            <FaChevronUp className="listing-side-nav-arrow" />
-          ) : (
-            <FaChevronDown className="listing-side-nav-arrow" />
-          )}
+          <FiShoppingBag className="listing-side-nav-icon" />
+
+          <span>My Orders</span>
+
         </button>
 
 
-        {myProductsOpen && (
-          <div className="listing-side-nav-submenu">
-
-            <button
-              type="button"
-              className={`listing-submenu-item ${ isActive("/my-listings") ? "active" : "" }`}
-              onClick={() => navigate("/my-listings") } >
-              Selling
-            </button>
-
-
-            <button
-              type="button"
-              className={`listing-submenu-item ${ isActive("/buying") ? "active" : "" }`}
-              onClick={() => navigate("/buying") } >
-              Buying
-            </button>
-
-
-            <button
-              type="button"
-              className={`listing-submenu-item ${ isActive("/saved") ? "active" : "" }`}
-              onClick={() => navigate("/saved") }>
-              Saved
-            </button>
-
-          </div>
-        )}
-
-
-        {/* =========================================
-            PRODUCTS
-        ========================================== */}
+        {/* WISHLIST */}
 
         <button
           type="button"
-          className={`listing-side-nav-item ${ isActive("/products") ? "active" : "" }`}
-                    onClick={() => navigate("/products")} >
-          {/* <FaShoppingBag className="listing-side-nav-icon" /> */}
-          <span>Products</span>
+          className={`listing-side-nav-item ${
+            isActive("/wishlist") ? "active" : ""
+          }`}
+          onClick={() => navigate("/wishlist")}
+        >
+
+          <FiHeart className="listing-side-nav-icon" />
+
+          <span>Wishlist</span>
+
         </button>
 
 
-        {/* =========================================
-            COMMUNITY
-        ========================================== */}
+        {/* =================================================
+            ACCOUNT SECTION
+        ================================================= */}
 
         <button
           type="button"
           className="listing-side-nav-item listing-side-nav-parent"
-          onClick={() => setCommunityOpen(!communityOpen) } >
+          onClick={() =>
+            setAccountOpen(!accountOpen)
+          }
+        >
+
           <span className="listing-side-nav-item-left">
-            {/* <FaUsers className="listing-side-nav-icon" /> */}
-            <span>Community</span>
+
+            <FiUser className="listing-side-nav-icon" />
+
+            <span>My Account</span>
+
           </span>
 
-          {communityOpen ? (
-            <FaChevronUp className="listing-side-nav-arrow" />
+          {accountOpen ? (
+            <FiChevronUp className="listing-side-nav-arrow" />
           ) : (
-            <FaChevronDown className="listing-side-nav-arrow" />
+            <FiChevronDown className="listing-side-nav-arrow" />
           )}
+
         </button>
 
 
-        {communityOpen && (
+        {/* ACCOUNT SUBMENU */}
+
+        {accountOpen && (
           <div className="listing-side-nav-submenu">
 
-            <button
-              type="button"
-              className={`listing-submenu-item ${ isActive("/announcements") ? "active" : "" }`}
-              onClick={() => navigate("/announcements") } >
-              {/* <FaBullhorn /> */}
-              <span>Announcements</span>
-            </button>
 
+            {/* PROFILE */}
 
             <button
               type="button"
-              className={`listing-submenu-item ${ isActive("/services") ? "active": ""}`}
-              onClick={() =>navigate("/services")}>
-              {/* <FaComments /> */}
+              className={`listing-submenu-item ${
+                isActive("/profile")
+                  ? "active"
+                  : ""
+              }`}
+              onClick={() => navigate("/profile")}
+            >
 
-              <span>Services</span>
+              <FiUser />
+
+              <span>Profile</span>
+
             </button>
 
+
+            {/* ADDRESSES */}
 
             <button
-              type="button" className={`listing-submenu-item ${isActive("/events")? "active": ""}`} onClick={() =>navigate("/events")} >
-              {/* <FaCalendarAlt /> */}
-              <span>Events</span>
+              type="button"
+              className={`listing-submenu-item ${
+                isActive("/addresses")
+                  ? "active"
+                  : ""
+              }`}
+              onClick={() =>
+                navigate("/addresses")
+              }
+            >
+
+              <FiMapPin />
+
+              <span>Addresses</span>
+
             </button>
+
+
+            {/* SETTINGS */}
+
+            <button
+              type="button"
+              className={`listing-submenu-item ${
+                isActive("/settings")
+                  ? "active"
+                  : ""
+              }`}
+              onClick={() =>
+                navigate("/settings")
+              }
+            >
+
+              <FiSettings />
+
+              <span>Settings</span>
+
+            </button>
+
           </div>
         )}
 
 
-        {/* =========================================
-            PROFILE
-        ========================================== */}
+        {/* =================================================
+            MY LISTINGS
+        ================================================= */}
 
         <button
           type="button"
-          className={`listing-side-nav-item ${isActive("/profile") ? "active" : ""}`}onClick={() => navigate("/profile")}        >
-          {/* <FaUser className="listing-side-nav-icon" /> */}
-          <span>Profile</span>
+          className={`listing-side-nav-item ${
+            isActive("/my-listings")
+              ? "active"
+              : ""
+          }`}
+          onClick={() =>
+            navigate("/my-listings")
+          }
+        >
+
+          <FiPackage className="listing-side-nav-icon" />
+
+          <span>My Listings</span>
+
         </button>
 
       </nav>
 
 
-      {/* =========================================
+      {/* =================================================
           LOGOUT
-      ========================================== */}
+      ================================================= */}
 
       <div className="listing-side-nav-bottom">
+
         <button
-          type="button" className="listing-side-nav-logout" onClick={handleLogout}        >
-          <FaSignOutAlt />
+          type="button"
+          className="listing-side-nav-logout"
+          onClick={handleLogout}
+        >
+
+          <FiLogOut />
+
           <span>Log out</span>
+
         </button>
 
       </div>
