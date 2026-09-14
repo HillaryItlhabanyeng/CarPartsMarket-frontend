@@ -1,20 +1,19 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
+
 import {
-  FaSearch,
-  FaComments,
-  FaBell,
-  FaHeart,
-  FaShoppingBag,
-  FaShoppingCart,
-  FaChevronDown,
-  FaUser,
-  FaExchangeAlt,
-  FaSignOutAlt,
-} from "react-icons/fa";
+  FiSearch,
+  FiBell,
+  FiShoppingCart,
+  FiChevronDown,
+  FiUser,
+  FiRepeat,
+  FiLogOut,
+  FiMapPin,
+} from "react-icons/fi";
+
 import { useCart } from "./useCart";
 import "./Navbar.css";
-import { MdLocationOn} from 'react-icons/md';
 
 type Props = {
   userName?: string;
@@ -27,11 +26,16 @@ export default function Navbar({
 }: Props) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [search, setSearch] = useState("");
+
   const navigate = useNavigate();
   const { itemCount } = useCart();
+
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // Close the dropdown when clicking anywhere outside it
+  /* =====================================================
+     CLOSE PROFILE MENU WHEN CLICKING OUTSIDE
+  ===================================================== */
+
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
@@ -43,145 +47,260 @@ export default function Navbar({
     }
 
     document.addEventListener("mousedown", handleClickOutside);
-    return () =>
-      document.removeEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener(
+        "mousedown",
+        handleClickOutside
+      );
+    };
   }, []);
 
+  /* =====================================================
+     SEARCH
+  ===================================================== */
+
+  function handleSearch() {
+    const query = search.trim();
+
+    if (query) {
+      navigate(
+        `/shop?search=${encodeURIComponent(query)}`
+      );
+    } else {
+      navigate("/shop");
+    }
+  }
+
   return (
-    <>
-      {/* =====================================================
-          TOP NAVBAR
-      ===================================================== */}
+    <header className="site-header">
+
+      {/* =================================================
+          MAIN NAVBAR
+      ================================================= */}
+
       <nav className="navbar">
 
         {/* LOGO */}
         <Link to="/home" className="navbar-logo">
+
           <img
-            src="/UniTrade logo 2.png"
-            alt="UniTrade Campus Marketplace"
+            src="/automarket - logo.png"
+            alt="AutoMarket"
             className="navbar-logo-image"
           />
+
         </Link>
 
-        {/* Messages */}
-          <Link to="/messages" className="nav-action-address">
-            <MdLocationOn className="action-icon-address" />
-            <span className="action-label">Address</span>
-          </Link>
 
-        {/* SEARCH */}
+        {/* =================================================
+            SEARCH
+        ================================================= */}
+
         <div className="navbar-search">
+
+          <FiSearch className="search-icon" />
+
           <input
             type="text"
             value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            onKeyDown={(event) => { if (event.key === "Enter") navigate(`/shop?search=${encodeURIComponent(search)}`); }}
-            placeholder="Search for items, users or categories..."
+            onChange={(event) =>
+              setSearch(event.target.value)
+            }
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                handleSearch();
+              }
+            }}
+            placeholder="Search for car parts, brands, or vehicles..."
             aria-label="Search"
           />
 
-          <button type="button" aria-label="Search" onClick={() => navigate(`/shop?search=${encodeURIComponent(search)}`)}>
-            <FaSearch />
+          <button
+            type="button"
+            onClick={handleSearch}
+            aria-label="Search"
+          >
+            Search
           </button>
+
         </div>
 
-        {/* NAV ACTIONS */}
+
+        {/* =================================================
+            RIGHT SIDE ACTIONS
+        ================================================= */}
+
         <div className="navbar-actions">
 
-          {/* Messages */}
-          {/* <Link to="/messages" className="nav-action">
-            <FaComments className="action-icon" />
-            <span className="action-label">Messages</span>
-          </Link> */}
 
-          {/* Notifications */}
-          <Link to="/notifications" className="nav-action">
-            <FaBell className="action-icon" />
-            <span className="action-label">Notifications</span>
+          {/* ADDRESS */}
+
+          <Link
+            to="/address"
+            className="nav-action"
+          >
+            <FiMapPin className="action-icon" />
+
+            <span className="action-label">
+              Address
+            </span>
           </Link>
 
-          {/* Saved */}
-          {/* <Link to="/saved" className="nav-action">
-            <FaHeart className="action-icon" />
-            <span className="action-label">Saved</span>
-          </Link> */}
 
-          {/* Cart */}
-          <Link to="/cart" className="nav-action nav-cart-action">
-            <FaShoppingCart className="action-icon" />
-            <span className="action-label">Cart</span>
-            {itemCount > 0 && <span className="cart-count" aria-label={`${itemCount} items in cart`}>{itemCount}</span>}
+          {/* NOTIFICATIONS */}
+
+          <Link
+            to="/notifications"
+            className="nav-action"
+          >
+            <FiBell className="action-icon" />
+
+            <span className="action-label">
+              Notifications
+            </span>
           </Link>
+
+
+          {/* CART */}
+
+          <Link
+            to="/cart"
+            className="nav-action nav-cart-action"
+          >
+
+            <span className="icon-wrapper">
+
+              <FiShoppingCart className="action-icon" />
+
+              {itemCount > 0 && (
+                <span
+                  className="cart-count"
+                  aria-label={`${itemCount} items in cart`}
+                >
+                  {itemCount}
+                </span>
+              )}
+
+            </span>
+
+            <span className="action-label">
+              Cart
+            </span>
+
+          </Link>
+
 
           {/* =================================================
-              PROFILE DROPDOWN
+              PROFILE
           ================================================= */}
-          <div className="nav-profile-wrapper" ref={menuRef}>
+
+          <div
+            className="nav-profile-wrapper"
+            ref={menuRef}
+          >
 
             <button
               type="button"
               className="nav-profile"
-              onClick={() => setIsMenuOpen((open) => !open)}
+              onClick={() =>
+                setIsMenuOpen((open) => !open)
+              }
               aria-haspopup="true"
               aria-expanded={isMenuOpen}
             >
-              <img
-                src="/Sipho.png"
-                alt={`${userName} profile`}
-                className="profile-avatar-image"
+
+              <span className="profile-icon">
+                <FiUser />
+              </span>
+
+              <span className="profile-name">
+                {userName}
+              </span>
+
+              <FiChevronDown
+                className={`profile-chevron ${
+                  isMenuOpen ? "open" : ""
+                }`}
               />
 
-              <span className="profile-name">{userName}</span>
-
-              <FaChevronDown
-                className={`profile-chevron ${isMenuOpen ? "open" : ""}`}
-              />
             </button>
+
+
+            {/* PROFILE DROPDOWN */}
 
             {isMenuOpen && (
               <div className="profile-dropdown">
+
                 <Link
                   to="/profile"
                   className="profile-dropdown-item"
-                  onClick={() => setIsMenuOpen(false)}
+                  onClick={() =>
+                    setIsMenuOpen(false)
+                  }
                 >
-                  <FaUser className="dropdown-icon" />
-                  Profile
+
+                  <FiUser />
+
+                  <span>
+                    Profile
+                  </span>
+
                 </Link>
+
 
                 <Link
                   to="/switch-user"
                   className="profile-dropdown-item"
-                  onClick={() => setIsMenuOpen(false)}
+                  onClick={() =>
+                    setIsMenuOpen(false)
+                  }
                 >
-                  <FaExchangeAlt className="dropdown-icon" />
-                  Switch User
+
+                  <FiRepeat />
+
+                  <span>
+                    Switch User
+                  </span>
+
                 </Link>
+
 
                 <button
                   type="button"
                   className="profile-dropdown-item logout"
                   onClick={() => {
                     setIsMenuOpen(false);
-                    // TODO: hook this up to your actual logout logic
+
+                    // Add your logout logic here
                     console.log("Logging out...");
                   }}
                 >
-                  <FaSignOutAlt className="dropdown-icon" />
-                  Log Out
+
+                  <FiLogOut />
+
+                  <span>
+                    Log Out
+                  </span>
+
                 </button>
+
               </div>
             )}
+
           </div>
 
         </div>
+
       </nav>
+
 
       {/* =====================================================
           SECOND NAVIGATION
       ===================================================== */}
+
       {showLinks && (
-        <div className="nav-links-row">
+        <nav className="nav-links-row">
 
           <NavLink
             to="/home"
@@ -193,6 +312,7 @@ export default function Navbar({
             Home
           </NavLink>
 
+
           <NavLink
             to="/shop"
             className={({ isActive }) =>
@@ -201,6 +321,7 @@ export default function Navbar({
           >
             Browse Listings
           </NavLink>
+
 
           <NavLink
             to="/categories"
@@ -211,68 +332,6 @@ export default function Navbar({
             Categories
           </NavLink>
 
-          {/* <NavLink
-            to="/bulletin-board"
-            className={({ isActive }) =>
-              isActive ? "active" : ""
-            }
-          >
-            Bulletin Board
-          </NavLink> */}
-
-          {/* <NavLink
-            to="/announcements"
-            className={({ isActive }) =>
-              isActive ? "active" : ""
-            }
-          >
-            Announcements
-          </NavLink> */}
-
-          {/* <NavLink
-            to="/events"
-            className={({ isActive }) =>
-              isActive ? "active" : ""
-            }
-          >
-            Events
-          </NavLink> */}
-
-          {/* <NavLink
-            to="/services"
-            className={({ isActive }) =>
-              isActive ? "active" : ""
-            }
-          >
-            Services
-          </NavLink> */}
-
-          {/* <NavLink
-            to="/account"
-            className={({ isActive }) =>
-              isActive ? "active" : ""
-            }
-          >
-            My Orders
-          </NavLink> */}
-
-          {/* <NavLink
-            to="/my-listings"
-            className={({ isActive }) =>
-              isActive ? "active" : ""
-            }
-          >
-            My Listings
-          </NavLink> */}
-
-          {/* <NavLink
-            to="/ratings-reviews"
-            className={({ isActive }) =>
-              isActive ? "active" : ""
-            }
-          >
-            Ratings & Reviews
-          </NavLink> */}
 
           <NavLink
             to="/contact"
@@ -283,8 +342,9 @@ export default function Navbar({
             Contact
           </NavLink>
 
-        </div>
+        </nav>
       )}
-    </>
+
+    </header>
   );
 }
