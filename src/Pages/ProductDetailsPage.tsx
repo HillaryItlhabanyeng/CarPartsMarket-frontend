@@ -2,7 +2,10 @@ import { useLocation, useNavigate, Link } from "react-router-dom";
 import { useState } from "react";
 import Navbar from "../Components/Navbar";
 import Footer from "../Components/Footer";
+<<<<<<< HEAD
 import { useCart } from "../Components/useCart";
+=======
+>>>>>>> f8e740661d6aa014a58bb2ef5629d22b109d5a4e
 import "./ProductDetailsPage.css";
 import { FaMinus, FaPlus, FaShoppingCart, FaStar, FaArrowLeft, FaThumbsUp, FaThumbsDown } from "react-icons/fa";
 
@@ -34,7 +37,10 @@ interface Review {
 export default function ProductDetailsPage() {
   const location = useLocation();
   const navigate = useNavigate();
+<<<<<<< HEAD
   const { addItem } = useCart();
+=======
+>>>>>>> f8e740661d6aa014a58bb2ef5629d22b109d5a4e
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState("");
   const [selectedColor, setSelectedColor] = useState(0);
@@ -50,6 +56,7 @@ export default function ProductDetailsPage() {
     }
   };
 
+<<<<<<< HEAD
   const addProductToCart = () => {
     addItem(
       {
@@ -66,11 +73,19 @@ export default function ProductDetailsPage() {
 
   const handleAddToCart = () => {
     addProductToCart();
+=======
+  const handleAddToCart = () => {
+    console.log(`Added ${quantity} of ${product.name} to cart`);
+>>>>>>> f8e740661d6aa014a58bb2ef5629d22b109d5a4e
     navigate("/cart");
   };
 
   const handleBuyNow = () => {
+<<<<<<< HEAD
     addProductToCart();
+=======
+    console.log(`Buying ${quantity} of ${product.name}`);
+>>>>>>> f8e740661d6aa014a58bb2ef5629d22b109d5a4e
     navigate("/checkout");
   };
 
