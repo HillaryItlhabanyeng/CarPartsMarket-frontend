@@ -3,7 +3,8 @@ import type { Order, OrderItem } from "./OrdersContext.types";
 
 type OrdersContextType = {
   orders: Order[];
-  addOrder: (items: OrderItem[], deliveryFee: number) => Order;
+  addOrder: (items: OrderItem[], deliveryFee: number, buyerEmail?: string) => Order;
+  markOrderShipped: (reference: string) => Order | undefined;
   getOrder: (reference: string) => Order | undefined;
 };
 
@@ -19,7 +20,7 @@ function generateReference() {
 export function OrdersProvider({ children }: { children: ReactNode }) {
   const [orders, setOrders] = useState<Order[]>([]);
 
-  const addOrder = (items: OrderItem[], deliveryFee: number) => {
+  const addOrder = (items: OrderItem[], deliveryFee: number, buyerEmail?: string) => {
     const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
     const newOrder: Order = {
       reference: generateReference(),
@@ -28,6 +29,7 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
       deliveryFee,
       total: subtotal + deliveryFee,
       status: "PENDING",
+      buyerEmail,
       date: new Date().toLocaleString("en-ZA", {
         day: "2-digit",
         month: "short",
@@ -40,11 +42,23 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
     return newOrder;
   };
 
+  const markOrderShipped = (reference: string) => {
+    let shippedOrder: Order | undefined;
+    setOrders((prev) =>
+      prev.map((order) => {
+        if (order.reference !== reference) return order;
+        shippedOrder = { ...order, status: "SHIPPED" };
+        return shippedOrder;
+      })
+    );
+    return shippedOrder;
+  };
+
   const getOrder = (reference: string) =>
     orders.find((o) => o.reference === reference);
 
   return (
-    <OrdersContext.Provider value={{ orders, addOrder, getOrder }}>
+    <OrdersContext.Provider value={{ orders, addOrder, markOrderShipped, getOrder }}>
       {children}
     </OrdersContext.Provider>
   );

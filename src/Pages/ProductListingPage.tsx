@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import SideNavigation from "../Components/SideNavigation";
 import { FaCog, FaBell } from "react-icons/fa";
 import ImageUploader from "../Components/ImageUploader";
+import { addNotification, ADMIN_NOTIFICATION_EMAIL } from "../Components/notificationStore";
 // import {useState } from 'react';
 
 function ProductListingPage() {
@@ -65,6 +66,13 @@ function ProductListingPage() {
       "marketplace_pending_products",
       JSON.stringify([product, ...pendingProducts])
     );
+
+    addNotification({
+      type: "Listing",
+      title: "New listing needs approval",
+      body: `${product.seller} submitted ${product.title} for review.`,
+      recipientEmail: ADMIN_NOTIFICATION_EMAIL,
+    });
 
     alert("Your product has been submitted for admin approval.");
     navigate("/my-listings");

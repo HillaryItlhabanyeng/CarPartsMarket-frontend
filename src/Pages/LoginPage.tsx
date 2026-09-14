@@ -48,6 +48,30 @@ const LoginPage: React.FC = () => {
       return;
     }
 
+    const normalizedEmail = email.trim().toLowerCase();
+    const storedUsers = (() => {
+      try {
+        const raw = window.localStorage.getItem("marketplace_users");
+        const parsed = raw ? JSON.parse(raw) : [];
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    })();
+    const signedInUser = storedUsers.find(
+      (user: { email?: string }) => user.email?.toLowerCase() === normalizedEmail
+    );
+
+    window.localStorage.setItem(
+      "marketplace_current_user",
+      JSON.stringify({
+        id: signedInUser?.id ?? normalizedEmail,
+        name: signedInUser?.name ?? email.split("@")[0],
+        email: normalizedEmail,
+        role: signedInUser?.role ?? "Buyer",
+      })
+    );
+
     console.log({ email, password, rememberMe });
 
     // Redirect to the home page after a successful login

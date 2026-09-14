@@ -77,11 +77,11 @@
 }
 
 .navbar-logo-image {
-  width: 155px;
+  width: 185px;
 
   height: auto;
 
-  max-height: 52px;
+  max-height: 54px;
 
   object-fit: contain;
 
@@ -646,7 +646,7 @@
   }
 
   .navbar-logo-image {
-    width: 135px;
+    width: 150px;
   }
 
   .navbar-search {
@@ -676,7 +676,7 @@
   }
 
   .navbar-logo-image {
-    width: 120px;
+    width: 135px;
   }
 
   .navbar-search {
@@ -726,7 +726,7 @@
   }
 
   .navbar-logo-image {
-    width: 125px;
+    width: 130px;
   }
 
   .navbar-actions {

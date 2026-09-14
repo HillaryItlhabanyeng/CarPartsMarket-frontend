@@ -85,7 +85,7 @@ export default function Navbar({
         <Link to="/home" className="navbar-logo">
 
           <img
-            src="/automarket - logo.png"
+            src="/automarket-logo.svg"
             alt="AutoMarket"
             className="navbar-logo-image"
           />

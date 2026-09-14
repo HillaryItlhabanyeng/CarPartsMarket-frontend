@@ -14,6 +14,7 @@ interface Product {
   price: number;
   image: string;
   brand?: string;
+  sellerEmail?: string;
   description?: string;
   rating?: number;
   reviews?: number;
@@ -58,6 +59,7 @@ export default function ProductDetailsPage() {
         price: product.price,
         imageUrl: product.image,
         seller: product.brand,
+        sellerEmail: product.sellerEmail,
         category: product.category,
       },
       quantity

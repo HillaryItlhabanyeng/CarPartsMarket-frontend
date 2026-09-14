@@ -39,6 +39,13 @@
 .admin-breadcrumb { color: var(--admin-muted); font-size: 12px; font-weight: 500; }
 .admin-breadcrumb span { margin: 0 9px; color: #c4cdd5; }
 .admin-top-actions { display: flex; align-items: center; gap: 12px; }
+.admin-notification-wrap { position: relative; }
+.admin-notification-menu { position: absolute; top: 42px; right: 0; z-index: 5; display: grid; gap: 10px; width: 290px; padding: 14px; border: 1px solid var(--admin-border); border-radius: 8px; background: #fff; box-shadow: 0 14px 35px rgba(16,42,67,.14); }
+.admin-notification-menu > strong { font-size: 12px; }
+.admin-notification-menu > span, .admin-notification-menu div { color: var(--admin-muted); font-size: 10px; line-height: 1.4; }
+.admin-notification-menu div { display: grid; gap: 2px; padding-top: 9px; border-top: 1px solid var(--admin-border); }
+.admin-notification-menu b { color: var(--admin-ink); font-size: 11px; }
+.admin-notification-menu small { color: #8c9baa; font-size: 9px; }
 .icon-button { position: relative; display: grid; place-items: center; width: 34px; height: 34px; border: 0; color: #557086; background: transparent; }
 .notification-dot { position: absolute; top: 6px; right: 6px; width: 6px; height: 6px; border: 1px solid #fff; border-radius: 50%; background: #df725f; }
 .admin-avatar, .member-avatar { display: grid; place-items: center; border-radius: 50%; font-weight: 700; }

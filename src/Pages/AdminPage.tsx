@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Activity,
@@ -19,6 +19,12 @@ import {
   X,
 } from "lucide-react";
 import "./AdminPage.css";
+import {
+  addNotification,
+  ADMIN_NOTIFICATION_EMAIL,
+  getNotificationsForRecipient,
+  type MarketplaceNotification,
+} from "../Components/notificationStore";
 
 type AdminTab = "overview" | "users" | "products";
 type UserRole = "Buyer" | "Seller";
@@ -38,6 +44,7 @@ type PendingProduct = {
   id: number;
   title: string;
   seller: string;
+  sellerEmail?: string;
   category: string;
   price: number;
   submitted: string;
@@ -82,6 +89,21 @@ export default function AdminPage() {
   const [userFilter, setUserFilter] = useState<"All" | UserRole>("All");
   const [search, setSearch] = useState("");
   const [notice, setNotice] = useState("");
+  const [adminNotifications, setAdminNotifications] = useState<MarketplaceNotification[]>(() =>
+    getNotificationsForRecipient(ADMIN_NOTIFICATION_EMAIL)
+  );
+  const [showNotifications, setShowNotifications] = useState(false);
+
+  useEffect(() => {
+    const refreshNotifications = () =>
+      setAdminNotifications(getNotificationsForRecipient(ADMIN_NOTIFICATION_EMAIL));
+    window.addEventListener("marketplace-notifications-updated", refreshNotifications);
+    window.addEventListener("storage", refreshNotifications);
+    return () => {
+      window.removeEventListener("marketplace-notifications-updated", refreshNotifications);
+      window.removeEventListener("storage", refreshNotifications);
+    };
+  }, []);
 
   const filteredUsers = useMemo(() => {
     const query = search.toLowerCase();
@@ -132,6 +154,12 @@ export default function AdminPage() {
       "marketplace_approved_products",
       JSON.stringify([product, ...approvedProducts])
     );
+    addNotification({
+      type: "Listing",
+      title: "Your car-part listing was approved",
+      body: `${product.title} is now visible to buyers on AutoMarket.`,
+      recipientEmail: product.sellerEmail,
+    });
     showNotice(`${product.title} is now visible in the marketplace.`);
   };
 
@@ -139,6 +167,12 @@ export default function AdminPage() {
     const nextProducts = products.filter((item) => item.id !== product.id);
     setProducts(nextProducts);
     window.localStorage.setItem("marketplace_pending_products", JSON.stringify(nextProducts));
+    addNotification({
+      type: "Listing",
+      title: "Your car-part listing was declined",
+      body: `${product.title} was not approved for the marketplace.`,
+      recipientEmail: product.sellerEmail,
+    });
     showNotice(`${product.title} was declined and returned to the seller.`);
   };
 
@@ -146,7 +180,6 @@ export default function AdminPage() {
     <div className="admin-page">
       <aside className="admin-sidebar">
         <div className="admin-brand">
-          <div className="admin-brand-mark">A</div>
           <div><strong>AutoMarket</strong><span>Admin console</span></div>
         </div>
         <div className="admin-workspace-label">Workspace</div>
@@ -163,9 +196,9 @@ export default function AdminPage() {
 
       <main className="admin-main">
         <header className="admin-topbar">
-          <div className="admin-mobile-brand"><div className="admin-brand-mark">A</div><strong>AutoMarket</strong></div>
+          <div className="admin-mobile-brand"><strong>AutoMarket</strong></div>
           <div className="admin-breadcrumb">Admin console <span>/</span> {activeTab === "overview" ? "Overview" : activeTab === "users" ? "People" : "Product approvals"}</div>
-          <div className="admin-top-actions"><button className="icon-button" aria-label="Notifications"><Bell size={19} /><span className="notification-dot" /></button><div className="admin-avatar">AM</div><div className="admin-profile"><strong>Amara M.</strong><span>Administrator</span></div><ChevronDown size={16} className="profile-chevron" /></div>
+          <div className="admin-top-actions"><div className="admin-notification-wrap"><button className="icon-button" aria-label="Notifications" onClick={() => setShowNotifications((current) => !current)}><Bell size={19} />{adminNotifications.some((notification) => !notification.read) && <span className="notification-dot" />}</button>{showNotifications && <div className="admin-notification-menu"><strong>Notifications</strong>{adminNotifications.length === 0 ? <span>No new listing submissions.</span> : adminNotifications.slice(0, 5).map((notification) => <div key={notification.id}><b>{notification.title}</b><span>{notification.body}</span><small>{notification.timestamp}</small></div>)}</div>}</div><div className="admin-avatar">AM</div><div className="admin-profile"><strong>Amara M.</strong><span>Administrator</span></div><ChevronDown size={16} className="profile-chevron" /></div>
         </header>
 
         <div className="admin-content">

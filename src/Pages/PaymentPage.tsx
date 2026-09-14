@@ -5,6 +5,7 @@ import CheckoutSteps from "../Components/CheckoutSteps";
 import { useCart } from "../Components/useCart";
 import { useOrders } from "../Components/useOrders";
 import { FaCcVisa } from "react-icons/fa";
+import { addNotification, getCurrentUser } from "../Components/notificationStore";
 import "./PaymentPage.css";
 
 const DELIVERY_FEE = 50;
@@ -76,9 +77,40 @@ export default function PaymentPage() {
     quantity: i.quantity,
     imageUrl: i.imageUrl,
     category: i.category,
+    seller: i.seller,
+    sellerEmail: i.sellerEmail,
   }));
 
-  const newOrder = addOrder(orderItems, delivery);
+  const currentUser = getCurrentUser();
+  const newOrder = addOrder(orderItems, delivery, currentUser?.email);
+  const registeredUsers = (() => {
+    try {
+      const raw = window.localStorage.getItem("marketplace_users");
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  })();
+
+  items.forEach((item) => {
+    const seller = registeredUsers.find(
+      (user: { name?: string; email?: string }) =>
+        user.name?.toLowerCase() === item.seller?.toLowerCase()
+    );
+    addNotification({
+      type: "Order",
+      title: "A buyer wants to buy your car part",
+      body: `${item.quantity} x ${item.name} was ordered. Order ${newOrder.reference} is awaiting fulfilment.`,
+      recipientEmail: item.sellerEmail || seller?.email,
+    });
+  });
+  addNotification({
+    type: "Order",
+    title: "Payment completed",
+    body: `Your payment for order ${newOrder.reference} was successful.`,
+    recipientEmail: currentUser?.email,
+  });
   clearCart();
 
   navigate("/checkout/confirmation", { state: { reference: newOrder.reference } });
