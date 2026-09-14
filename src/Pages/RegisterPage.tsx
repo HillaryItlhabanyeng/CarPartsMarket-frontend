@@ -17,6 +17,47 @@ import {
 } from "react-icons/fa";
 import { MdOutlineWorkOutline } from "react-icons/md";
 
+type MarketplaceUserRole = "Buyer" | "Seller";
+
+type StoredUser = {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  role: MarketplaceUserRole;
+  status: "Active" | "Review";
+  joined: string;
+  initials: string;
+  color: string;
+};
+
+const normalizeRole = (role: string): MarketplaceUserRole => {
+  return role === "seller" ? "Seller" : "Buyer";
+};
+
+const getStoredUsers = (): StoredUser[] => {
+  if (typeof window === "undefined") return [];
+
+  try {
+    const raw = window.localStorage.getItem("marketplace_users");
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
+
+const buildInitials = (name: string) => {
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("") || "U";
+};
+
+const colorPalette = ["blue", "gold", "teal", "orange", "purple", "rose", "green"];
+
 const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
@@ -48,9 +89,32 @@ const RegisterPage: React.FC = () => {
     if (password !== confirmPassword) return alert("Passwords do not match.");
     if (!agreeToTerms) return alert("Please agree to the Terms and Conditions to continue.");
 
-    console.log("Form submitted:", { fullName, email, phone, role, password });
+    const normalizedRole = normalizeRole(role);
+    const storedUsers = getStoredUsers();
+    const nextUser: StoredUser = {
+      id: Date.now(),
+      name: fullName,
+      email,
+      phone,
+      role: normalizedRole,
+      status: "Active",
+      joined: "Today",
+      initials: buildInitials(fullName),
+      color: colorPalette[(storedUsers.length + 1) % colorPalette.length],
+    };
 
-    // Go to login page after successful registration
+    const users = [...storedUsers, nextUser];
+    window.localStorage.setItem("marketplace_users", JSON.stringify(users));
+    window.localStorage.setItem(
+      "marketplace_current_user",
+      JSON.stringify({
+        id: nextUser.id,
+        name: nextUser.name,
+        email: nextUser.email,
+        role: nextUser.role,
+      })
+    );
+
     navigate("/login");
   };
 
@@ -143,10 +207,8 @@ const RegisterPage: React.FC = () => {
               <MdOutlineWorkOutline />
               <select name="role" defaultValue="" aria-label="Select Your Role">
                 <option value="" disabled>Select Your Role</option>
-                <option value="student">Student</option>
-                <option value="faculty">Faculty</option>
-                <option value="vendor">Vendor</option>
-                <option value="resident">Resident</option>
+                <option value="buyer">Buyer</option>
+                <option value="seller">Seller</option>
               </select>
             </div>
 

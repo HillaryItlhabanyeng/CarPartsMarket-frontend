@@ -1,4 +1,3 @@
-import { useState } from "react";
 // import { Link, useSearchParams } from "react-router-dom";
 // import { FaChevronLeft, FaChevronRight, FaFilter, FaMapMarkerAlt, FaShoppingCart } from "react-icons/fa";
 import Navbar from "../Components/Navbar";

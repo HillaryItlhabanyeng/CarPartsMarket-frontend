@@ -12,7 +12,6 @@ import {
   LayoutDashboard,
   PackageCheck,
   Search,
-  ShieldCheck,
   ShoppingBag,
   Trash2,
   UserRound,
@@ -45,34 +44,41 @@ type PendingProduct = {
   image: string;
 };
 
-const initialUsers: MarketplaceUser[] = [
-  { id: 1, name: "Thabo Mokoena", email: "thabo.m@example.com", role: "Buyer", status: "Active", joined: "Today, 08:42", initials: "TM", color: "blue" },
-  { id: 2, name: "Gearbox Garage", email: "hello@gearbox.co.za", role: "Seller", status: "Active", joined: "Yesterday", initials: "GG", color: "gold" },
-  { id: 3, name: "Naledi Dube", email: "naledi.d@example.com", role: "Buyer", status: "Active", joined: "12 Sep 2026", initials: "ND", color: "teal" },
-  { id: 4, name: "Mandla Auto Parts", email: "sales@mandlaauto.co.za", role: "Seller", status: "Review", joined: "11 Sep 2026", initials: "MA", color: "orange" },
-  { id: 5, name: "Kabelo Radebe", email: "kabelo.r@example.com", role: "Buyer", status: "Active", joined: "10 Sep 2026", initials: "KR", color: "purple" },
-];
+const initialUsers: MarketplaceUser[] = [];
 
-const initialProducts: PendingProduct[] = [
-  { id: 1, title: "Toyota Corolla Front Bumper", seller: "Mandla Auto Parts", category: "Body parts", price: 1850, submitted: "12 min ago", image: "/bumper.jpg" },
-  { id: 2, title: "Bosch Ceramic Brake Pads", seller: "Gearbox Garage", category: "Brakes", price: 650, submitted: "34 min ago", image: "/brakepad.jpg" },
-  { id: 3, title: "VW Polo 1.4 Alternator", seller: "Kasi Motors", category: "Electrical", price: 1200, submitted: "1 hr ago", image: "/alternator.jpg" },
-];
+const initialProducts: PendingProduct[] = [];
 
-const activityItems = [
-  { icon: UserRound, tone: "blue", title: "New seller registration", detail: "Mandla Auto Parts submitted a seller profile", time: "12 min ago" },
-  { icon: PackageCheck, tone: "gold", title: "Product awaiting review", detail: "Toyota Corolla Front Bumper needs approval", time: "12 min ago" },
-  { icon: CircleDollarSign, tone: "teal", title: "Order completed", detail: "Order #AM-1048 was marked as delivered", time: "38 min ago" },
-  { icon: ShieldCheck, tone: "purple", title: "Seller verification completed", detail: "Gearbox Garage passed identity checks", time: "1 hr ago" },
-];
+const readFromStorage = <T,>(key: string, fallback: T): T => {
+  if (typeof window === "undefined") {
+    return fallback;
+  }
+
+  try {
+    const raw = window.localStorage.getItem(key);
+    const parsed = raw ? JSON.parse(raw) : null;
+    return parsed ?? fallback;
+  } catch {
+    return fallback;
+  }
+};
+
+const getStoredUsers = (): MarketplaceUser[] => {
+  const stored = readFromStorage<MarketplaceUser[]>("marketplace_users", []);
+  return stored.length > 0 ? stored : initialUsers;
+};
+
+const getStoredProducts = (): PendingProduct[] => {
+  const stored = readFromStorage<PendingProduct[]>("marketplace_pending_products", []);
+  return stored.length > 0 ? stored : initialProducts;
+};
 
 const formatRand = (value: number) => `R${value.toLocaleString("en-ZA", { minimumFractionDigits: 0 })}`;
 
 export default function AdminPage() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<AdminTab>("overview");
-  const [users, setUsers] = useState(initialUsers);
-  const [products, setProducts] = useState(initialProducts);
+  const [users, setUsers] = useState<MarketplaceUser[]>(() => getStoredUsers());
+  const [products, setProducts] = useState<PendingProduct[]>(() => getStoredProducts());
   const [userFilter, setUserFilter] = useState<"All" | UserRole>("All");
   const [search, setSearch] = useState("");
   const [notice, setNotice] = useState("");
@@ -85,23 +91,54 @@ export default function AdminPage() {
     });
   }, [search, userFilter, users]);
 
+  const overviewActivity = useMemo(() => {
+    const registrationEvents = users.map((user) => ({
+      icon: UserRound,
+      tone: user.role === "Seller" ? "gold" : "blue",
+      title: user.role === "Seller" ? "New seller registration" : "New buyer registration",
+      detail: `${user.name} joined as a ${user.role.toLowerCase()}.`,
+      time: user.joined,
+    }));
+
+    const productEvents = products.map((product) => ({
+      icon: PackageCheck,
+      tone: "gold",
+      title: "Product awaiting review",
+      detail: `${product.title} needs approval from ${product.seller}.`,
+      time: product.submitted,
+    }));
+
+    return [...registrationEvents, ...productEvents].slice(0, 6);
+  }, [products, users]);
+
   const showNotice = (message: string) => {
     setNotice(message);
     window.setTimeout(() => setNotice(""), 2800);
   };
 
   const removeUser = (user: MarketplaceUser) => {
-    setUsers((current) => current.filter((item) => item.id !== user.id));
+    const nextUsers = users.filter((item) => item.id !== user.id);
+    setUsers(nextUsers);
+    window.localStorage.setItem("marketplace_users", JSON.stringify(nextUsers));
     showNotice(`${user.name} was removed from the marketplace.`);
   };
 
   const approveProduct = (product: PendingProduct) => {
-    setProducts((current) => current.filter((item) => item.id !== product.id));
+    const nextProducts = products.filter((item) => item.id !== product.id);
+    setProducts(nextProducts);
+    window.localStorage.setItem("marketplace_pending_products", JSON.stringify(nextProducts));
+    const approvedProducts = readFromStorage<PendingProduct[]>("marketplace_approved_products", []);
+    window.localStorage.setItem(
+      "marketplace_approved_products",
+      JSON.stringify([product, ...approvedProducts])
+    );
     showNotice(`${product.title} is now visible in the marketplace.`);
   };
 
   const rejectProduct = (product: PendingProduct) => {
-    setProducts((current) => current.filter((item) => item.id !== product.id));
+    const nextProducts = products.filter((item) => item.id !== product.id);
+    setProducts(nextProducts);
+    window.localStorage.setItem("marketplace_pending_products", JSON.stringify(nextProducts));
     showNotice(`${product.title} was declined and returned to the seller.`);
   };
 
@@ -142,18 +179,18 @@ export default function AdminPage() {
           {activeTab === "overview" && (
             <>
               <section className="admin-stat-grid">
-                <article className="admin-stat-card featured"><div className="stat-icon"><Users size={20} /></div><span>Total members</span><strong>2,486</strong><small><b>+8.2%</b> vs last month</small></article>
-                <article className="admin-stat-card"><div className="stat-icon teal"><ShoppingBag size={20} /></div><span>Live listings</span><strong>1,284</strong><small><b>+12.5%</b> this week</small></article>
-                <article className="admin-stat-card"><div className="stat-icon gold"><CircleDollarSign size={20} /></div><span>Gross sales</span><strong>{formatRand(184240)}</strong><small><b>+6.4%</b> this month</small></article>
-                <article className="admin-stat-card"><div className="stat-icon orange"><Clock3 size={20} /></div><span>Needs attention</span><strong>{products.length + 4}</strong><small className="neutral">Across users and listings</small></article>
+                <article className="admin-stat-card featured"><div className="stat-icon"><Users size={20} /></div><span>Total members</span><strong>{users.length}</strong><small>{users.length > 0 ? <b>{users.length} registered</b> : "No members yet"}</small></article>
+                <article className="admin-stat-card"><div className="stat-icon teal"><ShoppingBag size={20} /></div><span>Live listings</span><strong>{products.length}</strong><small>{products.length > 0 ? <b>{products.length} pending approval</b> : "No listings yet"}</small></article>
+                <article className="admin-stat-card"><div className="stat-icon gold"><CircleDollarSign size={20} /></div><span>Gross sales</span><strong>{formatRand(0)}</strong><small>{products.length > 0 ? <b>Waiting for sales</b> : "No sales yet"}</small></article>
+                <article className="admin-stat-card"><div className="stat-icon orange"><Clock3 size={20} /></div><span>Needs attention</span><strong>{products.length}</strong><small className="neutral">{products.length > 0 ? "Across listings" : "No action required"}</small></article>
               </section>
 
               <section className="admin-overview-grid">
-                <article className="admin-panel activity-panel"><div className="panel-heading"><div><p className="eyebrow">Live feed</p><h2>Marketplace activity</h2></div><button className="text-button" onClick={() => setActiveTab("users")}>Manage people <ArrowUpRight size={15} /></button></div><div className="activity-list">{activityItems.map(({ icon: Icon, tone, title, detail, time }) => <div className="activity-item" key={title}><div className={`activity-icon ${tone}`}><Icon size={17} /></div><div className="activity-copy"><strong>{title}</strong><span>{detail}</span></div><time>{time}</time></div>)}</div></article>
-                <article className="admin-panel health-panel"><div className="panel-heading"><div><p className="eyebrow">At a glance</p><h2>Marketplace health</h2></div><Activity size={19} className="panel-heading-icon" /></div><div className="health-score"><div className="score-ring"><strong>94</strong><span>/ 100</span></div><div><strong>Excellent</strong><p>Trust signals are strong across the platform.</p></div></div><div className="health-row"><span>Seller verification</span><b>98%</b><i><em style={{ width: "98%" }} /></i></div><div className="health-row"><span>Listing quality</span><b>91%</b><i><em style={{ width: "91%" }} /></i></div><div className="health-row"><span>Order fulfilment</span><b>96%</b><i><em style={{ width: "96%" }} /></i></div></article>
+                <article className="admin-panel activity-panel"><div className="panel-heading"><div><p className="eyebrow">Live feed</p><h2>Marketplace activity</h2></div><button className="text-button" onClick={() => setActiveTab("users")}>Manage people <ArrowUpRight size={15} /></button></div><div className="activity-list">{overviewActivity.length > 0 ? overviewActivity.map(({ icon: Icon, tone, title, detail, time }) => <div className="activity-item" key={`${title}-${time}`}><div className={`activity-icon ${tone}`}><Icon size={17} /></div><div className="activity-copy"><strong>{title}</strong><span>{detail}</span></div><time>{time}</time></div>) : <div className="empty-state">No marketplace activity yet.</div>}</div></article>
+                <article className="admin-panel health-panel"><div className="panel-heading"><div><p className="eyebrow">At a glance</p><h2>Marketplace health</h2></div><Activity size={19} className="panel-heading-icon" /></div>{users.length === 0 && products.length === 0 ? <div className="empty-state">The platform is waiting for its first buyer, seller, or listing.</div> : <><div className="health-score"><div className="score-ring"><strong>{Math.min(99, Math.max(0, users.length * 12 + products.length * 18))}</strong><span>/ 100</span></div><div><strong>{users.length > 0 ? "Healthy" : "Starting up"}</strong><p>{users.length > 0 ? "Trust signals are building across the platform." : "Platform activity will appear here once the marketplace begins operating."}</p></div></div><div className="health-row"><span>Seller verification</span><b>{users.filter((user) => user.role === "Seller").length > 0 ? "98%" : "0%"}</b><i><em style={{ width: users.filter((user) => user.role === "Seller").length > 0 ? "98%" : "0%" }} /></i></div><div className="health-row"><span>Listing quality</span><b>{products.length > 0 ? "91%" : "0%"}</b><i><em style={{ width: products.length > 0 ? "91%" : "0%" }} /></i></div><div className="health-row"><span>Order fulfilment</span><b>{users.length > 0 ? "96%" : "0%"}</b><i><em style={{ width: users.length > 0 ? "96%" : "0%" }} /></i></div></>}</article>
               </section>
 
-              <section className="admin-panel queue-panel"><div className="panel-heading"><div><p className="eyebrow">Moderation queue</p><h2>Listings waiting for approval</h2></div><button className="text-button" onClick={() => setActiveTab("products")}>View all <ArrowUpRight size={15} /></button></div><div className="mini-product-list">{products.slice(0, 2).map((product) => <div className="mini-product" key={product.id}><div className="product-thumb"><ShoppingBag size={20} /></div><div><strong>{product.title}</strong><span>{product.seller} <i /> {product.category}</span></div><b>{formatRand(product.price)}</b><button className="approve-button" onClick={() => approveProduct(product)}><Check size={16} /> Approve</button></div>)}</div></section>
+              <section className="admin-panel queue-panel"><div className="panel-heading"><div><p className="eyebrow">Moderation queue</p><h2>Listings waiting for approval</h2></div><button className="text-button" onClick={() => setActiveTab("products")}>View all <ArrowUpRight size={15} /></button></div>{products.length > 0 ? <div className="mini-product-list">{products.slice(0, 2).map((product) => <div className="mini-product" key={product.id}><div className="product-thumb"><ShoppingBag size={20} /></div><div><strong>{product.title}</strong><span>{product.seller} <i /> {product.category}</span></div><b>{formatRand(product.price)}</b><button className="approve-button" onClick={() => approveProduct(product)}><Check size={16} /> Approve</button></div>)}</div> : <div className="empty-state">No pending listings yet.</div>}</section>
             </>
           )}
 

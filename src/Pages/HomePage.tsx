@@ -1,18 +1,10 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import {
-  FaMapMarkerAlt,
-  FaShoppingCart,
-  FaTruckMoving,
-  FaHandshake,
-  FaWallet,
-  FaAward,
-  FaSearch
-} from "react-icons/fa";
+import { FaMapMarkerAlt, FaShoppingCart } from "react-icons/fa";
 import Navbar from "../Components/Navbar";
 import Footer from "../Components/Footer";
 import { useCart } from "../Components/useCart";
-import { categories, products } from "../data/products";
+import { products } from "../data/products";
 import "./HomePage.css";
 import { useNavigate } from "react-router-dom";
 
