@@ -30,13 +30,13 @@
 
 .shipping-summary {
   padding: 26px 22px 18px;
-  background: linear-gradient(180deg, #0c1623 0%, #0a121d 100%);
-  color: #edf5fb;
+  background: linear-gradient(180deg, #e7d7be 0%, #d9c7ae 100%);
+  color: #1b1b1b;
 }
 
 .shipping-kicker {
   margin: 0 0 7px;
-  color: #84a7bb;
+  color: #4b3b2c;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 1.4px;
@@ -95,19 +95,19 @@
 }
 
 .summary-meta span {
-  color: rgba(237, 245, 251, 0.7);
+  color: rgba(27, 27, 27, 0.7);
   font-size: 11px;
 }
 
 .summary-meta b {
-  color: #dfeffc;
+  color: #1b1b1b;
   font-size: 12px;
 }
 
 .summary-totals {
   margin-top: 20px;
   padding-top: 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(27, 27, 27, 0.12);
   display: grid;
   gap: 12px;
 }
@@ -118,17 +118,17 @@
   align-items: center;
   gap: 14px;
   font-size: 13px;
-  color: rgba(237, 245, 251, 0.8);
+  color: rgba(27, 27, 27, 0.8);
 }
 
 .summary-total-row {
   margin-top: 6px;
   font-size: 18px !important;
-  color: #fff !important;
+  color: #000 !important;
 }
 
 .empty-summary {
-  color: rgba(237, 245, 251, 0.75);
+  color: rgba(27, 27, 27, 0.75);
   margin: 0;
   font-size: 13px;
 }
