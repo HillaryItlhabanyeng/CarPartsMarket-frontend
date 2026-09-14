@@ -37,6 +37,7 @@ import LandingPage from "./Pages/LandingPage";
 import ProductListingPage from "./Pages/ProductListingPage";
 import ProfilePage from "./Pages/ProfilePage";
 import ProductDetailsPage from "./Pages/ProductDetailsPage";
+import AdminPage from "./Pages/AdminPage";
 
 
 function App() {
@@ -89,6 +90,9 @@ function App() {
         <Route path="/contact" element={<ContactPage />} />
         {/* <Route path="/landing" element={<LandingPage />} /> */}
         <Route path="/product-details" element={<ProductDetailsPage />} />
+
+        {/* Admin */}
+        <Route path="/admin" element={<AdminPage />} />
 
 
 
