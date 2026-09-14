@@ -93,6 +93,20 @@ export default function Navbar({
         </Link>
 
 
+        {/* ADDRESS - now next to the logo */}
+
+        <Link
+          to="/address"
+          className="nav-action"
+        >
+          <FiMapPin className="action-icon" />
+
+          <span className="action-label">
+            Address
+          </span>
+        </Link>
+
+
         {/* =================================================
             SEARCH
         ================================================= */}
@@ -132,20 +146,6 @@ export default function Navbar({
         ================================================= */}
 
         <div className="navbar-actions">
-
-
-          {/* ADDRESS */}
-
-          <Link
-            to="/address"
-            className="nav-action"
-          >
-            <FiMapPin className="action-icon" />
-
-            <span className="action-label">
-              Address
-            </span>
-          </Link>
 
 
           {/* NOTIFICATIONS */}
