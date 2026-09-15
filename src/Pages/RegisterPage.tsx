@@ -1,224 +1,199 @@
-import React, { useState } from "react";
-import type { FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
 import "./RegisterPage.css";
+import React, { useState } from 'react';
+import { useNavigate } from "react-router-dom";
 
-import {
-  FaUser,
-  FaEnvelope,
-  FaPhone,
-  FaLock,
-  FaRegEye,
-  FaRegEyeSlash,
-  FaShieldAlt,
-  FaUsers,
-  FaLeaf,
-  FaCommentDots,
-} from "react-icons/fa";
-import { MdOutlineWorkOutline } from "react-icons/md";
+function RegisterPage() {
+    const navigate = useNavigate();
+    const [formData, setFormData] = useState({
+        firstName: '',
+        lastName: '',
+        city: '',
+        province: '',
+        gender: '',
+        email: '',
+        mobile: '',
+        username: '',
+        confirmPassword: ''
+    });
 
-const RegisterPage: React.FC = () => {
-  const navigate = useNavigate();
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+    const handleSubmit = (e: React.SubmitEvent) => {
+        e.preventDefault();
+        // Handle registration logic here
+        console.log('Registration data:', formData);
+        // Navigate to login or dashboard
+        navigate("/login");
+    };
 
-    const formData = new FormData(e.currentTarget);
-    const data = Object.fromEntries(formData.entries());
+    const handleSignIn = () => {
+        // TODO: replace with actual navigation (e.g. react-router's navigate('/login'))
+        console.log('Navigate to sign-in');
+        navigate("/login");
+    };
 
-    const fullName = String(data.fullName || "").trim();
-    const email = String(data.email || "").trim();
-    const phone = String(data.phone || "").trim();
-    const role = String(data.role || "");
-    const password = String(data.password || "");
-    const confirmPassword = String(data.confirmPassword || "");
-    const agreeToTerms = data.agreeToTerms === "on";
+    return (
+        <div className="RegisterContainer">
 
-    if (!fullName) return alert("Please enter your full name and surname.");
-    if (!email) return alert("Please enter your email address.");
+            <div className="Registerlogo-card">
+              <img src="logoIcon.png" className="registerLogo" />
+                <h1 className="logoTitle">Carpart Market</h1>
 
-    const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
-    if (!emailRegex.test(email)) return alert("Please enter a valid email address.");
-    if (!phone) return alert("Please enter your phone number.");
-    if (!role) return alert("Please select your role.");
-    if (!password) return alert("Please enter a password.");
-    if (password.length < 8) return alert("Password must be at least 8 characters long.");
-    if (password !== confirmPassword) return alert("Passwords do not match.");
-    if (!agreeToTerms) return alert("Please agree to the Terms and Conditions to continue.");
+                <div className="logoButtons">
+                    <button type="submit" className="RegisterLogoButton">
+                        Create Account
+                    </button>
 
-    console.log("Form submitted:", { fullName, email, phone, role, password });
-
-    // Go to login page after successful registration
-    navigate("/login");
-  };
-
-  return (
-    <div className="register-page">
-      <div className="register-card">
-        {/* ===== LEFT SIDE ===== */}
-        <div className="left-panel">
-          <img src="/image.png" alt="UniTrade Logo" className="logo" />
-
-          <h1>
-            Join <span>UniTrade</span><br />Today!
-          </h1>
-
-          <p>
-            Buy, sell and connect with students, faculty, vendors and residents
-            across your campus community.
-          </p>
-
-          <img
-            src="/RegisterPage.png"
-            alt="Register Illustration"
-            className="register-image"
-          />
-
-          <div className="features">
-            <div className="feature">
-              <div className="feature-icon"><FaShieldAlt /></div>
-              <span>Secure Transactions</span>
+                    <button type="submit" className="RegisterLogoButton">
+                        Create Account
+                    </button>
+                </div>
             </div>
-            <div className="feature">
-              <div className="feature-icon"><FaUsers /></div>
-              <span>Trusted Community</span>
+
+            <div className="Register-card">
+                <h1>Create an Account</h1>
+
+                <form onSubmit={handleSubmit}>
+                    <div className="RegisterformRow">
+                        <div className="Registerform-group">
+                            <label>First Name</label>
+                            <input
+                                type="text"
+                                name="firstName"
+                                value={formData.firstName}
+                                onChange={handleChange}
+                                required
+                            />
+                        </div>
+
+                        <div className="Registerform-group">
+                            <label>Last Name</label>
+                            <input
+                                type="text"
+                                name="lastName"
+                                value={formData.lastName}
+                                onChange={handleChange}
+                                required
+                            />
+                        </div>
+                    </div>
+
+                    <div className="RegisterformRow">
+                        <div className="Registerform-group">
+                            <label>City</label>
+                            <input
+                                type="text"
+                                name="city"
+                                value={formData.city}
+                                onChange={handleChange}
+                                required
+                            />
+                        </div>
+
+                        <div className="Registerform-group">
+                            <label>Province</label>
+                            <select
+                                name="province"
+                                value={formData.province}
+                                onChange={handleChange}
+                                required
+                            >
+                                <option value="">Select Province</option>
+                                <option value="Eastern Cape">Eastern Cape</option>
+                                <option value="Free State">Free State</option>
+                                <option value="Gauteng">Gauteng</option>
+                                <option value="KwaZulu-Natal">KwaZulu-Natal</option>
+                                <option value="Limpopo">Limpopo</option>
+                                <option value="Mpumalanga">Mpumalanga</option>
+                                <option value="Northern Cape">Northern Cape</option>
+                                <option value="North West">North West</option>
+                                <option value="Western Cape">Western Cape</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div className="RegisterformRow">
+                        <div className="Registerform-group">
+                            <label>Gender</label>
+                            <select
+                                name="gender"
+                                value={formData.gender}
+                                onChange={handleChange}
+                                required
+                            >
+                                <option value="">Select Gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Non-binary">Non-binary</option>
+                                <option value="Prefer not to say">Prefer not to say</option>
+                            </select>
+                        </div>
+
+                        <div className="Registerform-group">
+                            <label>Mobile Number</label>
+                            <input
+                                type="mobile"
+                                name="mobile"
+                                value={formData.mobile}
+                                onChange={handleChange}
+                                required
+                            />
+                        </div>
+                    </div>
+
+                    <div className="RegisterformRow">
+                        <div className="Registerform-group">
+                            <label>Username</label>
+                            <input
+                                type="text"
+                                name="username"
+                                value={formData.username}
+                                onChange={handleChange}
+                                required
+                            />
+                        </div>
+
+                        <div className="Registerform-group">
+                            <label>Confirm Password</label>
+                            <input
+                                type="password"
+                                name="confirmPassword"
+                                value={formData.confirmPassword}
+                                onChange={handleChange}
+                                required
+                            />
+                        </div>
+                    </div>
+
+                    <div className="checkboxes">
+                        <label>
+                            <input type="checkbox" name="option1" required/>
+                            <span className="label-text">Creating your account and accepting terms & conditions</span>                            </label>
+
+                    </div>
+
+                    <button type="submit" className="RegisterButton">
+                        Create Account
+                    </button>
+
+                    <p className="signin-link">Already have an account? <span
+                        role="button"
+                        tabIndex={0}
+                        onClick={handleSignIn}
+                        onKeyPress={(e) => { if (e.key === 'Enter') handleSignIn(); }}
+                    >
+                        Sign in
+                    </span></p>
+                </form>
             </div>
-            <div className="feature">
-              <div className="feature-icon"><FaLeaf /></div>
-              <span>Sustainable Marketplace</span>
-            </div>
-            <div className="feature">
-              <div className="feature-icon"><FaCommentDots /></div>
-              <span>Community Engagement</span>
-            </div>
-          </div>
         </div>
-
-        {/* ===== RIGHT SIDE ===== */}
-        <div className="right-panel">
-          <h2>Create Your UniTrade Account</h2>
-          <p className="subtitle">Join the Campus Marketplace Today</p>
-
-          <form onSubmit={handleSubmit} noValidate>
-            <div className="input-group">
-              <FaUser />
-              <input
-                name="fullName"
-                type="text"
-                placeholder="Full Name and Surname"
-                aria-label="Full Name and Surname"
-                autoComplete="name"
-              />
-            </div>
-
-            <div className="input-group">
-              <FaEnvelope />
-              <input
-                name="email"
-                type="email"
-                placeholder="Email Address"
-                aria-label="Email Address"
-                autoComplete="email"
-              />
-            </div>
-
-            <small className="email-note">
-              Student must use their university email address.
-            </small>
-
-            <div className="input-group">
-              <FaPhone />
-              <input
-                name="phone"
-                type="tel"
-                placeholder="Phone Number"
-                aria-label="Phone Number"
-                autoComplete="tel"
-              />
-            </div>
-
-            <div className="input-group">
-              <MdOutlineWorkOutline />
-              <select name="role" defaultValue="" aria-label="Select Your Role">
-                <option value="" disabled>Select Your Role</option>
-                <option value="student">Student</option>
-                <option value="faculty">Faculty</option>
-                <option value="vendor">Vendor</option>
-                <option value="resident">Resident</option>
-              </select>
-            </div>
-
-            <div className="input-group">
-              <FaLock />
-              <input
-                name="password"
-                type={showPassword ? "text" : "password"}
-                placeholder="Password"
-                aria-label="Password"
-                autoComplete="new-password"
-              />
-              <span
-                className="eye"
-                onClick={() => setShowPassword((p) => !p)}
-                role="button"
-                tabIndex={0}
-                aria-label={showPassword ? "Hide password" : "Show password"}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    setShowPassword((p) => !p);
-                  }
-                }}
-              >
-                {showPassword ? <FaRegEye /> : <FaRegEyeSlash />}
-              </span>
-            </div>
-
-            <div className="input-group">
-              <FaLock />
-              <input
-                name="confirmPassword"
-                type={showConfirmPassword ? "text" : "password"}
-                placeholder="Confirm Password"
-                aria-label="Confirm Password"
-                autoComplete="new-password"
-              />
-              <span
-                className="eye"
-                onClick={() => setShowConfirmPassword((p) => !p)}
-                role="button"
-                tabIndex={0}
-                aria-label={showConfirmPassword ? "Hide password" : "Show password"}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    setShowConfirmPassword((p) => !p);
-                  }
-                }}
-              >
-                {showConfirmPassword ? <FaRegEye /> : <FaRegEyeSlash />}
-              </span>
-            </div>
-
-            <div className="checkbox">
-              <input type="checkbox" id="terms" name="agreeToTerms" />
-              <label htmlFor="terms">
-                I agree to the<span> Terms and Conditions</span>
-              </label>
-            </div>
-
-            <button type="submit">Create Account</button>
-          </form>
-
-          <p className="login">
-            Already have an account?<Link to="/login"> Login</Link>
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-};
+    );
+}
 
 export default RegisterPage;
