@@ -1,7 +1,7 @@
 /* ================================================================footer=================================== */
 /* Footer Main Styles */
 .footer {
-    background-color: #142c49;
+    background-color: #080e16;
     color: #ffffff;
     padding: 60px 80px 0 80px;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -19,11 +19,8 @@
 
 /* Brand Section */
 .footer-logo {
-    font-size: 28px;
-    font-weight: 700;
-    margin: 0 0 15px 0;
-    letter-spacing: 1px;
-    color: #ffffff;
+    width: 200px;
+    height: 100px;
 }
 
 .footer-description {

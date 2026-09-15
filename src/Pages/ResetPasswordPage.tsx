@@ -10,12 +10,11 @@ function ResetPasswordPage() {
   return (
 
     <div className="ResetContainer">
-      <div className="Resetlogo-card">
-        {/* <h1>Logo</h1> */}
+
+      {/* <div className="Resetlogo-card">
         <img src="/logo-BW.png" alt="PartLink Logo" className="Resetlogoicon" />
-        {/* <img src="/logo-name.png" alt="PartLink Logo" className="Loginlogo" /> */}
-        {/* <h1 className="Resetwelcome-text">Welcome Back</h1> */}
-      </div>
+      </div> */}
+
       <div className="Reset-card">
         <h1>Reset Password</h1>
 

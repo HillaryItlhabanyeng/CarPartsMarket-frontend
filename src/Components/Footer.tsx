@@ -7,7 +7,7 @@ function Footer() {
     <footer className="footer">
                 <div className="footer-container">
                     <div className="footer-brand">
-                        <img src="/logo-recolored.png" alt="PartLink Logo" className="footer-logo" />
+                        <img src="/automarket-recolored.png" alt="PartLink Logo" className="footer-logo" />
                         <p className="footer-description">
                             A premier marketplace connecting buyers and sellers with secure transactions, transparent pricing, and streamlined logistics.
                         </p>
@@ -17,9 +17,9 @@ function Footer() {
                         <h3 className="footer-heading">MARKETPLACE</h3>
                         <ul className="footer-links">
                             <li><a href="#">All Categories</a></li>
-                            <li><a href="#">Electronics</a></li>
-                            <li><a href="#">Home & Bedding</a></li>
-                            <li><a href="#">Fashion</a></li>
+                            <li><a href="#">Engines</a></li>
+                            <li><a href="#">Body & Internal</a></li>
+                            <li><a href="#">Suspensions</a></li>
                         </ul>
                     </div>
 
@@ -42,7 +42,7 @@ function Footer() {
                 </div>
 
                 <div className="footer-bottom">
-                    <p>© 2026 UNITRADE MARKETPLACE</p>
+                    <p>© 2026 AUTOMARKET MARKETPLACE</p>
                 </div>
             </footer>
   );
