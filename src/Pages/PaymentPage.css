@@ -27,11 +27,12 @@
   border-radius: 12px;
   overflow: hidden;
   margin-top: 24px;
+  box-shadow: 0 4px 20px rgba(15, 42, 74, 0.08);
 }
 
 .payfast-header {
-  background: #1e3a5f;
-  color: #fff;
+  background: linear-gradient(135deg, #d8c3a5, #c2a978);
+  color: #1a1a1a;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -40,9 +41,13 @@
 
 .payfast-icon {
   font-size: 22px;
-  background: #14b8a6;
+  background: #fff;
+  color: #1e3a5f;
   border-radius: 6px;
   padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .payfast-title {
@@ -53,7 +58,7 @@
 
 .payfast-subtitle {
   font-size: 12px;
-  color: #cbd5e1;
+  color: #5c4a33;
   margin: 2px 0 0 0;
 }
 
@@ -73,7 +78,7 @@
 .amount-value {
   font-size: 32px;
   font-weight: 700;
-  color: #14b8a6;
+  color: #c2a978;
   margin: 4px 0;
 }
 
@@ -127,7 +132,8 @@
 
 .payfast-card input:focus {
   outline: none;
-  border-color: #14b8a6;
+  border-color: #c2a978;
+  box-shadow: 0 0 0 3px rgba(216, 195, 165, 0.25);
 }
 
 .form-row {
@@ -154,8 +160,8 @@
   width: calc(100% - 48px);
   margin: 8px 24px 8px 24px;
   padding: 14px;
-  background: #14b8a6;
-  color: #fff;
+  background: #d8c3a5;
+  color: #1a1a1a;
   border: none;
   border-radius: 8px;
   font-size: 15px;
@@ -164,7 +170,13 @@
 }
 
 .pay-now-btn:hover {
-  background: #0d9488;
+  background: #c2a978;
+}
+
+.pay-now-btn:disabled {
+  background: #e0e0e0;
+  color: #999;
+  cursor: not-allowed;
 }
 
 .simulated-note {

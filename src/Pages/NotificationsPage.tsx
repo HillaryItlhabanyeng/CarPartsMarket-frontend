@@ -1,60 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Navbar from "../Components/Navbar";
+import {
+  getNotificationsForCurrentUser,
+  saveNotifications,
+  type MarketplaceNotification,
+  type NotificationType,
+} from "../Components/notificationStore";
 import "./NotificationsPage.css";
-
-type NotificationType = "Order" | "Message" | "System" | "Listing";
-
-type Notification = {
-  id: string;
-  type: NotificationType;
-  title: string;
-  body: string;
-  timestamp: string;
-  read: boolean;
-};
-
-const initialNotifications: Notification[] = [
-  {
-    id: "n1",
-    type: "Order",
-    title: "Your order FR-78TRFGDUN3452 is confirmed",
-    body: "PROLINE INTEL CELERON — delivery to Bellville Campus.",
-    timestamp: "10 minutes ago",
-    read: false,
-  },
-  {
-    id: "n2",
-    type: "Message",
-    title: "New message from Naledi M.",
-    body: "\"Hey, is the desk still available?\"",
-    timestamp: "1 hour ago",
-    read: false,
-  },
-  {
-    id: "n3",
-    type: "Listing",
-    title: "Your listing got a new favorite",
-    body: "Bugani FreeBuds B20 Wireless Earbuds was saved by another student.",
-    timestamp: "3 hours ago",
-    read: false,
-  },
-  {
-    id: "n4",
-    type: "System",
-    title: "Verify your student email",
-    body: "Verified accounts get priority placement on the marketplace.",
-    timestamp: "Yesterday",
-    read: true,
-  },
-  {
-    id: "n5",
-    type: "Order",
-    title: "Payment received",
-    body: "R40.00 for A4 Counter Books - 3 Quire.",
-    timestamp: "2 days ago",
-    read: true,
-  },
-];
 
 const typeIcons: Record<NotificationType, string> = {
   Order: "📦",
@@ -73,9 +25,10 @@ const filters: ("All" | "Unread" | NotificationType)[] = [
 ];
 
 export default function NotificationsPage() {
-  const [notifications, setNotifications] = useState<Notification[]>(
-    initialNotifications
-  );
+  const [notifications, setNotifications] = useState<MarketplaceNotification[]>(() => {
+    return getNotificationsForCurrentUser();
+  });
+  const [toast, setToast] = useState<MarketplaceNotification | null>(null);
   const [activeFilter, setActiveFilter] = useState<
     "All" | "Unread" | NotificationType
   >("All");
@@ -88,19 +41,50 @@ export default function NotificationsPage() {
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
+  useEffect(() => {
+    const refreshNotifications = () => {
+      const nextNotifications = getNotificationsForCurrentUser();
+      if (nextNotifications.length > notifications.length) {
+        setToast(nextNotifications[0]);
+        window.setTimeout(() => setToast(null), 4500);
+      }
+      setNotifications(nextNotifications);
+    };
+
+    window.addEventListener("marketplace-notifications-updated", refreshNotifications);
+    window.addEventListener("storage", refreshNotifications);
+    return () => {
+      window.removeEventListener("marketplace-notifications-updated", refreshNotifications);
+      window.removeEventListener("storage", refreshNotifications);
+    };
+  }, [notifications.length]);
+
   const markAsRead = (id: string) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
-    );
+    setNotifications((prev) => {
+      const next = prev.map((n) => (n.id === id ? { ...n, read: true } : n));
+      saveNotifications(next);
+      return next;
+    });
   };
 
   const markAllAsRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    setNotifications((prev) => {
+      const next = prev.map((n) => ({ ...n, read: true }));
+      saveNotifications(next);
+      return next;
+    });
   };
 
   return (
     <div className="nt-page">
       <Navbar />
+
+      {toast && (
+        <div className="nt-toast" role="status">
+          <strong>{toast.title}</strong>
+          <span>{toast.body}</span>
+        </div>
+      )}
 
       <div className="nt-page-header">
         <div>

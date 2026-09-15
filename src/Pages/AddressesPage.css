@@ -1,0 +1,175 @@
+.addr-action-bar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+}
+
+.addr-add-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 42px;
+  padding: 0 20px;
+  border: none;
+  border-radius: 6px;
+  background: #a67b5b;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.2s ease;
+}
+
+.addr-add-btn:hover {
+  filter: brightness(1.06);
+}
+
+.addr-form {
+  margin-bottom: 20px;
+}
+
+.addr-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.addr-form-group-wide {
+  grid-column: 1 / -1;
+}
+
+.addr-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.addr-form-group label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #45576a;
+}
+
+.addr-form-group input {
+  height: 42px;
+  padding: 0 14px;
+  border: 1px solid #c9d1d8;
+  border-radius: 6px;
+  background: #f8f9fa;
+  color: #273a4c;
+  font-size: 14px;
+  font-family: inherit;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.addr-form-group input:focus {
+  outline: none;
+  border-color: #a67b5b;
+  box-shadow: 0 0 0 3px rgba(166, 123, 91, 0.15);
+}
+
+.addr-save-btn {
+  height: 42px;
+  padding: 0 22px;
+  border: none;
+  border-radius: 6px;
+  background: #0d2b45;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.2s ease;
+}
+
+.addr-save-btn:hover {
+  filter: brightness(1.15);
+}
+
+.addr-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 48px 24px;
+  color: #6b7a7f;
+  text-align: center;
+}
+
+.addr-empty-icon {
+  font-size: 28px;
+  color: #c9d1d8;
+}
+
+.addr-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.addr-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(13, 43, 69, 0.06);
+}
+
+.addr-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.addr-card-label {
+  font-weight: 700;
+  color: #0d2b45;
+  font-size: 14px;
+}
+
+.addr-delete-btn {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: #a67b5b;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.addr-delete-btn:hover {
+  background: rgba(166, 123, 91, 0.12);
+}
+
+.addr-card-street,
+.addr-card-city,
+.addr-card-phone {
+  margin: 2px 0;
+  font-size: 13px;
+  color: #45576a;
+}
+
+@media (max-width: 900px) {
+  .addr-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .addr-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .addr-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .addr-add-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

@@ -48,11 +48,6 @@ select {
    TOP NAVBAR
 ========================================================= */
 
-.site-header {
-  width: 100%;
-  background: #1f3d63;
-}
-
 .site-header-top {
   width: 100%;
   max-width: 1180px;

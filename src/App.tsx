@@ -23,6 +23,8 @@ import SavedPage from "./Pages/SavedPage";
 import BuyingPage from "./Pages/BuyingPage";
 import OrderDetailPage from "./Pages/OrderDetailPage";
 import BulletinBoardPage from "./Pages/BulletinBoardPage";
+import DashboardPage from "./Pages/DashboardPage";
+import AddressesPage from "./Pages/AddressesPage";
 
 import NotificationsPage from "./Pages/NotificationsPage";
 import MessagesPage from "./Pages/MessagesPage";
@@ -38,6 +40,7 @@ import ProductListingPage from "./Pages/ProductListingPage";
 import ProfilePage from "./Pages/ProfilePage";
 import ProductDetailsPage from "./Pages/ProductDetailsPage";
 import AdminPage from "./Pages/AdminPage";
+import ShippingPage from "./Pages/ShippingPage";
 
 
 function App() {
@@ -59,6 +62,10 @@ function App() {
         <Route path="/account" element={<AccountPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/addresses" element={<AddressesPage />} />
+
+        {/* Seller Dashboard */}
+        <Route path="/dashboard" element={<DashboardPage />} />
 
         {/* Marketplace */}
         <Route path="/shop" element={<MarketPlacePage />} />
@@ -67,7 +74,9 @@ function App() {
         <Route path="/list-product" element={<ProductListingPage />} />
         <Route path="/my-listings" element={<MyListingsPage />} />
         <Route path="/saved" element={<SavedPage />} />
+        <Route path="/wishlist" element={<SavedPage />} />
         <Route path="/buying" element={<BuyingPage />} />
+        <Route path="/orders" element={<BuyingPage />} />
         <Route path="/orders/:reference" element={<OrderDetailPage />} />
 
         {/* Cart / Checkout */}
@@ -93,8 +102,7 @@ function App() {
 
         {/* Admin */}
         <Route path="/admin" element={<AdminPage />} />
-
-
+        <Route path="/shipping" element={<ShippingPage />} />
 
         {/* Reviews */}
         <Route

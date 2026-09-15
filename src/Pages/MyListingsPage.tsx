@@ -1,63 +1,90 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../Components/Navbar";
 import "./MyListingsPage.css";
 
-type ListingStatus = "Active" | "Sold" | "Draft";
+type ListingStatus = "Active" | "Pending" | "Sold";
+type ListingSource = "pending" | "approved";
+
+type StoredProduct = {
+  id: number;
+  title: string;
+  location: string;
+  image: string;
+  price: number;
+  submitted: string;
+  sellerEmail?: string;
+  sold?: boolean;
+};
 
 type MyListing = {
-  id: string;
+  id: number;
+  source: ListingSource;
   title: string;
-  price: string;
+  price: number;
   location: string;
   image: string;
   status: ListingStatus;
-  views: number;
+  submitted: string;
 };
 
-const initialListings: MyListing[] = [
-  {
-    id: "proline-intel-celeron",
-    title: "PROLINE INTEL CELERON",
-    price: "R3699.00",
-    location: "Bellville Campus",
-    image: "/laptop.jpg",
-    status: "Active",
-    views: 42,
-  },
-  {
-    id: "a4-counter-books",
-    title: "A4 Counter Books - 3 Quire",
-    price: "R40.00",
-    location: "Wellington Campus",
-    image: "/a4.jpg",
-    status: "Sold",
-    views: 18,
-  },
-  {
-    id: "nortic-classic-desk",
-    title: "Nortic Classic Home office Desk",
-    price: "R1500.00",
-    location: "Wellington Campus",
-    image: "/desks.jpg",
-    status: "Draft",
-    views: 0,
-  },
-  {
-    id: "bugani-freebuds-b20",
-    title: "Bugani FreeBuds B20 Wireless Earbuds",
-    price: "R930.00",
-    location: "Mowbray Campus",
-    image: "/earbuds.jpg",
-    status: "Active",
-    views: 27,
-  },
-];
+type CurrentUser = {
+  email?: string;
+};
 
-const statusFilters: ("All" | ListingStatus)[] = ["All", "Active", "Sold", "Draft"];
+const statusFilters: ("All" | ListingStatus)[] = ["All", "Active", "Pending", "Sold"];
+
+function readFromStorage<T>(key: string, fallback: T): T {
+  try {
+    const raw = window.localStorage.getItem(key);
+    const parsed = raw ? JSON.parse(raw) : fallback;
+    return parsed ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function loadMyListings(): MyListing[] {
+  const currentUser = readFromStorage<CurrentUser | null>("marketplace_current_user", null);
+  const email = currentUser?.email?.toLowerCase();
+
+  const pending = readFromStorage<StoredProduct[]>("marketplace_pending_products", []);
+  const approved = readFromStorage<StoredProduct[]>("marketplace_approved_products", []);
+
+  const belongsToUser = (product: StoredProduct) =>
+    !email || product.sellerEmail?.toLowerCase() === email;
+
+  const pendingListings: MyListing[] = pending
+    .filter(belongsToUser)
+    .map((product) => ({
+      id: product.id,
+      source: "pending",
+      title: product.title,
+      price: product.price,
+      location: product.location,
+      image: product.image,
+      status: "Pending",
+      submitted: product.submitted,
+    }));
+
+  const approvedListings: MyListing[] = approved
+    .filter(belongsToUser)
+    .map((product) => ({
+      id: product.id,
+      source: "approved",
+      title: product.title,
+      price: product.price,
+      location: product.location,
+      image: product.image,
+      status: product.sold ? "Sold" : "Active",
+      submitted: product.submitted,
+    }));
+
+  return [...pendingListings, ...approvedListings];
+}
 
 export default function MyListingsPage() {
-  const [listings, setListings] = useState<MyListing[]>(initialListings);
+  const [listings, setListings] = useState<MyListing[]>(() => loadMyListings());
   const [activeFilter, setActiveFilter] = useState<"All" | ListingStatus>("All");
 
   const visibleListings =
@@ -65,13 +92,23 @@ export default function MyListingsPage() {
       ? listings
       : listings.filter((l) => l.status === activeFilter);
 
-  const handleDelete = (id: string) => {
-    setListings((prev) => prev.filter((l) => l.id !== id));
+  const handleDelete = (item: MyListing) => {
+    const key =
+      item.source === "pending" ? "marketplace_pending_products" : "marketplace_approved_products";
+    const stored = readFromStorage<StoredProduct[]>(key, []);
+    const next = stored.filter((product) => product.id !== item.id);
+    window.localStorage.setItem(key, JSON.stringify(next));
+    setListings((prev) => prev.filter((listing) => listing.id !== item.id));
   };
 
-  const handleMarkSold = (id: string) => {
+  const handleMarkSold = (item: MyListing) => {
+    const stored = readFromStorage<StoredProduct[]>("marketplace_approved_products", []);
+    const next = stored.map((product) =>
+      product.id === item.id ? { ...product, sold: true } : product
+    );
+    window.localStorage.setItem("marketplace_approved_products", JSON.stringify(next));
     setListings((prev) =>
-      prev.map((l) => (l.id === id ? { ...l, status: "Sold" } : l))
+      prev.map((listing) => (listing.id === item.id ? { ...listing, status: "Sold" } : listing))
     );
   };
 
@@ -106,12 +143,12 @@ export default function MyListingsPage() {
       {visibleListings.length === 0 ? (
         <div className="ml-empty">
           <p>You don't have any {activeFilter !== "All" ? activeFilter.toLowerCase() : ""} listings yet.</p>
-          <button className="ml-sell-btn">Sell an Item</button>
+          <button className="ml-sell-btn" onClick={() => navigate("/list-product")}>Sell an Item</button>
         </div>
       ) : (
         <div className="ml-grid">
           {visibleListings.map((item) => (
-            <div className="ml-card" key={item.id}>
+            <div className="ml-card" key={`${item.source}-${item.id}`}>
               <div className="ml-card-image">
                 <img src={item.image} alt={item.title} />
                 <span className={`ml-status ml-status-${item.status.toLowerCase()}`}>
@@ -121,25 +158,22 @@ export default function MyListingsPage() {
 
               <div className="ml-card-info">
                 <span className="ml-card-title">{item.title}</span>
-                <span className="ml-card-price">{item.price}</span>
+                <span className="ml-card-price">R{item.price.toFixed(2)}</span>
                 <span className="ml-card-location">📍 {item.location}</span>
-                <span className="ml-card-views">{item.views} views</span>
+                <span className="ml-card-views">{item.submitted}</span>
 
                 <div className="ml-card-actions">
-                  <Link to={`/edit-listing/${item.id}`} className="ml-edit-btn">
-                    Edit
-                  </Link>
-                  {item.status !== "Sold" && (
+                  {item.status === "Active" && (
                     <button
                       className="ml-sold-btn"
-                      onClick={() => handleMarkSold(item.id)}
+                      onClick={() => handleMarkSold(item)}
                     >
                       Mark Sold
                     </button>
                   )}
                   <button
                     className="ml-delete-btn"
-                    onClick={() => handleDelete(item.id)}
+                    onClick={() => handleDelete(item)}
                   >
                     Delete
                   </button>

@@ -9,21 +9,17 @@ import {
   FaLock,
   FaRegEye,
   FaRegEyeSlash,
-  FaShieldAlt,
-  FaUsers,
-  FaLeaf,
-  FaCommentDots,
-  FaUserGraduate,
-  FaStore,
-  FaHome,
-  FaBuilding,
+  FaUserTag,
 } from "react-icons/fa";
+
+const ROLE_OPTIONS = ["Buyer", "Seller", "Admin"] as const;
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -48,55 +44,65 @@ const LoginPage: React.FC = () => {
       return;
     }
 
-    console.log({ email, password, rememberMe });
+    if (!role) {
+      alert("Please select your role.");
+      return;
+    }
 
-    // Redirect to the home page after a successful login
-    navigate("/home");
+    const normalizedEmail = email.trim().toLowerCase();
+    const storedUsers = (() => {
+      try {
+        const raw = window.localStorage.getItem("marketplace_users");
+        const parsed = raw ? JSON.parse(raw) : [];
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    })();
+    const signedInUser = storedUsers.find(
+      (user: { email?: string }) => user.email?.toLowerCase() === normalizedEmail
+    );
+
+    window.localStorage.setItem(
+      "marketplace_current_user",
+      JSON.stringify({
+        id: signedInUser?.id ?? normalizedEmail,
+        name: signedInUser?.name ?? email.split("@")[0],
+        email: normalizedEmail,
+        role,
+      })
+    );
+
+    console.log({ email, password, role, rememberMe });
+
+    // Sellers land on the listing form, buyers land on the shop, everyone else goes home.
+    if (role === "Seller") {
+      navigate("/list-product");
+    } else if (role === "Buyer") {
+      navigate("/shop");
+    } else {
+      navigate("/home");
+    }
   };
 
   return (
     <main className="login-page">
       {/* ================= LEFT PANEL ================= */}
       <section className="login-left-panel">
-        <img
-          src="/image.png"
-          alt="UniTrade Campus Marketplace"
-          className="login-logo"
+        <video
+          className="login-video"
+          src="/login-video.mp4"
+          autoPlay
+          loop
+          muted
+          playsInline
         />
 
-        <h1>
-          Welcome <span>Back</span>!
-        </h1>
-
-        <p className="welcome-text">
-          Login to continue to
-          <br />
-          UniTrade Campus Marketplace.
-        </p>
-
-        <img
-          src="/LoginPage.png"
-          alt="Students using the UniTrade marketplace"
-          className="login-illustration"
-        />
-
-        {/* Features */}
-        <div className="login-features">
-          <div className="login-feature">
-            <div className="login-feature-icon"><FaShieldAlt /></div>
-            <span>Secure<br />Transactions</span>
-          </div>
-          <div className="login-feature">
-            <div className="login-feature-icon"><FaUsers /></div>
-            <span>Trusted<br />Community</span>
-          </div>
-          <div className="login-feature">
-            <div className="login-feature-icon"><FaLeaf /></div>
-            <span>Sustainable<br />Marketplace</span>
-          </div>
-          <div className="login-feature">
-            <div className="login-feature-icon"><FaCommentDots /></div>
-            <span>Community<br />Engagement</span>
+        <div className="login-video-overlay">
+          <div className="login-video-content">
+            <span className="login-video-eyebrow">AutoMarket</span>
+            <h2 className="login-video-heading">Welcome Back to AutoMarket</h2>
+            <span className="login-video-divider" />
           </div>
         </div>
       </section>
@@ -146,6 +152,28 @@ const LoginPage: React.FC = () => {
               </button>
             </div>
 
+            {/* Role */}
+            <div className="login-input-group">
+              <FaUserTag />
+              <select
+                id="role"
+                name="role"
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                aria-label="Select your role"
+                className="role-select"
+              >
+                <option value="" disabled>
+                  Select Role
+                </option>
+                {ROLE_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             {/* Forgot password */}
             <div className="forgot-password-row">
               <Link to="/reset-password">Forgot Password?</Link>
@@ -165,34 +193,6 @@ const LoginPage: React.FC = () => {
 
             <button type="submit" className="login-button">Login</button>
           </form>
-
-          {/* Divider */}
-          <div className="or-divider">
-            <span />
-            <p>OR</p>
-            <span />
-          </div>
-
-          {/* Role login options */}
-          <p className="login-as-text">Login as :</p>
-          <div className="role-options">
-            <button type="button" className="role-option" aria-label="Login as student">
-              <FaUserGraduate />
-              <span>Student</span>
-            </button>
-            <button type="button" className="role-option" aria-label="Login as vendor">
-              <FaStore />
-              <span>Vendor</span>
-            </button>
-            <button type="button" className="role-option" aria-label="Login as resident">
-              <FaHome />
-              <span>Resident</span>
-            </button>
-            <button type="button" className="role-option" aria-label="Login as faculty">
-              <FaBuilding />
-              <span>Faculty</span>
-            </button>
-          </div>
 
           {/* Register */}
           <p className="register-link">

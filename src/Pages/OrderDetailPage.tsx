@@ -1,15 +1,28 @@
 import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "../Components/Navbar";
 import { useOrders } from "../Components/useOrders";
+import { addNotification } from "../Components/notificationStore";
 import "./OrderDetailPage.css";
 
 export default function OrderDetailPage() {
   const { reference } = useParams<{ reference: string }>();
   const navigate = useNavigate();
-  const { getOrder } = useOrders();
+  const { getOrder, markOrderShipped } = useOrders();
 
   const order = reference ? getOrder(reference) : undefined;
   const formatCurrency = (value: number) => `R${value.toFixed(2)}`;
+
+  const handleMarkAsShipped = () => {
+    if (!order || order.status === "SHIPPED") return;
+    markOrderShipped(order.reference);
+
+    addNotification({
+      type: "Order",
+      title: "Your car-part order has shipped",
+      body: `Order ${order.reference} is on its way to you.`,
+      recipientEmail: order.buyerEmail,
+    });
+  };
 
   if (!order) {
     return (
@@ -77,6 +90,12 @@ export default function OrderDetailPage() {
             <span>{formatCurrency(order.total)}</span>
           </div>
         </div>
+
+        {order.status !== "SHIPPED" && order.status !== "DELIVERED" && (
+          <button className="back-to-buying-btn" onClick={handleMarkAsShipped}>
+            Mark order as shipped
+          </button>
+        )}
       </div>
     </div>
   );

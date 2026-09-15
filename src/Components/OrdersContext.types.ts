@@ -5,6 +5,8 @@ export type OrderItem = {
   quantity: number;
   imageUrl?: string;
   category?: string;
+  seller?: string;
+  sellerEmail?: string;
 };
 
 export type Order = {
@@ -13,6 +15,7 @@ export type Order = {
   subtotal: number;
   deliveryFee: number;
   total: number;
-  status: "PENDING" | "PAID" | "DELIVERED" | "CANCELLED";
+  status: "PENDING" | "PAID" | "SHIPPED" | "DELIVERED" | "CANCELLED";
+  buyerEmail?: string;
   date: string;
 };

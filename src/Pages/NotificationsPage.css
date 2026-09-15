@@ -1,6 +1,8 @@
 .nt-page {
-  font-family: Arial, Helvetica, sans-serif;
-  color: #1a1a1a;
+  min-height: 100vh;
+  font-family: Georgia, "Times New Roman", serif;
+  color: #30271f;
+  background: #f3eadc;
 }
 
 .nt-page-header {
@@ -18,14 +20,14 @@
 
 .nt-page-header p {
   font-size: 13px;
-  color: #888;
+  color: #806f5d;
   margin: 0;
 }
 
 .nt-mark-all-btn {
-  background: #fff;
-  color: #14b8a6;
-  border: 1px solid #14b8a6;
+  background: #fffaf2;
+  color: #8b5e34;
+  border: 1px solid #c9a77d;
   padding: 9px 18px;
   border-radius: 8px;
   font-size: 13px;
@@ -36,7 +38,7 @@
 }
 
 .nt-mark-all-btn:hover {
-  background: #f0fdfa;
+  background: #ead8c0;
 }
 
 /* Filter chips */
@@ -48,23 +50,23 @@
 }
 
 .nt-filter-chip {
-  border: 1px solid #ddd;
-  background: #fff;
+  border: 1px solid #d6c5af;
+  background: #fffaf2;
   border-radius: 20px;
   padding: 7px 16px;
   font-size: 13px;
   font-weight: 600;
-  color: #555;
+  color: #665546;
   cursor: pointer;
 }
 
 .nt-filter-chip:hover {
-  background: #f5f5f5;
+  background: #ead8c0;
 }
 
 .nt-filter-chip.nt-active {
-  background: #14b8a6;
-  border-color: #14b8a6;
+  background: #8b5e34;
+  border-color: #8b5e34;
   color: #fff;
 }
 
@@ -80,25 +82,25 @@
 .nt-card {
   display: flex;
   gap: 14px;
-  border: 1px solid #eee;
+  border: 1px solid #ddcbb4;
   border-radius: 10px;
   padding: 14px 16px;
-  background: #fff;
+  background: #fffaf2;
   cursor: pointer;
   transition: background 0.15s ease;
 }
 
 .nt-card:hover {
-  background: #fafafa;
+  background: #f8efdf;
 }
 
 .nt-card.nt-unread {
-  background: #f0fdfa;
-  border-color: #ccfbf1;
+  background: #ead8c0;
+  border-color: #c9a77d;
 }
 
 .nt-card.nt-unread:hover {
-  background: #e6fbf8;
+  background: #e2cdae;
 }
 
 .nt-icon {
@@ -110,7 +112,7 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: #f5f5f5;
+  background: #e6d3ba;
 }
 
 .nt-content {
@@ -130,27 +132,27 @@
   font-size: 13px;
   font-weight: 700;
   margin: 0;
-  color: #111;
+  color: #30271f;
 }
 
 .nt-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #14b8a6;
+  background: #a86d35;
   flex-shrink: 0;
 }
 
 .nt-body {
   font-size: 12px;
-  color: #666;
+  color: #756352;
   margin: 0;
   line-height: 1.4;
 }
 
 .nt-time {
   font-size: 11px;
-  color: #999;
+  color: #9a846c;
   margin-top: 2px;
 }
 
@@ -158,7 +160,7 @@
 .nt-empty {
   padding: 60px 0;
   text-align: center;
-  color: #888;
+  color: #806f5d;
   font-size: 14px;
 }
 
@@ -167,4 +169,38 @@
     flex-direction: column;
     gap: 12px;
   }
+}
+
+.nt-toast {
+  position: fixed;
+  top: 86px;
+  right: 24px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: min(360px, calc(100vw - 48px));
+  padding: 14px 16px;
+  border: 1px solid #b68b5e;
+  border-left: 5px solid #8b5e34;
+  border-radius: 8px;
+  background: #fffaf2;
+  box-shadow: 0 12px 28px rgb(77 54 31 / 18%);
+  animation: nt-toast-in 220ms ease-out;
+}
+
+.nt-toast strong {
+  font-size: 13px;
+}
+
+.nt-toast span {
+  color: #756352;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+@keyframes nt-toast-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
 }

@@ -1,9 +1,12 @@
 .checkout-page{
     max-width: 1000px;
     margin: 40px auto;
-    padding: 24px;
+    padding: 32px;
     font-family: Arial, Helvetica, sans-serif;
     color: #1a1a1a;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(15, 42, 74, 0.08);
 }
 
 .secure-label{
@@ -12,16 +15,19 @@
     color:#888;
     text-transform: uppercase;
     margin-bottom: 4px;
+    text-align: center;
 }
 
 .checkout-page h2{
     font-size: 24px;
     margin: 0 0 20px 0;
+    text-align: center;
 }
 
 .checkout-steps{
     display: flex;
     align-items: center;
+    justify-content: center;
     margin-bottom: 32px;
 }
 
@@ -70,6 +76,7 @@
     display: flex;
     gap: 24px;
     align-items: flex-start;
+    justify-content: center;
 }
 
 .details-form{
@@ -84,6 +91,16 @@
     letter-spacing: 1px;
     color:#999;
     margin-bottom: 16px;
+    text-align: center;
+}
+
+.details-form label{
+    display: block;
+    margin: 0 0 8px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: #1a1a1a;
 }
 
 .details-form input{
@@ -98,7 +115,8 @@
 
 .details-form input:focus{
     outline: none;
-    border-color: #14b8a6;
+    border-color: #c2a978;
+    box-shadow: 0 0 0 3px rgba(216, 195, 165, 0.25);
 }
 
 .form-row{
@@ -174,8 +192,8 @@
     width: 100%;
     padding: 16px;
     margin-top: 32px;
-    background: #14b8a6;
-    color: white;
+    background: #d8c3a5;
+    color: #1a1a1a;
     border: none;
     border-radius: 8px;
     font-size: 16px;
@@ -183,5 +201,5 @@
 }
 
 .continue-btn:hover{
-    background: #0d9488;
+    background: #c2a978;
 }
