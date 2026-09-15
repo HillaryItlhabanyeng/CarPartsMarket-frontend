@@ -1,19 +1,16 @@
-import "./RegisterPage.css";
+import "./AddressPage.css";
 import React, { useState } from 'react';
 import { useNavigate } from "react-router-dom";
 
-function RegisterPage() {
+function AddressPage() {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
-        firstName: '',
-        lastName: '',
-        // city: '',
-        // province: '',
-        // gender: '',
-        email: '',
-        mobile: '',
-        password: '',
-        confirmPassword: ''
+        streetNumber: '',
+        suburb: '',
+        city: '',
+        province: '',
+        postalCode: '',
+        country: '',
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -31,9 +28,13 @@ function RegisterPage() {
     };
 
     const handleSignIn = () => {
-        // TODO: replace with actual navigation (e.g. react-router's navigate('/login'))
         console.log('Navigate to sign-in');
         navigate("/login");
+    };
+
+     const handleCancel = () => {
+        console.log('Navigate to sign-in');
+        navigate("/");
     };
 
     return (
@@ -44,45 +45,45 @@ function RegisterPage() {
                 <h1 className="logoTitle"><span>Auto</span>Market</h1>
 
                 <div className="logoButtons">
-                    <button type="submit" className="RegisterLogoButton">
+                    <button className="RegisterLogoButton" onClick={(handleSignIn)}>
                         Login
                     </button>
 
-                    <button type="submit" className="RegisterLogoButton">
+                    <button className="RegisterLogoButton" onClick={(handleCancel)}>
                         Cancel
                     </button>
                 </div>
             </div>
 
             <div className="Register-card">
-                <h1>Create an Account</h1>
+                <h1>Enter your Address</h1>
 
                 <form onSubmit={handleSubmit}>
                     <div className="RegisterformRow">
                         <div className="Registerform-group">
-                            <label>First Name</label>
+                            <label>Street Number</label>
                             <input
                                 type="text"
-                                name="firstName"
-                                value={formData.firstName}
+                                name="streetNumber"
+                                value={formData.streetNumber}
                                 onChange={handleChange}
                                 required
                             />
                         </div>
 
                         <div className="Registerform-group">
-                            <label>Last Name</label>
+                            <label>Suburb</label>
                             <input
                                 type="text"
-                                name="lastName"
-                                value={formData.lastName}
+                                name="suburb"
+                                value={formData.suburb}
                                 onChange={handleChange}
                                 required
                             />
                         </div>
                     </div>
 
-                    {/* <div className="RegisterformRow">
+                    <div className="RegisterformRow">
                         <div className="Registerform-group">
                             <label>City</label>
                             <input
@@ -114,83 +115,44 @@ function RegisterPage() {
                                 <option value="Western Cape">Western Cape</option>
                             </select>
                         </div>
-                    </div> */}
+                    </div>
 
                     <div className="RegisterformRow">
                         <div className="Registerform-group">
-                            <label>Email</label>
+                            <label>Postal code</label>
                             <input
                                 type="text"
-                                name="email"
-                                value={formData.email}
+                                name="postalCode"
+                                value={formData.postalCode}
                                 onChange={handleChange}
                                 required
                             />
                         </div>
 
                         <div className="Registerform-group">
-                            <label>Mobile Number</label>
+                            <label>Country</label>
                             <input
-                                type="mobile"
-                                name="mobile"
-                                value={formData.mobile}
+                                type="text"
+                                name="country"
+                                value={formData.country}
                                 onChange={handleChange}
                                 required
                             />
                         </div>
-                    </div>
-
-                    <div className="RegisterformRow">
-                        <div className="Registerform-group">
-                            <label>Password</label>
-                            <input
-                                type="password"
-                                name="password"
-                                value={formData.password}
-                                onChange={handleChange}
-                                required
-                            />
-                        </div>
-
-                        <div className="Registerform-group">
-                            <label>Confirm Password</label>
-                            <input
-                                type="password"
-                                name="confirmPassword"
-                                value={formData.confirmPassword}
-                                onChange={handleChange}
-                                required
-                            />
-                        </div>
-                    </div>
-
-                    <div className="checkboxes">
-                        <label>
-                            <input type="checkbox" name="option1" required/>
-                            <span className="label-text">Creating your account and accepting terms & conditions</span>                            </label>
-
                     </div>
 
                     <button type="submit" className="RegisterButton">
-                        Continue
+                        Create Account
                     </button>
 
                     <div className="bottomButtons">
-                        <button className="RegisterBottomButton1" onClick={() => navigate("/register")}></button>
-                        <button type="submit" className="RegisterBottomButton2"></button>
+                        <button className="addressBottomButton1" onClick={() => navigate("/register")}></button>
+                        <button className="addressBottomButton2" onClick={() => navigate("/address")}></button>
                     </div>
-                    {/* <p className="signin-link">Already have an account? <span
-                        role="button"
-                        tabIndex={0}
-                        onClick={handleSignIn}
-                        onKeyPress={(e) => { if (e.key === 'Enter') handleSignIn(); }}
-                    >
-                        Sign in
-                    </span></p> */}
                 </form>
             </div>
         </div>
     );
 }
 
-export default RegisterPage;
+export default AddressPage;

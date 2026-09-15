@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import HomePage from "./Pages/HomePage";
 import LoginPage from "./Pages/LoginPage";
 import RegisterPage from "./Pages/RegisterPage";
+import AddressPage from "./Pages/AddressPage";
 import SettingsPage from "./Pages/SettingsPage";
 
 import AccountPage from "./Pages/AccountPage";
@@ -55,6 +56,7 @@ function App() {
         {/* Authentication */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/address" element={<AddressPage />} />
         <Route path="/otp" element={<OTPPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
 
