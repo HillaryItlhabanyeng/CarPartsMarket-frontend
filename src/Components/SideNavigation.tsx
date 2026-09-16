@@ -60,7 +60,10 @@ function normalizeRole(role?: string): Role {
     return "seller";
   }
 
-  if (normalized === "admin" || normalized === "administrator") {
+  if (
+    normalized === "admin" ||
+    normalized === "administrator"
+  ) {
     return "admin";
   }
 
@@ -96,11 +99,7 @@ function getInitials(user: CurrentUser | null): string {
   return name.substring(0, 2).toUpperCase();
 }
 
-type Props = {
-  onRoleChange?: (role: Role) => void;
-};
-
-export default function SideNavigation({ onRoleChange }: Props) {
+export default function SideNavigation() {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -111,14 +110,23 @@ export default function SideNavigation({ onRoleChange }: Props) {
   const [accountOpen, setAccountOpen] = useState(
     location.pathname.startsWith("/profile") ||
       location.pathname.startsWith("/addresses") ||
-      location.pathname.startsWith("/settings")
+      location.pathname.startsWith("/settings") ||
+      location.pathname.startsWith("/notifications")
   );
 
   /*
-   * Read the role from the same storage item used by LoginPage.
+   * The role comes from the logged-in user.
+   *
+   * Buyer  -> buyer sidebar
+   * Seller -> seller sidebar
+   * Admin  -> admin sidebar
    */
   const role = normalizeRole(user?.role);
 
+  /*
+   * Refresh the user if another part of the application
+   * updates localStorage.
+   */
   useEffect(() => {
     const refreshUser = () => {
       setUser(getStoredUser());
@@ -133,16 +141,32 @@ export default function SideNavigation({ onRoleChange }: Props) {
     };
   }, []);
 
+  /*
+   * Automatically open My Account when the user is already
+   * on one of the account pages.
+   *
+   * This does NOT navigate the user anywhere.
+   */
   useEffect(() => {
     if (
       location.pathname.startsWith("/profile") ||
       location.pathname.startsWith("/addresses") ||
-      location.pathname.startsWith("/settings")
+      location.pathname.startsWith("/settings") ||
+      location.pathname.startsWith("/notifications")
     ) {
       setAccountOpen(true);
     }
   }, [location.pathname]);
 
+  /*
+   * ACTIVE ROUTE
+   *
+   * Supports nested routes.
+   *
+   * Example:
+   * /orders/123
+   * will still highlight /orders.
+   */
   const isActive = (path: string) => {
     return (
       location.pathname === path ||
@@ -154,45 +178,9 @@ export default function SideNavigation({ onRoleChange }: Props) {
     return paths.some((path) => isActive(path));
   };
 
-  const handleRoleSwitch = (nextRole: Role) => {
-    if (nextRole === role) {
-      return;
-    }
-
-    /*
-     * Keep the current user's selected role in sync.
-     * This is useful for your current frontend setup.
-     */
-    const currentUser = getStoredUser();
-
-    if (currentUser) {
-      const updatedUser = {
-        ...currentUser,
-        role: nextRole,
-      };
-
-      localStorage.setItem(
-        CURRENT_USER_KEY,
-        JSON.stringify(updatedUser)
-      );
-
-      setUser(updatedUser);
-    }
-
-    onRoleChange?.(nextRole);
-
-    /*
-     * Send the user to the appropriate area.
-     */
-    if (nextRole === "seller") {
-      navigate("/my-listings");
-    } else if (nextRole === "buyer") {
-      navigate("/shop");
-    } else {
-      navigate("/admin");
-    }
-  };
-
+  /*
+   * LOGOUT
+   */
   const handleLogout = () => {
     const confirmed = window.confirm(
       "Are you sure you want to log out?"
@@ -231,10 +219,12 @@ export default function SideNavigation({ onRoleChange }: Props) {
   return (
     <aside className="listing-side-nav">
 
-      {/* =========================
+      {/* =====================================================
           BRAND
-      ========================= */}
+      ===================================================== */}
+
       <div className="listing-side-nav-brand">
+
         <img
           src="/logoIcon2.png"
           alt="AutoMarket"
@@ -248,11 +238,14 @@ export default function SideNavigation({ onRoleChange }: Props) {
           <span className="brand-auto">Auto</span>
           <span className="brand-market">Market</span>
         </div>
+
       </div>
 
-      {/* =========================
-          USER CARD
-      ========================= */}
+
+      {/* =====================================================
+          USER
+      ===================================================== */}
+
       <div className="listing-side-nav-user">
 
         <div className="listing-side-nav-avatar">
@@ -260,91 +253,69 @@ export default function SideNavigation({ onRoleChange }: Props) {
         </div>
 
         <div className="listing-side-nav-user-info">
+
           <strong>{userName}</strong>
+
           <span>{roleLabel}</span>
+
         </div>
 
       </div>
 
-      {/* =========================
-          ROLE SWITCH
-          Only show for Buyer/Seller
-      ========================= */}
-      {role !== "admin" && (
-        <div
-          className="listing-role-switch"
-          role="tablist"
-          aria-label="Account mode"
-        >
-          <button
-            type="button"
-            role="tab"
-            aria-selected={role === "buyer"}
-            className={`listing-role-switch-btn ${
-              role === "buyer" ? "active" : ""
-            }`}
-            onClick={() => handleRoleSwitch("buyer")}
-          >
-            Buying
-          </button>
 
-          <button
-            type="button"
-            role="tab"
-            aria-selected={role === "seller"}
-            className={`listing-role-switch-btn ${
-              role === "seller" ? "active" : ""
-            }`}
-            onClick={() => handleRoleSwitch("seller")}
-          >
-            Selling
-          </button>
-        </div>
-      )}
-
-      {/* =========================
+      {/* =====================================================
           NAVIGATION
-      ========================= */}
+      ===================================================== */}
+
       <nav className="listing-side-nav-menu">
 
-        {/* =========================
-            MAIN
-        ========================= */}
-        <div className="listing-nav-section-title">
-          {role === "admin" ? "ADMIN" : "MAIN"}
-        </div>
+        {/* =================================================
+            BUYER SIDEBAR
+        ================================================= */}
 
-        <button
-          type="button"
-          className={`listing-side-nav-item ${
-            isActive("/dashboard") ? "active" : ""
-          }`}
-          onClick={() => navigate("/dashboard")}
-        >
-          <FiHome className="listing-side-nav-icon" />
-          <span>Dashboard</span>
-        </button>
-
-        {/* =========================
-            BUYER
-        ========================= */}
         {role === "buyer" && (
           <>
+
+            <div className="listing-nav-section-title">
+              MAIN
+            </div>
+
+            {/* Dashboard */}
+            <button
+              type="button"
+              className={`listing-side-nav-item ${
+                isActive("/dashboard") ? "active" : ""
+              }`}
+              onClick={() => navigate("/dashboard")}
+            >
+              <FiHome className="listing-side-nav-icon" />
+
+              <span>Dashboard</span>
+            </button>
+
+
             <div className="listing-nav-section-title">
               SHOPPING
             </div>
 
+            {/* Shop */}
             <button
               type="button"
               className={`listing-side-nav-item ${
-                isActive("/shop") ? "active" : ""
+                isActive("/shop") ||
+                isActive("/marketplace")
+                  ? "active"
+                  : ""
               }`}
               onClick={() => navigate("/shop")}
             >
               <FiShoppingBag className="listing-side-nav-icon" />
+
               <span>Shop</span>
             </button>
 
+
+            {/* My Orders */}
             <button
               type="button"
               className={`listing-side-nav-item ${
@@ -353,9 +324,12 @@ export default function SideNavigation({ onRoleChange }: Props) {
               onClick={() => navigate("/orders")}
             >
               <FiClipboard className="listing-side-nav-icon" />
+
               <span>My Orders</span>
             </button>
 
+
+            {/* Wishlist */}
             <button
               type="button"
               className={`listing-side-nav-item ${
@@ -364,29 +338,56 @@ export default function SideNavigation({ onRoleChange }: Props) {
               onClick={() => navigate("/wishlist")}
             >
               <FiHeart className="listing-side-nav-icon" />
+
               <span>Wishlist</span>
             </button>
+
           </>
         )}
 
-        {/* =========================
-            SELLER
-        ========================= */}
+
+        {/* =================================================
+            SELLER SIDEBAR
+        ================================================= */}
+
         {role === "seller" && (
           <>
+
+            <div className="listing-nav-section-title">
+              MAIN
+            </div>
+
+            {/* Dashboard */}
+            <button
+              type="button"
+              className={`listing-side-nav-item ${
+                isActive("/dashboard") ? "active" : ""
+              }`}
+              onClick={() => navigate("/dashboard")}
+            >
+              <FiHome className="listing-side-nav-icon" />
+
+              <span>Dashboard</span>
+            </button>
+
+
             <div className="listing-nav-section-title">
               SELLING
             </div>
 
+            {/* Add Listing */}
             <button
               type="button"
               className="listing-side-nav-cta"
               onClick={() => navigate("/list-product")}
             >
               <FiPlusCircle />
+
               <span>Add Listing</span>
             </button>
 
+
+            {/* My Listings */}
             <button
               type="button"
               className={`listing-side-nav-item ${
@@ -398,31 +399,42 @@ export default function SideNavigation({ onRoleChange }: Props) {
               onClick={() => navigate("/my-listings")}
             >
               <FiPackage className="listing-side-nav-icon" />
+
               <span>My Listings</span>
             </button>
 
+
+            {/* Orders Received */}
             <button
               type="button"
               className={`listing-side-nav-item ${
-                isActive("/seller-orders") ? "active" : ""
+                isActive("/seller-orders")
+                  ? "active"
+                  : ""
               }`}
               onClick={() => navigate("/seller-orders")}
             >
               <FiClipboard className="listing-side-nav-icon" />
+
               <span>Orders Received</span>
             </button>
+
           </>
         )}
 
-        {/* =========================
-            ADMIN
-        ========================= */}
+
+        {/* =================================================
+            ADMIN SIDEBAR
+        ================================================= */}
+
         {role === "admin" && (
           <>
+
             <div className="listing-nav-section-title">
-              MANAGEMENT
+              ADMIN
             </div>
 
+            {/* Admin Dashboard */}
             <button
               type="button"
               className={`listing-side-nav-item ${
@@ -431,20 +443,32 @@ export default function SideNavigation({ onRoleChange }: Props) {
               onClick={() => navigate("/admin")}
             >
               <FiBarChart2 className="listing-side-nav-icon" />
+
               <span>Admin Dashboard</span>
             </button>
 
+
+            <div className="listing-nav-section-title">
+              MANAGEMENT
+            </div>
+
+            {/* Users */}
             <button
               type="button"
               className={`listing-side-nav-item ${
-                isActive("/admin/users") ? "active" : ""
+                isActive("/admin/users")
+                  ? "active"
+                  : ""
               }`}
               onClick={() => navigate("/admin/users")}
             >
               <FiUsers className="listing-side-nav-icon" />
+
               <span>Users</span>
             </button>
 
+
+            {/* Listings */}
             <button
               type="button"
               className={`listing-side-nav-item ${
@@ -455,29 +479,40 @@ export default function SideNavigation({ onRoleChange }: Props) {
               onClick={() => navigate("/admin/listings")}
             >
               <FiPackage className="listing-side-nav-icon" />
+
               <span>Listings</span>
             </button>
 
+
+            {/* Orders */}
             <button
               type="button"
               className={`listing-side-nav-item ${
-                isActive("/admin/orders") ? "active" : ""
+                isActive("/admin/orders")
+                  ? "active"
+                  : ""
               }`}
               onClick={() => navigate("/admin/orders")}
             >
               <FiClipboard className="listing-side-nav-icon" />
+
               <span>Orders</span>
             </button>
+
           </>
         )}
 
-        {/* =========================
+
+        {/* =================================================
             ACCOUNT
-        ========================= */}
+        ================================================= */}
+
         <div className="listing-nav-section-title">
           ACCOUNT
         </div>
 
+
+        {/* My Account */}
         <button
           type="button"
           className={`listing-side-nav-item listing-side-nav-parent ${
@@ -485,63 +520,90 @@ export default function SideNavigation({ onRoleChange }: Props) {
               ? "has-active-child"
               : ""
           }`}
-          onClick={() => setAccountOpen((previous) => !previous)}
+          onClick={() =>
+            setAccountOpen((previous) => !previous)
+          }
         >
+
           <span className="listing-side-nav-item-left">
+
             <FiUser className="listing-side-nav-icon" />
+
             <span>My Account</span>
+
           </span>
+
 
           {accountOpen ? (
             <FiChevronUp className="listing-side-nav-arrow" />
           ) : (
             <FiChevronDown className="listing-side-nav-arrow" />
           )}
+
         </button>
 
+
+        {/* Account Submenu */}
         {accountOpen && (
           <div className="listing-side-nav-submenu">
 
+            {/* Profile */}
             <button
               type="button"
               className={`listing-submenu-item ${
-                isActive("/profile") ? "active" : ""
+                isActive("/profile")
+                  ? "active"
+                  : ""
               }`}
               onClick={() => navigate("/profile")}
             >
               <FiUser />
+
               <span>Profile</span>
             </button>
 
+
+            {/* Addresses */}
             <button
               type="button"
               className={`listing-submenu-item ${
-                isActive("/addresses") ? "active" : ""
+                isActive("/addresses")
+                  ? "active"
+                  : ""
               }`}
               onClick={() => navigate("/addresses")}
             >
               <FiMapPin />
+
               <span>Addresses</span>
             </button>
 
+
+            {/* Settings */}
             <button
               type="button"
               className={`listing-submenu-item ${
-                isActive("/settings") ? "active" : ""
+                isActive("/settings")
+                  ? "active"
+                  : ""
               }`}
               onClick={() => navigate("/settings")}
             >
               <FiSettings />
+
               <span>Settings</span>
             </button>
+
           </div>
         )}
 
       </nav>
 
-      {/* =========================
+
+      {/* =====================================================
           LOGOUT
-      ========================= */}
+      ===================================================== */}
+
       <div className="listing-side-nav-bottom">
 
         <button
@@ -550,6 +612,7 @@ export default function SideNavigation({ onRoleChange }: Props) {
           onClick={handleLogout}
         >
           <FiLogOut />
+
           <span>Log out</span>
         </button>
 
