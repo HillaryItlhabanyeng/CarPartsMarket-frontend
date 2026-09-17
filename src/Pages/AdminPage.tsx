@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Activity,
@@ -10,8 +10,10 @@ import {
   CircleDollarSign,
   Clock3,
   LayoutDashboard,
+  LogOut,
   PackageCheck,
   Search,
+  Settings,
   ShoppingBag,
   Trash2,
   UserRound,
@@ -22,6 +24,7 @@ import "./AdminPage.css";
 import {
   addNotification,
   ADMIN_NOTIFICATION_EMAIL,
+  getCurrentUser,
   getNotificationsForRecipient,
   type MarketplaceNotification,
 } from "../Components/notificationStore";
@@ -81,8 +84,34 @@ const getStoredProducts = (): PendingProduct[] => {
 
 const formatRand = (value: number) => `R${value.toLocaleString("en-ZA", { minimumFractionDigits: 0 })}`;
 
+const formatCurrentDate = (date: Date) =>
+  date.toLocaleDateString("en-ZA", {
+    weekday: "long",
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
+
+const getTimeGreeting = (hour: number) => {
+  if (hour < 12) return "Good morning";
+  if (hour < 18) return "Good afternoon";
+  return "Good evening";
+};
+
 export default function AdminPage() {
   const navigate = useNavigate();
+  const currentUser = getCurrentUser();
+  const adminName =
+    currentUser?.name?.trim().split(/\s+/)[0] ||
+    currentUser?.email?.split("@")[0] ||
+    "Administrator";
+  const adminInitials = adminName
+    .split(/\s+/)
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+  const [currentDate, setCurrentDate] = useState(() => new Date());
   const [activeTab, setActiveTab] = useState<AdminTab>("overview");
   const [users, setUsers] = useState<MarketplaceUser[]>(() => getStoredUsers());
   const [products, setProducts] = useState<PendingProduct[]>(() => getStoredProducts());
@@ -93,6 +122,40 @@ export default function AdminPage() {
     getNotificationsForRecipient(ADMIN_NOTIFICATION_EMAIL)
   );
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const notificationMenuRef = useRef<HTMLDivElement>(null);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const refreshDate = () => setCurrentDate(new Date());
+    const dateRefresh = window.setInterval(refreshDate, 60_000);
+    return () => window.clearInterval(dateRefresh);
+  }, []);
+
+  useEffect(() => {
+    const closeProfileMenu = (event: PointerEvent) => {
+      if (!profileMenuRef.current?.contains(event.target as Node)) {
+        setShowProfileMenu(false);
+      }
+    };
+    const closeNotificationMenu = (event: PointerEvent) => {
+      if (!notificationMenuRef.current?.contains(event.target as Node)) {
+        setShowNotifications(false);
+      }
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setShowProfileMenu(false);
+    };
+
+    document.addEventListener("pointerdown", closeProfileMenu);
+    document.addEventListener("pointerdown", closeNotificationMenu);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeProfileMenu);
+      document.removeEventListener("pointerdown", closeNotificationMenu);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, []);
 
   useEffect(() => {
     const refreshNotifications = () =>
@@ -176,6 +239,18 @@ export default function AdminPage() {
     showNotice(`${product.title} was declined and returned to the seller.`);
   };
 
+  const openReviewQueue = () => {
+    setProducts(getStoredProducts());
+    setActiveTab("products");
+  };
+
+  const handleLogout = () => {
+    window.localStorage.removeItem("automarketUser");
+    window.localStorage.removeItem("marketplace_current_user");
+    window.localStorage.removeItem("automarketRememberMe");
+    navigate("/login");
+  };
+
   return (
     <div className="admin-page">
       <aside className="admin-sidebar">
@@ -198,13 +273,13 @@ export default function AdminPage() {
         <header className="admin-topbar">
           <div className="admin-mobile-brand"><strong>AutoMarket</strong></div>
           <div className="admin-breadcrumb">Admin console <span>/</span> {activeTab === "overview" ? "Overview" : activeTab === "users" ? "People" : "Product approvals"}</div>
-          <div className="admin-top-actions"><div className="admin-notification-wrap"><button className="icon-button" aria-label="Notifications" onClick={() => setShowNotifications((current) => !current)}><Bell size={19} />{adminNotifications.some((notification) => !notification.read) && <span className="notification-dot" />}</button>{showNotifications && <div className="admin-notification-menu"><strong>Notifications</strong>{adminNotifications.length === 0 ? <span>No new listing submissions.</span> : adminNotifications.slice(0, 5).map((notification) => <div key={notification.id}><b>{notification.title}</b><span>{notification.body}</span><small>{notification.timestamp}</small></div>)}</div>}</div><div className="admin-avatar">AM</div><div className="admin-profile"><strong>Amara M.</strong><span>Administrator</span></div><ChevronDown size={16} className="profile-chevron" /></div>
+          <div className="admin-top-actions"><div className="admin-notification-wrap" ref={notificationMenuRef}><button className="icon-button" aria-label="Notifications" onClick={() => setShowNotifications((current) => !current)}><Bell size={19} />{adminNotifications.some((notification) => !notification.read) && <span className="notification-dot" />}</button>{showNotifications && <div className="admin-notification-menu"><strong>Notifications</strong>{adminNotifications.length === 0 ? <span>No new listing submissions.</span> : adminNotifications.slice(0, 5).map((notification) => <div key={notification.id}><b>{notification.title}</b><span>{notification.body}</span><small>{notification.timestamp}</small></div>)}</div>}</div><div className="admin-profile-menu-wrap" ref={profileMenuRef}><button className="admin-profile-trigger" aria-expanded={showProfileMenu} aria-haspopup="menu" onClick={() => setShowProfileMenu((current) => !current)}><div className="admin-avatar">{adminInitials}</div><div className="admin-profile"><strong>{adminName}</strong><span>Administrator</span></div><ChevronDown size={16} className="profile-chevron" /></button>{showProfileMenu && <div className="admin-profile-menu" role="menu"><button role="menuitem" onClick={() => navigate("/profile")}><UserRound size={15} /> Profile</button><button role="menuitem" onClick={() => navigate("/settings")}><Settings size={15} /> Settings</button><button role="menuitem" className="logout-menu-item" onClick={handleLogout}><LogOut size={15} /> Log out</button></div>}</div></div>
         </header>
 
         <div className="admin-content">
           <section className="admin-heading-row">
-            <div><p className="eyebrow">Monday, 14 September 2026</p><h1>{activeTab === "overview" ? "Good morning, Amara" : activeTab === "users" ? "People on AutoMarket" : "Product approvals"}</h1><p className="admin-subtitle">{activeTab === "overview" ? "Here is what is happening across your marketplace today." : activeTab === "users" ? "Review, manage and remove buyers or sellers from the platform." : "Review seller listings before they become visible to buyers."}</p></div>
-            <button className="admin-primary-button" onClick={() => setActiveTab("products")}><PackageCheck size={17} /> Review queue <span>{products.length}</span></button>
+            <div><p className="eyebrow">{formatCurrentDate(currentDate)}</p><h1>{activeTab === "overview" ? `${getTimeGreeting(currentDate.getHours())}, ${adminName}` : activeTab === "users" ? "People on AutoMarket" : "Product approvals"}</h1><p className="admin-subtitle">{activeTab === "overview" ? "Here is what is happening across your marketplace today." : activeTab === "users" ? "Review, manage and remove buyers or sellers from the platform." : "Review seller listings before they become visible to buyers."}</p></div>
+            <button className="admin-primary-button" onClick={openReviewQueue} aria-label={`Review ${products.length} pending listings`}><PackageCheck size={17} /> Review queue <span>{products.length}</span></button>
           </section>
 
           {notice && <div className="admin-notice"><CheckCircle2 size={18} /> {notice}</div>}
