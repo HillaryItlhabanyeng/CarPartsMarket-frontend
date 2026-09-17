@@ -133,6 +133,12 @@ export default function AdminPage() {
   }, []);
 
   useEffect(() => {
+    const refreshDate = () => setCurrentDate(new Date());
+    const dateRefresh = window.setInterval(refreshDate, 60_000);
+    return () => window.clearInterval(dateRefresh);
+  }, []);
+
+  useEffect(() => {
     const closeProfileMenu = (event: PointerEvent) => {
       if (!profileMenuRef.current?.contains(event.target as Node)) {
         setShowProfileMenu(false);
