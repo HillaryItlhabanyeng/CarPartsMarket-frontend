@@ -163,46 +163,8 @@ export default function HomePage() {
 
       {/* ===================================================service======================================== */}
 
-      <section className="homeServicesSection">
-        {/* <div className="servicePromoCards">
-
-          <div className="serviceCards" >
-            <div className="serviceIconsContainer">
-              <FaWallet className="serviceIcons" />
-            </div>
-            <p className="serviceCardsText">secure payment</p>
-          </div>
-
-          <div className="serviceCards" >
-            <div className="serviceIconsContainer">
-              <FaHandshake className="serviceIcons" />
-            </div>
-            <p className="serviceCardsText">Trusted sellers</p>
-          </div>
-
-          <div className="serviceCards" >
-            <div className="serviceIconsContainer">
-              <FaAward className="serviceIcons" />
-            </div>
-            <p className="serviceCardsText">quality products</p>
-          </div>
-
-          <div className="serviceCards" >
-            <div className="serviceIconsContainer">
-              <FaTruckMoving className="serviceIcons" />
-            </div>
-            <p className="serviceCardsText">Fast Delivery</p>
-          </div>
-
-          <div className="serviceCards" >
-            <div className="serviceIconsContainer">
-              <FaSearch className="serviceIcons" />
-            </div>
-            <p className="serviceCardsText">Easy to find products</p>
-          </div>
-
-        </div> */}
-      </section>
+      {/* <section className="homeServicesSection">
+      </section> */}
 
       <section className="homeCategorySection">
 

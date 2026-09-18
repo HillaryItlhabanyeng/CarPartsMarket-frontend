@@ -20,7 +20,7 @@
 
 /* Seller mode background */
 .ut-hero.seller-mode {
-  background: #142c49;
+  background: #080e16;
   transition: background 0.5s ease;
 }
 
@@ -31,8 +31,8 @@
 .ut-hero-copy h1 {
   font-size: 55px;
   font-weight: 800;
-  /* margin: 0 0 8px 0; */
-  color: #142c49;
+  margin: 0 0 8px 0;
+  color: #080e16;
 }
 
 .ut-hero.seller-mode .ut-hero-copy h1,
@@ -52,7 +52,7 @@
   font-size: 55px;
   font-weight: 800;
   margin: 0 0 16px 0;
-  color: #142c49;
+  color: #080e16;
 }
 
 .ut-hero-copy p {
@@ -167,6 +167,7 @@
   padding: 5px;
   z-index: 10;
   border: 1px solid rgba(255, 255, 255, 0.25);
+  margin-top: 20px;
 }
 
 .ut-toggle-btn {

@@ -31,9 +31,13 @@ function RegisterPage() {
     };
 
     const handleSignIn = () => {
-        // TODO: replace with actual navigation (e.g. react-router's navigate('/login'))
         console.log('Navigate to sign-in');
         navigate("/login");
+    };
+
+    const handleCancel = () => {
+        console.log('Navigate to sign-in');
+        navigate("/");
     };
 
     return (
@@ -44,11 +48,11 @@ function RegisterPage() {
                 <h1 className="logoTitle"><span>Auto</span>Market</h1>
 
                 <div className="logoButtons">
-                    <button type="submit" className="RegisterLogoButton">
+                    <button type="submit" className="RegisterLogoButton" onClick={(handleSignIn)}>
                         Login
                     </button>
 
-                    <button type="submit" className="RegisterLogoButton">
+                    <button type="submit" className="RegisterLogoButton" onClick={(handleCancel)}>
                         Cancel
                     </button>
                 </div>
