@@ -178,22 +178,22 @@ export default function HomePage() {
           </div>
 
           <div className="homeserviceCards" >
-              <img src="/engine.png" alt="PartLink Logo" className="homeServiceImage" />
-              <h2 className="homeServiceText">Engines</h2>
+              <img src="/fluids.png" alt="PartLink Logo" className="homeServiceImage" />
+              <h2 className="homeServiceText">Fluids</h2>
           </div>
 
           <div className="homeserviceCards" >
-              <img src="/engine.png" alt="PartLink Logo" className="homeServiceImage" />
-              <h2 className="homeServiceText">Engines</h2>
+              <img src="/suspension.png" alt="PartLink Logo" className="homeServiceImage" />
+              <h2 className="homeServiceText">Suspensions</h2>
           </div>
 
           <div className="homeserviceCards" >
-              <img src="/engine.png" alt="PartLink Logo" className="homeServiceImage" />
-              <h2 className="homeServiceText">Engines</h2>
+              <img src="/interior-decoration.png" alt="PartLink Logo" className="homeServiceImage" />
+              <h2 className="homeServiceText">Interio</h2>
           </div>
 
           <div className="homeserviceCards" >
-              <img src="/engine.png" alt="PartLink Logo" className="homeServiceImage" />
+              <img src="/lights.jpg" alt="PartLink Logo" className="homeServiceImage" />
               <h2 className="homeServiceText">Electronics</h2>
           </div>
 

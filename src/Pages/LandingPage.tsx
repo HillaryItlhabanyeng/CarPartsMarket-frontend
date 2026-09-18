@@ -6,6 +6,7 @@ import {
     FaMapPin, FaAward, FaEnvelope, FaPhone, FaClock, FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn
 } from "react-icons/fa";
 import { useState } from "react";
+import Footer from "../Components/Footer";
 
 
 function LandingPage() {
@@ -45,6 +46,7 @@ function LandingPage() {
 
             {/* home section */}
             <section className="landingSection">
+                <div className="landingTexts">
                 <p className="landingMiniText">Your number one secure marketplace.</p>
                 <p className="landingHeadText">Trade With Total Confendence.</p>
                 {/* <img src="/logo-recolored.png" alt="PartLink Logo" className="Landinglogo" /> */}
@@ -58,6 +60,7 @@ function LandingPage() {
                     <button className="landingButton2" onClick={() => navigate("/login")}>Log in</button>
                 </div>
 
+                </div>
                 {/* <div className="landingHomeImageContainer">
                 </div> */}
 
@@ -158,8 +161,12 @@ function LandingPage() {
             {/* ========================================================Promo================================================= */}
 
             <section className="landingSectionPromo">
-                <h1 className="landingSectionPromoTitle">School essentials at every price</h1>
-                <img src="back-to-school-laptop.png" alt="PartLink Logo" className="promoRightImage" />
+                
+                {/* <div className="promoDeco"></div> */}
+                {/* <div className="promoDeco1"></div> */}
+                <img src="interior-decoration.png" alt="PartLink Logo" className="promoDeco" />
+                <h1 className="landingSectionPromoTitle">Car essentials at every price</h1>
+                {/* <img src="back-to-school-laptop.png" alt="PartLink Logo" className="promoRightImage" /> */}
             </section>
 
             {/* ========================================================Trending============================================== */}
@@ -169,62 +176,62 @@ function LandingPage() {
                 <div className="landingTrandingCards">
 
                     <div className="trandingCards">
-                        <img src="/trending1.png" alt="PartLink Logo" className="trandingImage" />
+                        <img src="/wheel-cap.png" alt="PartLink Logo" className="trandingImage" />
 
                         <div className="trandingButtonContainer">
-                            <h2 className="trandingProductName">Cooking set</h2>
+                            <h2 className="trandingProductName">VW Wheel decal cap</h2>
                             <h2 className="trandingProductPrice">R799.99</h2>
-                            <button className="trandingButton">
+                            {/* <button className="trandingButton">
                                 <FaShoppingCart /> Add to cart
-                            </button>
+                            </button> */}
                         </div>
                     </div>
 
                     <div className="trandingCards">
-                        <img src="/trending2.jpg" alt="PartLink Logo" className="trandingImage" />
+                        <img src="/lights.png" alt="PartLink Logo" className="trandingImage" />
 
                         <div className="trandingButtonContainer">
-                            <h2 className="trandingProductName">Headphones</h2>
+                            <h2 className="trandingProductName">headlights</h2>
                             <h2 className="trandingProductPrice">R429.99</h2>
-                            <button className="trandingButton">
+                            {/* <button className="trandingButton">
                                 <FaShoppingCart /> Add to cart
-                            </button>
+                            </button> */}
                         </div>
                     </div>
 
                     <div className="trandingCards">
-                        <img src="/trending3.jpg" alt="PartLink Logo" className="trandingImage" />
+                        <img src="/tires.png" alt="PartLink Logo" className="trandingImage" />
 
                         <div className="trandingButtonContainer">
-                            <h2 className="trandingProductName">Bluetooth Speaker</h2>
+                            <h2 className="trandingProductName">Tires</h2>
                             <h2 className="trandingProductPrice">R379.99</h2>
-                            <button className="trandingButton">
+                            {/* <button className="trandingButton">
                                 <FaShoppingCart /> Add to cart
-                            </button>
+                            </button> */}
                         </div>
                     </div>
 
                     <div className="trandingCards">
-                        <img src="/trending4.webp" alt="PartLink Logo" className="trandingImage" />
+                        <img src="/fluids.png" alt="PartLink Logo" className="trandingImage" />
 
                         <div className="trandingButtonContainer">
-                            <h2 className="trandingProductName">Note Book</h2>
+                            <h2 className="trandingProductName">Fluids</h2>
                             <h2 className="trandingProductPrice">R80.00</h2>
-                            <button className="trandingButton">
+                            {/* <button className="trandingButton">
                                 <FaShoppingCart /> Add to cart
-                            </button>
+                            </button> */}
                         </div>
                     </div>
 
                     <div className="trandingCards">
-                        <img src="/trending5.jpg" alt="PartLink Logo" className="trandingImage" />
+                        <img src="/car-diffuser.png" alt="PartLink Logo" className="trandingImage" />
 
                         <div className="trandingButtonContainer">
-                            <h2 className="trandingProductName">Highlighter</h2>
+                            <h2 className="trandingProductName">Car diffuser</h2>
                             <h2 className="trandingProductPrice">R67.90</h2>
-                            <button className="trandingButton">
+                            {/* <button className="trandingButton">
                                 <FaShoppingCart /> Add to cart
-                            </button>
+                            </button> */}
                         </div>
                     </div>
 
@@ -340,7 +347,7 @@ function LandingPage() {
 
             {/* ============================================================footer========================================= */}
 
-            <footer className="footer">
+            {/* <footer className="footer">
                 <div className="footer-container">
                     <div className="footer-brand">
                         <img src="/logo-recolored.png" alt="PartLink Logo" className="footer-logo" />
@@ -380,7 +387,9 @@ function LandingPage() {
                 <div className="footer-bottom">
                     <p>© 2026 UNITRADE MARKETPLACE</p>
                 </div>
-            </footer>
+            </footer> */}
+
+            <Footer />
         </div>
 
 

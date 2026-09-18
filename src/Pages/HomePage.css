@@ -147,7 +147,7 @@
 .ut-view-all {
   font-size: 13px;
   font-weight: 600;
-  color: #14b8a6;
+  color: #9d7338;
   text-decoration: none;
 }
 
@@ -269,6 +269,8 @@
   flex: 1;
   min-width: 150px;
   max-width: 250px;
+  min-height: 50px;
+  max-height: 150px;
   background-color: #DEDEDE; /* Slightly lighter dark teal for cards */
   border-radius: 12px;
   /* padding: 10px; */
@@ -280,19 +282,26 @@
 
 .homeServiceImage{
    position: relative;
-  min-width: 150px;
+  min-width: 250px;
   max-width: 250px;
+  min-height: 150px;
+    max-height: 150px; 
   /* min-height: 100px;
   max-height: 100px; */
   border-radius: 12px;
+  filter: grayscale(30%) brightness(50%);
 }
 
 .homeServiceText{
    position: absolute;
   /* bottom: 20px;   distance from bottom */
   /* left: 20px;     distance from left */
-  color: #ffffff;
+  color: #DEDEDE;
+  /* background-color: #a67b5b; */
+  /* border-radius: 10px; */
+  /* padding: 2px; */
   z-index: 2;
+  font-size: 20px;
 }
 
 /* Popular Categories */

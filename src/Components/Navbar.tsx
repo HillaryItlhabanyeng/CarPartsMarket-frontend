@@ -814,7 +814,7 @@ export default function Navbar({
                   isActive ? "active" : ""
                 }
               >
-                <FiHeart />
+                {/* <FiHeart /> */}
                 Wishlist
               </NavLink>
 
