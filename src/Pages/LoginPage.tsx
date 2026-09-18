@@ -5,204 +5,481 @@ import { Link, useNavigate } from "react-router-dom";
 import "./LoginPage.css";
 
 import {
-  FaEnvelope,
-  FaLock,
-  FaRegEye,
-  FaRegEyeSlash,
-  FaUserTag,
+    FaEnvelope,
+    FaLock,
+    FaRegEye,
+    FaRegEyeSlash,
+    FaUserTag,
 } from "react-icons/fa";
 
 const ROLE_OPTIONS = ["Buyer", "Seller", "Admin"] as const;
 
+type UserRole = "buyer" | "seller" | "admin";
+
+type StoredUser = {
+    id?: string | number;
+    firstName?: string;
+    lastName?: string;
+    name?: string;
+    email?: string;
+    mobile?: string;
+    role?: string;
+};
+
 const LoginPage: React.FC = () => {
-  const navigate = useNavigate();
+    const navigate = useNavigate();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [role, setRole] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [role, setRole] = useState("");
+    const [rememberMe, setRememberMe] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+    const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
 
-    if (!email.trim()) {
-      alert("Please enter your email address.");
-      return;
-    }
+        /* =========================
+           VALIDATE EMAIL
+        ========================= */
 
-    const emailRegex =
-      /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+        if (!email.trim()) {
+            alert("Please enter your email address.");
+            return;
+        }
 
-    if (!emailRegex.test(email)) {
-      alert("Please enter a valid email address.");
-      return;
-    }
+        const emailRegex =
+            /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
 
-    if (!password) {
-      alert("Please enter your password.");
-      return;
-    }
+        if (!emailRegex.test(email.trim())) {
+            alert("Please enter a valid email address.");
+            return;
+        }
 
-    if (!role) {
-      alert("Please select your role.");
-      return;
-    }
+        /* =========================
+           VALIDATE PASSWORD
+        ========================= */
 
-    const normalizedEmail = email.trim().toLowerCase();
-    const storedUsers = (() => {
-      try {
-        const raw = window.localStorage.getItem("marketplace_users");
-        const parsed = raw ? JSON.parse(raw) : [];
-        return Array.isArray(parsed) ? parsed : [];
-      } catch {
-        return [];
-      }
-    })();
-    const signedInUser = storedUsers.find(
-      (user: { email?: string }) => user.email?.toLowerCase() === normalizedEmail
-    );
+        if (!password) {
+            alert("Please enter your password.");
+            return;
+        }
 
-    window.localStorage.setItem(
-      "marketplace_current_user",
-      JSON.stringify({
-        id: signedInUser?.id ?? normalizedEmail,
-        name: signedInUser?.name ?? email.split("@")[0],
-        email: normalizedEmail,
-        role,
-      })
-    );
+        /* =========================
+           VALIDATE ROLE
+        ========================= */
 
-    console.log({ email, password, role, rememberMe });
+        if (!role) {
+            alert("Please select your role.");
+            return;
+        }
 
-    // Sellers land on the listing form, buyers land on the shop, everyone else goes home.
-    if (role === "Seller") {
-      navigate("/list-product");
-    } else if (role === "Buyer") {
-      navigate("/shop");
-    } else {
-      navigate("/home");
-    }
-  };
+        /* =========================
+           NORMALISE EMAIL
+        ========================= */
 
-  return (
-    <main className="login-page">
-      {/* ================= LEFT PANEL ================= */}
-      <section className="login-left-panel">
-        <video
-          className="login-video"
-          src="/login-video.mp4"
-          autoPlay
-          loop
-          muted
-          playsInline
-        />
+        const normalizedEmail = email.trim().toLowerCase();
 
-        <div className="login-video-overlay">
-          <div className="login-video-content">
-            <span className="login-video-eyebrow">AutoMarket</span>
-            <h2 className="login-video-heading">Welcome Back to AutoMarket</h2>
-            <span className="login-video-divider" />
-          </div>
+        const selectedRole = role.toLowerCase() as UserRole;
+
+        /* =========================
+           GET REGISTERED USER
+        ========================= */
+
+        let registeredUser: StoredUser | null = null;
+
+        try {
+            const rawUser =
+                window.localStorage.getItem("automarketUser");
+
+            if (rawUser) {
+                const parsedUser = JSON.parse(rawUser);
+
+                if (
+                    parsedUser &&
+                    typeof parsedUser === "object"
+                ) {
+                    registeredUser = parsedUser;
+                }
+            }
+        } catch {
+            registeredUser = null;
+        }
+
+        /* =========================
+           GET USERS LIST
+        ========================= */
+
+        let storedUsers: StoredUser[] = [];
+
+        try {
+            const rawUsers =
+                window.localStorage.getItem("marketplace_users");
+
+            const parsedUsers = rawUsers
+                ? JSON.parse(rawUsers)
+                : [];
+
+            if (Array.isArray(parsedUsers)) {
+                storedUsers = parsedUsers;
+            }
+        } catch {
+            storedUsers = [];
+        }
+
+        /* =========================
+           FIND USER BY EMAIL
+        ========================= */
+
+        const signedInUser = storedUsers.find(
+            (user) =>
+                user.email?.toLowerCase() === normalizedEmail
+        );
+
+        /* =========================
+           GET USER INFORMATION
+        ========================= */
+
+        const firstName =
+            signedInUser?.firstName ||
+            registeredUser?.firstName ||
+            "";
+
+        const lastName =
+            signedInUser?.lastName ||
+            registeredUser?.lastName ||
+            "";
+
+        const mobile =
+            signedInUser?.mobile ||
+            registeredUser?.mobile ||
+            "";
+
+        const userName =
+            firstName && lastName
+                ? `${firstName} ${lastName}`
+                : signedInUser?.name ||
+                  registeredUser?.name ||
+                  normalizedEmail.split("@")[0];
+
+        /* =========================
+           CREATE CURRENT USER
+        ========================= */
+
+        const currentUser = {
+            id:
+                signedInUser?.id ||
+                registeredUser?.id ||
+                normalizedEmail,
+
+            firstName: firstName,
+
+            lastName: lastName,
+
+            name: userName,
+
+            email: normalizedEmail,
+
+            mobile: mobile,
+
+            /*
+             * The role selected on Login
+             * determines the current role.
+             */
+            role: selectedRole,
+        };
+
+        /* =========================
+           SAVE CURRENT USER
+        ========================= */
+
+        /*
+         * ProfilePage reads this.
+         */
+        window.localStorage.setItem(
+            "automarketUser",
+            JSON.stringify(currentUser)
+        );
+
+        /*
+         * Keep this key as well because
+         * other pages may already use it.
+         */
+        window.localStorage.setItem(
+            "marketplace_current_user",
+            JSON.stringify(currentUser)
+        );
+
+        /* =========================
+           REMEMBER ME
+        ========================= */
+
+        if (rememberMe) {
+            window.localStorage.setItem(
+                "automarketRememberMe",
+                "true"
+            );
+        } else {
+            window.localStorage.removeItem(
+                "automarketRememberMe"
+            );
+        }
+
+        console.log("Logged in user:", currentUser);
+
+        /* =========================
+           ROLE-BASED NAVIGATION
+        ========================= */
+
+        if (selectedRole === "seller") {
+            navigate("/list-product");
+        } else if (selectedRole === "buyer") {
+            navigate("/shop");
+        } else if (selectedRole === "admin") {
+            navigate("/home");
+        }
+    };
+
+    return (
+        <div className="LoginContainer">
+
+            {/* =================================
+                LEFT SIDE
+                LOGO + AUTOMARKET ONLY
+            ================================= */}
+
+            <div className="Loginlogo-card">
+
+                <img
+                    src="/logoIcon2.png"
+                    className="loginLogo"
+                    alt="AutoMarket logo"
+                />
+
+                <h1 className="loginLogoTitle">
+                    <span>Auto</span>Market
+                </h1>
+
+            </div>
+
+            {/* =================================
+                LOGIN CARD
+            ================================= */}
+
+            <div className="Login-card">
+
+                <h1>Login</h1>
+
+                <p className="Login-subtitle">
+                    Access your AutoMarket account
+                </p>
+
+                <form onSubmit={handleSubmit}>
+
+                    {/* =================================
+                        EMAIL
+                    ================================= */}
+
+                    <div className="Loginform-group">
+
+                        <label htmlFor="email">
+                            Email
+                        </label>
+
+                        <div className="Login-input-wrapper">
+
+                            <FaEnvelope />
+
+                            <input
+                                id="email"
+                                name="email"
+                                type="email"
+                                value={email}
+                                onChange={(e) =>
+                                    setEmail(e.target.value)
+                                }
+                                placeholder="Enter your email"
+                                autoComplete="email"
+                                required
+                            />
+
+                        </div>
+
+                    </div>
+
+                    {/* =================================
+                        PASSWORD
+                    ================================= */}
+
+                    <div className="Loginform-group">
+
+                        <label htmlFor="password">
+                            Password
+                        </label>
+
+                        <div className="Login-input-wrapper">
+
+                            <FaLock />
+
+                            <input
+                                id="password"
+                                name="password"
+                                type={
+                                    showPassword
+                                        ? "text"
+                                        : "password"
+                                }
+                                value={password}
+                                onChange={(e) =>
+                                    setPassword(e.target.value)
+                                }
+                                placeholder="Enter your password"
+                                autoComplete="current-password"
+                                required
+                            />
+
+                            <button
+                                type="button"
+                                className="LoginPasswordButton"
+                                onClick={() =>
+                                    setShowPassword(
+                                        (previous) =>
+                                            !previous
+                                    )
+                                }
+                                aria-label={
+                                    showPassword
+                                        ? "Hide password"
+                                        : "Show password"
+                                }
+                            >
+                                {showPassword ? (
+                                    <FaRegEyeSlash />
+                                ) : (
+                                    <FaRegEye />
+                                )}
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                    {/* =================================
+                        ACCOUNT TYPE
+                    ================================= */}
+
+                    <div className="Loginform-group">
+
+                        <label htmlFor="role">
+                            Account Type
+                        </label>
+
+                        <div className="Login-input-wrapper">
+
+                            <FaUserTag />
+
+                            <select
+                                id="role"
+                                name="role"
+                                value={role}
+                                onChange={(e) =>
+                                    setRole(e.target.value)
+                                }
+                                required
+                            >
+
+                                <option
+                                    value=""
+                                    disabled
+                                >
+                                    Select Role
+                                </option>
+
+                                {ROLE_OPTIONS.map(
+                                    (option) => (
+                                        <option
+                                            key={option}
+                                            value={option}
+                                        >
+                                            {option}
+                                        </option>
+                                    )
+                                )}
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+                    {/* =================================
+                        FORGOT PASSWORD
+                    ================================= */}
+
+                    <div className="LoginForgotPassword">
+
+                        <Link to="/reset-password">
+                            Forgot Password?
+                        </Link>
+
+                    </div>
+
+                    {/* =================================
+                        REMEMBER ME
+                    ================================= */}
+
+                    <div className="LoginRememberMe">
+
+                        <label>
+
+                            <input
+                                type="checkbox"
+                                checked={rememberMe}
+                                onChange={(e) =>
+                                    setRememberMe(
+                                        e.target.checked
+                                    )
+                                }
+                            />
+
+                            <span>
+                                Remember Me
+                            </span>
+
+                        </label>
+
+                    </div>
+
+                    {/* =================================
+                        LOGIN BUTTON
+                    ================================= */}
+
+                    <button
+                        type="submit"
+                        className="LoginButton"
+                    >
+                        Login
+                    </button>
+
+                    {/* =================================
+                        REGISTER
+                    ================================= */}
+
+                    <p className="LoginRegisterText">
+
+                        Don't have an account?
+
+                        <Link to="/register">
+                            Register
+                        </Link>
+
+                    </p>
+
+                </form>
+
+            </div>
+
         </div>
-      </section>
-
-      {/* ================= RIGHT PANEL ================= */}
-      <section className="login-right-panel">
-        <div className="login-form-container">
-          <h2>Login</h2>
-          <p className="login-subtitle">Access your account</p>
-
-          <form onSubmit={handleSubmit} noValidate>
-            {/* Email */}
-            <div className="login-input-group">
-              <FaEnvelope />
-              <input
-                id="email"
-                name="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Email Address"
-                aria-label="Email Address"
-                autoComplete="email"
-              />
-            </div>
-
-            {/* Password */}
-            <div className="login-input-group">
-              <FaLock />
-              <input
-                id="password"
-                name="password"
-                type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Password"
-                aria-label="Password"
-                autoComplete="current-password"
-              />
-              <button
-                type="button"
-                className="password-toggle"
-                onClick={() => setShowPassword((previous) => !previous)}
-                aria-label={showPassword ? "Hide password" : "Show password"}
-              >
-                {showPassword ? <FaRegEyeSlash /> : <FaRegEye />}
-              </button>
-            </div>
-
-            {/* Role */}
-            <div className="login-input-group">
-              <FaUserTag />
-              <select
-                id="role"
-                name="role"
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                aria-label="Select your role"
-                className="role-select"
-              >
-                <option value="" disabled>
-                  Select Role
-                </option>
-                {ROLE_OPTIONS.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Forgot password */}
-            <div className="forgot-password-row">
-              <Link to="/reset-password">Forgot Password?</Link>
-            </div>
-
-            {/* Remember me */}
-            <div className="remember-me">
-              <input
-                id="rememberMe"
-                name="rememberMe"
-                type="checkbox"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-              />
-              <label htmlFor="rememberMe">Remember Me</label>
-            </div>
-
-            <button type="submit" className="login-button">Login</button>
-          </form>
-
-          {/* Register */}
-          <p className="register-link">
-            Don't have an account?
-            <Link to="/register">Register</Link>
-          </p>
-        </div>
-      </section>
-    </main>
-  );
+    );
 };
 
 export default LoginPage;

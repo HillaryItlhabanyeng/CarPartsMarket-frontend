@@ -1,567 +1,776 @@
-import { useState } from "react";
-import type { SyntheticEvent } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-// @ts-expect-error - SideNav.jsx has no type declarations
-import SideNav from "../Components/SideNav";
+import {
+    FaBell,
+    FaCog,
+    FaMapMarkerAlt,
+    FaPencilAlt,
+    FaTrash,
+    FaSignOutAlt,
+    FaChevronRight,
+} from "react-icons/fa";
 
 import "./ProfilePage.css";
 
-import {
-  FaArrowLeft,
-  FaBell,
-  FaCog,
-  FaEdit,
-  FaEnvelope,
-  FaMapMarkerAlt,
-  FaPhone,
-  FaStar,
-  FaTrash,
-} from "react-icons/fa";
+type UserRole = "buyer" | "seller" | "admin";
 
+type User = {
+    firstName: string;
+    lastName: string;
+    email: string;
+    mobile: string;
+    role: UserRole;
+};
 
-/* =========================================================
-   SIPHO PROFILE IMAGE
-   Use the SAME image everywhere in the application.
+type Address = {
+    id: number;
+    label: string;
+    street: string;
+    city: string;
+    postalCode: string;
+    phone?: string;
+};
 
-   File must physically live at: public/assets/Sipho.png
-========================================================= */
+const USER_STORAGE_KEY = "automarketUser";
+const ADDRESS_STORAGE_KEY = "marketplace_addresses";
 
-const SIPHO_PROFILE_IMAGE = "/Sipho.png";
-
-
-/* =========================================================
-   FAVOURITE BRANDS
-
-   Files must physically live at:
-   public/assets/adidas.png
-   public/assets/puma.png
-   public/assets/nike.png
-========================================================= */
-
-const FAVOURITE_BRANDS = [
-  {
-    name: "Audi",
-    image: "audi.png",
-  },
-  {
-    name: "Toyota",
-    image: "toyota.png",
-  },
-  {
-    name: "BMW",
-    image: "bmw.png",
-  },
-];
-
-
-export default function ProfilePage() {
-  const navigate = useNavigate();
-
-  /* =======================================================
-     STATE
-  ======================================================= */
-
-  const [rating] = useState(3);
-
-  const [profileImageError, setProfileImageError] =
-    useState(false);
-
-
-  /* =======================================================
-     HANDLERS
-  ======================================================= */
-
-  const handleBack = () => {
-    navigate(-1);
-  };
-
-
-  const handleEditProfile = () => {
-    alert("Edit Profile coming soon.");
-  };
-
-
-  const handleMyProducts = () => {
-    navigate("/my-listings");
-  };
-
-
-  const handleSettings = () => {
-    alert("Settings coming soon.");
-  };
-
-
-  const handleNotifications = () => {
-    alert("Notifications coming soon.");
-  };
-
-
-  const handleDeleteAccount = () => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete your account?"
-    );
-
-    if (confirmed) {
-      alert("Account deletion would be processed here.");
+const roleConfig: Record<
+    UserRole,
+    {
+        label: string;
+        description: string;
+        actionLabel: string;
+        actionPath: string;
+        statOneLabel: string;
+        statTwoLabel: string;
     }
-  };
+> = {
+    buyer: {
+        label: "Buyer",
+        description: "Shop for quality car parts from trusted sellers.",
+        actionLabel: "Browse Marketplace",
+        actionPath: "/marketplace",
+        statOneLabel: "Orders",
+        statTwoLabel: "Favourites",
+    },
 
+    seller: {
+        label: "Seller",
+        description: "Manage your car parts and reach customers.",
+        actionLabel: "Manage Products",
+        actionPath: "/seller/products",
+        statOneLabel: "Products",
+        statTwoLabel: "Sales",
+    },
 
-  /* =======================================================
-     IMAGE ERROR HANDLERS
-  ======================================================= */
+    admin: {
+        label: "Administrator",
+        description: "Manage AutoMarket users, products and platform activity.",
+        actionLabel: "Admin Dashboard",
+        actionPath: "/admin",
+        statOneLabel: "Users",
+        statTwoLabel: "Products",
+    },
+};
 
-  const handleProfileImageError = () => {
-    setProfileImageError(true);
-  };
+function getStoredUser(): User | null {
+    try {
+        const storedUser = localStorage.getItem(USER_STORAGE_KEY);
 
-  const handleBrandImageError = (
-    event: SyntheticEvent<HTMLImageElement, Event>
-  ) => {
-    event.currentTarget.style.display = "none";
-  };
+        if (!storedUser) {
+            return null;
+        }
 
+        const parsedUser = JSON.parse(storedUser);
 
-  /* =======================================================
-     PROFILE IMAGE RENDERER
-     Accepts the classnames needed for each place the image
-     is used (small top avatar vs. large card photo), so the
-     <img> always gets sized/clipped correctly by CSS.
-  ======================================================= */
+        if (!parsedUser || typeof parsedUser !== "object") {
+            return null;
+        }
 
-  const renderProfileImage = (
-    imgClassName: string,
-    fallbackClassName: string
-  ) =>
-    !profileImageError ? (
-      <img
-        src={SIPHO_PROFILE_IMAGE}
-        alt="Sipho Khubeka"
-        className={imgClassName}
-        onError={handleProfileImageError}
-      />
-    ) : (
-      <span className={fallbackClassName}>S</span>
+        const role: UserRole =
+            parsedUser.role === "seller" || parsedUser.role === "admin"
+                ? parsedUser.role
+                : "buyer";
+
+        return {
+            firstName: String(parsedUser.firstName ?? ""),
+            lastName: String(parsedUser.lastName ?? ""),
+            email: String(parsedUser.email ?? ""),
+            mobile: String(
+                parsedUser.mobile ??
+                parsedUser.phone ??
+                parsedUser.phoneNumber ??
+                ""
+            ),
+            role,
+        };
+    } catch {
+        return null;
+    }
+}
+
+function getStoredAddresses(): Address[] {
+    try {
+        const storedAddresses = localStorage.getItem(ADDRESS_STORAGE_KEY);
+
+        if (!storedAddresses) {
+            return [];
+        }
+
+        const parsedAddresses = JSON.parse(storedAddresses);
+
+        return Array.isArray(parsedAddresses) ? parsedAddresses : [];
+    } catch {
+        return [];
+    }
+}
+
+function ProfilePage() {
+    const navigate = useNavigate();
+
+    const [user, setUser] = useState<User | null>(() => getStoredUser());
+    const [addresses, setAddresses] = useState<Address[]>(() =>
+        getStoredAddresses()
     );
 
+    const [isEditing, setIsEditing] = useState(false);
 
-  return (
-    <div className="profile-page">
-      {/* =====================================================
-          PAGE CONTENT
-      ===================================================== */}
+    const [editForm, setEditForm] = useState({
+        firstName: "",
+        lastName: "",
+        email: "",
+        mobile: "",
+    });
 
-      <div className="profile-page-content">
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-        <main className="profile-main">
+    useEffect(() => {
+        const storedUser = getStoredUser();
 
-          {/* =================================================
-              PROFILE HEADER
-          ================================================= */}
+        if (storedUser) {
+            setUser(storedUser);
 
-          <header className="profile-topbar">
+            setEditForm({
+                firstName: storedUser.firstName,
+                lastName: storedUser.lastName,
+                email: storedUser.email,
+                mobile: storedUser.mobile,
+            });
+        }
 
-            {/* BACK */}
+        setAddresses(getStoredAddresses());
+    }, []);
 
-            <button
-              type="button"
-              className="profile-back-button"
-              onClick={handleBack}
-            >
-              <FaArrowLeft />
+    const initials = useMemo(() => {
+        if (!user) {
+            return "U";
+        }
 
-              <span>
-                Profile
-              </span>
-            </button>
+        const firstInitial = user.firstName.trim().charAt(0);
+        const lastInitial = user.lastName.trim().charAt(0);
 
+        return `${firstInitial}${lastInitial}`.toUpperCase() || "U";
+    }, [user]);
 
-            {/* TOP ACTIONS */}
+    const role = user?.role ?? "buyer";
+    const currentRole = roleConfig[role];
 
-            <div className="profile-top-actions">
+    const handleEditChange = (
+        event: React.ChangeEvent<HTMLInputElement>
+    ) => {
+        const { name, value } = event.target;
 
-              {/* NOTIFICATIONS */}
+        setEditForm((previous) => ({
+            ...previous,
+            [name]: value,
+        }));
+    };
 
-              <button
-                type="button"
-                aria-label="Notifications"
-                onClick={handleNotifications}
-                className="profile-action-button"
-              >
-                <FaBell />
+    const handleSaveProfile = () => {
+        if (!user) {
+            return;
+        }
 
-                <span className="notification-dot" />
-              </button>
+        const updatedUser: User = {
+            ...user,
+            firstName: editForm.firstName.trim(),
+            lastName: editForm.lastName.trim(),
+            email: editForm.email.trim(),
+            mobile: editForm.mobile.trim(),
+        };
 
+        if (
+            !updatedUser.firstName ||
+            !updatedUser.lastName ||
+            !updatedUser.email ||
+            !updatedUser.mobile
+        ) {
+            alert("Please complete all profile fields.");
+            return;
+        }
 
-              {/* SETTINGS */}
+        localStorage.setItem(
+            USER_STORAGE_KEY,
+            JSON.stringify(updatedUser)
+        );
 
-              <button
-                type="button"
-                aria-label="Settings"
-                onClick={handleSettings}
-                className="profile-action-button"
-              >
-                <FaCog />
-              </button>
+        setUser(updatedUser);
+        setIsEditing(false);
+    };
 
+    const handleCancelEdit = () => {
+        if (!user) {
+            return;
+        }
 
-              {/* SIPHO PROFILE IMAGE (small, top-right) */}
+        setEditForm({
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+            mobile: user.mobile,
+        });
 
-              <button
-                type="button"
-                className="top-avatar"
-                onClick={() => navigate("/profile")}
-                aria-label="Open profile"
-              >
-                {renderProfileImage("", "profile-image-fallback")}
-              </button>
+        setIsEditing(false);
+    };
 
+    const handleLogout = () => {
+        localStorage.removeItem("automarketUser");
+        localStorage.removeItem("token");
+        localStorage.removeItem("authToken");
+
+        navigate("/login");
+    };
+
+    const handleDeleteAccount = () => {
+        /*
+         * This currently removes the locally stored account.
+         * When your backend/database is connected, this function
+         * should call the account deletion API instead.
+         */
+
+        localStorage.removeItem(USER_STORAGE_KEY);
+        localStorage.removeItem(ADDRESS_STORAGE_KEY);
+        localStorage.removeItem("token");
+        localStorage.removeItem("authToken");
+
+        setUser(null);
+        setShowDeleteModal(false);
+
+        navigate("/register");
+    };
+
+    if (!user) {
+        return (
+            <div className="profile-page">
+                <div className="profile-empty-state">
+                    <div className="profile-empty-avatar">U</div>
+
+                    <h1>No Profile Found</h1>
+
+                    <p>
+                        Please register or log in to your AutoMarket
+                        account to view your profile.
+                    </p>
+
+                    <button
+                        type="button"
+                        className="profile-primary-btn"
+                        onClick={() => navigate("/login")}
+                    >
+                        Go to Login
+                    </button>
+                </div>
             </div>
+        );
+    }
 
-          </header>
+    return (
+        <div className="profile-page">
+            {/* Header */}
+            <header className="profile-top-header">
+                <div className="profile-header-left">
+                    <div>
+                        <h1>My Profile</h1>
+                        <p>Manage your AutoMarket account</p>
+                    </div>
+                </div>
 
+                <div className="profile-header-right">
+                    <button
+                        type="button"
+                        className="profile-header-icon"
+                        aria-label="Notifications"
+                        onClick={() => navigate("/notifications")}
+                    >
+                        <FaBell />
+                    </button>
 
-          {/* =================================================
-              PROFILE BANNER
-          ================================================= */}
+                    <button
+                        type="button"
+                        className="profile-header-icon"
+                        aria-label="Settings"
+                        onClick={() => navigate("/settings")}
+                    >
+                        <FaCog />
+                    </button>
 
-          <section className="profile-banner">
+                    <button
+                        type="button"
+                        className="profile-header-avatar"
+                        aria-label="My profile"
+                    >
+                        {initials}
+                    </button>
+                </div>
+            </header>
 
-            <button
-              type="button"
-              className="edit-profile-button"
-              onClick={handleEditProfile}
-            >
-              <FaEdit />
+            <main className="profile-content">
+                {/* Profile Summary */}
+                <section className="profile-summary-card">
+                    <div className="profile-summary-main">
+                        <div className="profile-avatar">
+                            {initials}
+                        </div>
 
-              <span>
-                Edit Profile
-              </span>
-            </button>
+                        <div className="profile-summary-info">
+                            <div className="profile-name-row">
+                                <h2>
+                                    {user.firstName} {user.lastName}
+                                </h2>
 
-          </section>
+                                <span className="profile-role-badge">
+                                    {currentRole.label}
+                                </span>
+                            </div>
 
+                            <p className="profile-email">
+                                {user.email}
+                            </p>
 
-          {/* =================================================
-              PROFILE CONTENT
-          ================================================= */}
+                            <p className="profile-role-description">
+                                {currentRole.description}
+                            </p>
+                        </div>
+                    </div>
 
-          <div className="profile-content">
+                    <button
+                        type="button"
+                        className="profile-edit-btn"
+                        onClick={() => setIsEditing(true)}
+                    >
+                        <FaPencilAlt />
+                        Edit Profile
+                    </button>
+                </section>
 
+                {/* Role Stats */}
+                <section className="profile-stats-grid">
+                    <div className="profile-stat-card">
+                        <span className="profile-stat-label">
+                            {currentRole.statOneLabel}
+                        </span>
 
-            {/* =================================================
-                LEFT PROFILE CARD
-            ================================================= */}
+                        <strong className="profile-stat-value">
+                            0
+                        </strong>
+                    </div>
 
-            <section className="profile-card">
+                    <div className="profile-stat-card">
+                        <span className="profile-stat-label">
+                            {currentRole.statTwoLabel}
+                        </span>
 
-              {/* =================================================
-                  LARGE SIPHO PROFILE IMAGE
+                        <strong className="profile-stat-value">
+                            0
+                        </strong>
+                    </div>
+                </section>
 
-                  Same image as the top-right avatar.
-              ================================================= */}
+                {/* Personal Information */}
+                <section className="profile-card">
+                    <div className="profile-card-header">
+                        <div>
+                            <h2>Personal Information</h2>
+                            <p>
+                                Your basic account information
+                            </p>
+                        </div>
 
-              <div className="profile-photo-wrapper">
+                        {!isEditing && (
+                            <button
+                                type="button"
+                                className="profile-small-edit-btn"
+                                onClick={() => setIsEditing(true)}
+                            >
+                                <FaPencilAlt />
+                                Edit
+                            </button>
+                        )}
+                    </div>
 
-                {renderProfileImage(
-                  "profile-photo",
-                  "profile-photo-fallback"
-                )}
+                    {isEditing ? (
+                        <div className="profile-edit-form">
+                            <div className="profile-form-grid">
+                                <div className="profile-form-group">
+                                    <label htmlFor="firstName">
+                                        First Name
+                                    </label>
 
-              </div>
+                                    <input
+                                        id="firstName"
+                                        name="firstName"
+                                        type="text"
+                                        value={editForm.firstName}
+                                        onChange={handleEditChange}
+                                    />
+                                </div>
 
+                                <div className="profile-form-group">
+                                    <label htmlFor="lastName">
+                                        Last Name
+                                    </label>
 
-              {/* NAME */}
+                                    <input
+                                        id="lastName"
+                                        name="lastName"
+                                        type="text"
+                                        value={editForm.lastName}
+                                        onChange={handleEditChange}
+                                    />
+                                </div>
 
-              <h1 className="profile-user-name">
-                Sipho Khubeka
-              </h1>
+                                <div className="profile-form-group">
+                                    <label htmlFor="email">
+                                        Email
+                                    </label>
 
+                                    <input
+                                        id="email"
+                                        name="email"
+                                        type="email"
+                                        value={editForm.email}
+                                        onChange={handleEditChange}
+                                    />
+                                </div>
 
-              {/* ROLE */}
+                                <div className="profile-form-group">
+                                    <label htmlFor="mobile">
+                                        Mobile Number
+                                    </label>
 
-              <p className="profile-role">
-                Student Seller
-              </p>
+                                    <input
+                                        id="mobile"
+                                        name="mobile"
+                                        type="tel"
+                                        value={editForm.mobile}
+                                        onChange={handleEditChange}
+                                    />
+                                </div>
+                            </div>
 
+                            <div className="profile-form-actions">
+                                <button
+                                    type="button"
+                                    className="profile-cancel-btn"
+                                    onClick={handleCancelEdit}
+                                >
+                                    Cancel
+                                </button>
 
-              {/* BIO */}
+                                <button
+                                    type="button"
+                                    className="profile-save-btn"
+                                    onClick={handleSaveProfile}
+                                >
+                                    Save Changes
+                                </button>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="profile-details-grid">
+                            <div className="profile-detail-item">
+                                <span>First Name</span>
+                                <strong>{user.firstName}</strong>
+                            </div>
 
-              <p className="profile-bio">
-                Curating quality products that blend
-                style, value, and practicality. I'm
-                committed to offering items you'll love,
-                backed by excellent service and a
-                smooth shopping experience.
-              </p>
+                            <div className="profile-detail-item">
+                                <span>Last Name</span>
+                                <strong>{user.lastName}</strong>
+                            </div>
 
+                            <div className="profile-detail-item">
+                                <span>Email</span>
+                                <strong>{user.email}</strong>
+                            </div>
 
-              {/* =================================================
-                  PRODUCT RANKING
-              ================================================= */}
+                            <div className="profile-detail-item">
+                                <span>Mobile Number</span>
+                                <strong>{user.mobile}</strong>
+                            </div>
 
-              <div className="product-ranking">
+                            <div className="profile-detail-item">
+                                <span>Account Type</span>
+                                <strong>{currentRole.label}</strong>
+                            </div>
+                        </div>
+                    )}
+                </section>
 
-                <h2>
-                  Your Product Rankings
-                </h2>
+                {/* Addresses */}
+                <section className="profile-card">
+                    <div className="profile-card-header">
+                        <div>
+                            <h2>Saved Addresses</h2>
+                            <p>
+                                Manage the addresses used for your orders
+                            </p>
+                        </div>
 
+                        <button
+                            type="button"
+                            className="profile-small-edit-btn"
+                            onClick={() => navigate("/address")}
+                        >
+                            <FaMapMarkerAlt />
+                            Manage
+                        </button>
+                    </div>
 
-                <div
-                  className="ranking-stars"
-                  aria-label={`${rating} out of 5 stars`}
-                >
+                    {addresses.length > 0 ? (
+                        <div className="profile-address-list">
+                            {addresses.slice(0, 2).map((address) => (
+                                <div
+                                    className="profile-address-item"
+                                    key={address.id}
+                                >
+                                    <div className="profile-address-icon">
+                                        <FaMapMarkerAlt />
+                                    </div>
 
-                  {Array.from({ length: 5 }).map(
-                    (_, index) => (
-                      <FaStar
-                        key={index}
-                        className={
-                          index < rating
-                            ? "ranking-star ranking-star-filled"
-                            : "ranking-star"
+                                    <div className="profile-address-info">
+                                        <strong>
+                                            {address.label}
+                                        </strong>
+
+                                        <p>
+                                            {address.street}
+                                        </p>
+
+                                        <p>
+                                            {address.city},{" "}
+                                            {address.postalCode}
+                                        </p>
+
+                                        {address.phone && (
+                                            <p>
+                                                {address.phone}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="profile-no-address">
+                            <FaMapMarkerAlt />
+
+                            <div>
+                                <strong>No saved addresses</strong>
+
+                                <p>
+                                    Add an address for faster checkout.
+                                </p>
+                            </div>
+
+                            <button
+                                type="button"
+                                onClick={() => navigate("/address")}
+                            >
+                                Add Address
+                            </button>
+                        </div>
+                    )}
+                </section>
+
+                {/* Account Settings */}
+                <section className="profile-card">
+                    <div className="profile-card-header">
+                        <div>
+                            <h2>Account Settings</h2>
+                            <p>
+                                Manage your account preferences
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="profile-settings-list">
+                        <button
+                            type="button"
+                            className="profile-setting-row"
+                            onClick={() => navigate("/settings")}
+                        >
+                            <div className="profile-setting-icon">
+                                <FaCog />
+                            </div>
+
+                            <div className="profile-setting-content">
+                                <strong>Settings</strong>
+                                <span>
+                                    Manage your account preferences
+                                </span>
+                            </div>
+
+                            <FaChevronRight className="profile-setting-arrow" />
+                        </button>
+
+                        <button
+                            type="button"
+                            className="profile-setting-row"
+                            onClick={() => navigate("/notifications")}
+                        >
+                            <div className="profile-setting-icon">
+                                <FaBell />
+                            </div>
+
+                            <div className="profile-setting-content">
+                                <strong>Notifications</strong>
+                                <span>
+                                    Manage your notification preferences
+                                </span>
+                            </div>
+
+                            <FaChevronRight className="profile-setting-arrow" />
+                        </button>
+
+                        <button
+                            type="button"
+                            className="profile-setting-row"
+                            onClick={() => navigate("/address")}
+                        >
+                            <div className="profile-setting-icon">
+                                <FaMapMarkerAlt />
+                            </div>
+
+                            <div className="profile-setting-content">
+                                <strong>Addresses</strong>
+                                <span>
+                                    Manage your saved addresses
+                                </span>
+                            </div>
+
+                            <FaChevronRight className="profile-setting-arrow" />
+                        </button>
+                    </div>
+                </section>
+
+                {/* Role Action */}
+                <section className="profile-role-card">
+                    <div>
+                        <span className="profile-role-card-badge">
+                            {currentRole.label}
+                        </span>
+
+                        <h2>{currentRole.actionLabel}</h2>
+
+                        <p>
+                            {currentRole.description}
+                        </p>
+                    </div>
+
+                    <button
+                        type="button"
+                        className="profile-primary-btn"
+                        onClick={() =>
+                            navigate(currentRole.actionPath)
                         }
-                      />
-                    )
-                  )}
+                    >
+                        {currentRole.actionLabel}
+                        <FaChevronRight />
+                    </button>
+                </section>
 
-                </div>
+                {/* Logout */}
+                <section className="profile-logout-section">
+                    <button
+                        type="button"
+                        className="profile-logout-btn"
+                        onClick={handleLogout}
+                    >
+                        <FaSignOutAlt />
+                        Log Out
+                    </button>
+                </section>
 
+                {/* Delete Account */}
+                <section className="profile-delete-card">
+                    <div>
+                        <h2>Delete Account</h2>
 
-                <span className="rating-text">
-                  {rating}.0 / 5.0
-                </span>
-
-              </div>
-
-
-              {/* MY PRODUCTS */}
-
-              <button
-                type="button"
-                className="my-products-button"
-                onClick={handleMyProducts}
-              >
-                My Products
-              </button>
-
-
-              {/* DELETE */}
-
-              <button
-                type="button"
-                className="delete-account-button"
-                onClick={handleDeleteAccount}
-              >
-                <FaTrash />
-
-                <span>
-                  Delete Account
-                </span>
-              </button>
-
-            </section>
-
-
-            {/* =================================================
-                RIGHT COLUMN
-            ================================================= */}
-
-            <div className="profile-right">
-
-
-              {/* =================================================
-                  DETAILS CARD
-              ================================================= */}
-
-              <section className="details-card">
-
-                <div className="profile-section-heading">
-
-                  <h2>
-                    My Details
-                  </h2>
-
-                  <button
-                    type="button"
-                    className="settings-button"
-                    aria-label="Profile settings"
-                    onClick={handleSettings}
-                  >
-                    <FaCog />
-                  </button>
-
-                </div>
-
-
-                <div className="details-list">
-
-                  {/* PHONE */}
-
-                  <div className="detail-row">
-
-                    <FaPhone className="detail-icon" />
-
-                    <div className="detail-content">
-
-                      <span className="detail-label">
-                        Phone
-                      </span>
-
-                      <span className="detail-value">
-                        +27 734 634 763
-                      </span>
-
+                        <p>
+                            Permanently remove your AutoMarket
+                            account and locally saved profile information.
+                        </p>
                     </div>
 
-                  </div>
+                    <button
+                        type="button"
+                        className="profile-delete-btn"
+                        onClick={() => setShowDeleteModal(true)}
+                    >
+                        <FaTrash />
+                        Delete Account
+                    </button>
+                </section>
+            </main>
 
+            {/* Delete Confirmation Modal */}
+            {showDeleteModal && (
+                <div className="profile-modal-overlay">
+                    <div
+                        className="profile-delete-modal"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="delete-account-title"
+                    >
+                        <div className="profile-modal-icon">
+                            <FaTrash />
+                        </div>
 
-                  {/* LOCATION */}
+                        <h2 id="delete-account-title">
+                            Delete your account?
+                        </h2>
 
-                  <div className="detail-row">
+                        <p>
+                            This will remove your locally saved
+                            AutoMarket profile and saved addresses.
+                            This action cannot be undone.
+                        </p>
 
-                    <FaMapMarkerAlt className="detail-icon" />
+                        <div className="profile-modal-actions">
+                            <button
+                                type="button"
+                                className="profile-cancel-btn"
+                                onClick={() =>
+                                    setShowDeleteModal(false)
+                                }
+                            >
+                                Cancel
+                            </button>
 
-                    <div className="detail-content">
-
-                      <span className="detail-label">
-                        Location
-                      </span>
-
-                      <span className="detail-value">
-                        Cape Town
-                      </span>
-
+                            <button
+                                type="button"
+                                className="profile-confirm-delete-btn"
+                                onClick={handleDeleteAccount}
+                            >
+                                Delete Account
+                            </button>
+                        </div>
                     </div>
-
-                  </div>
-
-
-                  {/* EMAIL */}
-
-                  <div className="detail-row">
-
-                    <FaEnvelope className="detail-icon" />
-
-                    <div className="detail-content">
-
-                      <span className="detail-label">
-                        Email
-                      </span>
-
-                      <span className="detail-value">
-                        siphokhubeka@gmail.com
-                      </span>
-
-                    </div>
-
-                  </div>
-
                 </div>
-
-              </section>
-
-
-              {/* =================================================
-                  FAVOURITE BRANDS
-              ================================================= */}
-
-              <section className="brands-card">
-
-                <div className="brands-heading">
-
-                  <h2>
-                    Favourite Brands
-                  </h2>
-
-                </div>
-
-
-                <div className="brands-row">
-
-                  {FAVOURITE_BRANDS.map(
-                    (brand) => (
-                      <div
-                        className="brand-logo"
-                        key={brand.name}
-                      >
-                        <img
-                          src={brand.image}
-                          alt={brand.name}
-                          onError={handleBrandImageError}
-                        />
-                      </div>
-                    )
-                  )}
-
-                </div>
-
-              </section>
-
-
-              {/* =================================================
-                  PROFILE INFORMATION
-              ================================================= */}
-
-              <section className="profile-info-card">
-
-                <div className="info-item">
-
-                  <strong>
-                    Member since
-                  </strong>
-
-                  <span>
-                    2025
-                  </span>
-
-                </div>
-
-
-                <div className="info-divider" />
-
-
-                <div className="info-item">
-
-                  <strong>
-                    Products listed
-                  </strong>
-
-                  <span>
-                    12
-                  </span>
-
-                </div>
-
-
-                <div className="info-divider" />
-
-
-                <div className="info-item">
-
-                  <strong>
-                    Reviews received
-                  </strong>
-
-                  <span>
-                    128
-                  </span>
-
-                </div>
-
-              </section>
-
-            </div>
-
-          </div>
-
-        </main>
-
-      </div>
-
-    </div>
-  );
+            )}
+        </div>
+    );
 }
+
+export default ProfilePage;

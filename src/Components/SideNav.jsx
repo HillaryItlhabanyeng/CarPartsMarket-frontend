@@ -47,8 +47,8 @@ export default function SideNav() {
 
       <div className="side-nav-logo">
         <img
-          src="UniTrade logo 2.png"
-          alt="UniTrade Campus Marketplace"
+          src="automarket_-_logo-removebg-preview.png"
+          alt="automarket logo"
           className="unitrade-logo"
         />
       </div>

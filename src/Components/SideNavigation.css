@@ -1,346 +1,193 @@
-/* =========================================================
-   AUTOMARKET SIDE NAVIGATION
-========================================================= */
+/* =====================================================
+   AUT0MARKET SIDE NAVIGATION
+   ===================================================== */
+
+.listing-side-nav,
+.listing-side-nav * {
+  box-sizing: border-box;
+}
+
+/* =====================================================
+   SIDEBAR
+   ===================================================== */
 
 .listing-side-nav {
   position: fixed;
-
   top: 0;
   left: 0;
   bottom: 0;
 
-  width: 240px;
+  width: 260px;
+  min-width: 260px;
 
   display: flex;
   flex-direction: column;
 
   background: #a67b5b;
-
   color: #ffffff;
+
+  overflow-y: auto;
+  overflow-x: hidden;
 
   z-index: 1000;
 
-  overflow-y: auto;
-
-  font-family:
-    Inter,
-    Arial,
-    Helvetica,
-    sans-serif;
-
-  box-sizing: border-box;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.35) transparent;
 }
 
+.listing-side-nav::-webkit-scrollbar {
+  width: 5px;
+}
 
-/* =========================================================
-   LOGO
-========================================================= */
+.listing-side-nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.listing-side-nav::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.35);
+  border-radius: 20px;
+}
+
+/* =====================================================
+   BRAND
+   ===================================================== */
+
+.listing-side-nav-brand {
+  min-height: 145px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px 20px 16px;
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.22);
+}
 
 .listing-side-nav-logo {
-  width: 100%;
+  width: 105px;
+  height: 70px;
+
+  object-fit: contain;
+
+  display: block;
+}
+
+.listing-side-nav-brand-name {
+  margin-top: 5px;
+
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.5px;
+}
+
+.brand-auto {
+  color: #ffffff;
+}
+
+.brand-market {
+  color: #ffffff;
+}
+
+/* =====================================================
+   USER CARD
+   ===================================================== */
+
+.listing-side-nav-user {
+  margin: 16px 15px 12px;
+
+  min-height: 66px;
+
+  padding: 12px;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  border-radius: 12px;
+
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.listing-side-nav-avatar {
+  width: 44px;
+  height: 44px;
+
+  min-width: 44px;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  padding: 24px 20px 28px;
+  border-radius: 50%;
 
-  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+  background: #ffffff;
+  color: #a67b5b;
 
-  box-sizing: border-box;
+  font-size: 14px;
+  font-weight: 700;
 }
 
-.listing-automarket-logo {
-  display: block;
-
-  width: 95px;
-  height: 95px;
-
-  object-fit: contain;
-}
-
-
-/* =========================================================
-   NAVIGATION
-========================================================= */
-
-.listing-side-nav-menu {
-  width: 100%;
+.listing-side-nav-user-info {
+  min-width: 0;
 
   display: flex;
   flex-direction: column;
 
-  padding: 22px 12px;
-
-  box-sizing: border-box;
-
-  gap: 5px;
+  overflow: hidden;
 }
 
+.listing-side-nav-user-info strong {
+  color: #ffffff;
 
-/* =========================================================
-   NAVIGATION ITEM
-========================================================= */
+  font-size: 13px;
+  font-weight: 700;
 
-.listing-side-nav-item {
-  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
-  min-height: 46px;
+.listing-side-nav-user-info span {
+  margin-top: 3px;
+
+  color: rgba(255, 255, 255, 0.82);
+
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* =====================================================
+   ROLE SWITCH
+   ===================================================== */
+
+.listing-role-switch {
+  margin: 0 15px 10px;
+
+  padding: 3px;
 
   display: flex;
-  align-items: center;
 
-  gap: 13px;
+  border-radius: 8px;
 
-  padding: 11px 14px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.listing-role-switch-btn {
+  flex: 1;
+
+  min-height: 32px;
 
   border: none;
-
   border-radius: 6px;
 
   background: transparent;
-
-  color: #ffffff;
-
-  font-family: inherit;
-
-  font-size: 13px;
-
-  font-weight: 500;
-
-  text-align: left;
-
-  cursor: pointer;
-
-  box-sizing: border-box;
-
-  transition:
-    background 0.2s ease,
-    color 0.2s ease;
-}
-
-
-/* =========================================================
-   ICON
-========================================================= */
-
-.listing-side-nav-icon {
-  width: 18px;
-  height: 18px;
-
-  flex-shrink: 0;
-
-  stroke-width: 1.7;
-
-  color: #ffffff;
-
-  transition: color 0.2s ease;
-}
-
-
-/* =========================================================
-   HOVER
-========================================================= */
-
-.listing-side-nav-item:hover {
-  background: rgba(255, 255, 255, 0.12);
-
-  color: #ffffff;
-}
-
-.listing-side-nav-item:hover
-.listing-side-nav-icon {
-  color: #ffffff;
-}
-
-
-/* =========================================================
-   ACTIVE ITEM
-========================================================= */
-
-.listing-side-nav-item.active {
-  background: #ffffff;
-
-  color: #a67b5b;
-
-  font-weight: 700;
-
-  border-left: 3px solid #ffffff;
-
-  padding-left: 11px;
-}
-
-.listing-side-nav-item.active
-.listing-side-nav-icon {
-  color: #a67b5b;
-}
-
-
-/* =========================================================
-   PARENT ITEM
-========================================================= */
-
-.listing-side-nav-parent {
-  justify-content: space-between;
-}
-
-.listing-side-nav-item-left {
-  display: flex;
-
-  align-items: center;
-
-  gap: 13px;
-}
-
-
-/* =========================================================
-   ARROW
-========================================================= */
-
-.listing-side-nav-arrow {
-  width: 14px;
-  height: 14px;
 
   color: rgba(255, 255, 255, 0.8);
 
-  stroke-width: 1.7;
-}
-
-
-/* =========================================================
-   SUBMENU
-========================================================= */
-
-.listing-side-nav-submenu {
-  display: flex;
-
-  flex-direction: column;
-
-  margin-left: 21px;
-
-  padding: 3px 0 8px 22px;
-
-  border-left: 1px solid rgba(255, 255, 255, 0.25);
-
-  box-sizing: border-box;
-}
-
-
-/* =========================================================
-   SUBMENU ITEM
-========================================================= */
-
-.listing-submenu-item {
-  min-height: 38px;
-
-  display: flex;
-  align-items: center;
-
-  gap: 10px;
-
-  padding: 8px 10px;
-
-  border: none;
-
-  border-radius: 5px;
-
-  background: transparent;
-
-  color: rgba(255, 255, 255, 0.78);
-
-  font-family: inherit;
-
-  font-size: 12px;
-
-  font-weight: 500;
-
-  text-align: left;
-
-  cursor: pointer;
-
-  transition:
-    color 0.2s ease,
-    background 0.2s ease;
-}
-
-
-/* Submenu icons */
-
-.listing-submenu-item svg {
-  width: 15px;
-  height: 15px;
-
-  stroke-width: 1.6;
-}
-
-
-/* =========================================================
-   SUBMENU HOVER
-========================================================= */
-
-.listing-submenu-item:hover {
-  background: rgba(255, 255, 255, 0.10);
-
-  color: #ffffff;
-}
-
-
-/* =========================================================
-   SUBMENU ACTIVE
-========================================================= */
-
-.listing-submenu-item.active {
-  background: rgba(255, 255, 255, 0.14);
-
-  color: #ffffff;
-
-  font-weight: 700;
-}
-
-
-/* =========================================================
-   LOGOUT AREA
-========================================================= */
-
-.listing-side-nav-bottom {
-  margin-top: auto;
-
-  padding: 18px 12px 22px;
-
-  border-top: 1px solid rgba(255, 255, 255, 0.18);
-
-  box-sizing: border-box;
-}
-
-
-/* =========================================================
-   LOGOUT
-========================================================= */
-
-.listing-side-nav-logout {
-  width: 100%;
-
-  min-height: 45px;
-
-  display: flex;
-  align-items: center;
-
-  gap: 13px;
-
-  padding: 10px 14px;
-
-  border: none;
-
-  border-radius: 6px;
-
-  background: transparent;
-
-  color: #ffffff;
-
-  font-family: inherit;
-
-  font-size: 13px;
-
+  font-size: 11px;
   font-weight: 600;
 
   cursor: pointer;
@@ -350,144 +197,317 @@
     color 0.2s ease;
 }
 
-.listing-side-nav-logout svg {
-  width: 18px;
-  height: 18px;
-
-  stroke-width: 1.7;
-
+.listing-role-switch-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
   color: #ffffff;
 }
 
+.listing-role-switch-btn.active {
+  background: #ffffff;
+  color: #a67b5b;
+}
 
-/* Logout hover */
+/* =====================================================
+   NAVIGATION
+   ===================================================== */
+
+.listing-side-nav-menu {
+  width: 100%;
+
+  padding: 5px 12px 20px;
+}
+
+.listing-nav-section-title {
+  padding: 15px 13px 8px;
+
+  color: rgba(255, 255, 255, 0.68);
+
+  font-size: 10px;
+  font-weight: 700;
+
+  letter-spacing: 1.3px;
+}
+
+/* =====================================================
+   NAV ITEM
+   ===================================================== */
+
+.listing-side-nav-item {
+  width: 100%;
+  min-height: 43px;
+
+  margin-bottom: 3px;
+  padding: 0 13px;
+
+  display: flex;
+  align-items: center;
+  gap: 13px;
+
+  border: none;
+  border-radius: 8px;
+
+  background: transparent;
+
+  color: #ffffff;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+
+  text-align: left;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    transform 0.15s ease;
+}
+
+.listing-side-nav-item:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.listing-side-nav-item:active {
+  transform: scale(0.99);
+}
+
+.listing-side-nav-item.active {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.listing-side-nav-icon {
+  width: 17px;
+  height: 17px;
+
+  min-width: 17px;
+
+  stroke-width: 1.8;
+}
+
+.listing-side-nav-item-left {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+
+  min-width: 0;
+}
+
+/* =====================================================
+   SELLER ADD LISTING BUTTON
+   ===================================================== */
+
+.listing-side-nav-cta {
+  width: 100%;
+  min-height: 43px;
+
+  margin: 2px 0 7px;
+  padding: 0 13px;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+
+  background: #ffffff;
+  color: #a67b5b;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    filter 0.2s ease,
+    transform 0.15s ease;
+}
+
+.listing-side-nav-cta:hover {
+  filter: brightness(0.96);
+}
+
+.listing-side-nav-cta:active {
+  transform: scale(0.99);
+}
+
+.listing-side-nav-cta svg {
+  width: 17px;
+  height: 17px;
+}
+
+/* =====================================================
+   ACCOUNT
+   ===================================================== */
+
+.listing-side-nav-parent {
+  justify-content: space-between;
+}
+
+.listing-side-nav-arrow {
+  width: 15px;
+  height: 15px;
+
+  flex-shrink: 0;
+}
+
+.listing-side-nav-parent.has-active-child {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* =====================================================
+   SUBMENU
+   ===================================================== */
+
+.listing-side-nav-submenu {
+  margin: 2px 0 7px 18px;
+  padding-left: 9px;
+
+  border-left: 1px solid rgba(255, 255, 255, 0.28);
+}
+
+.listing-submenu-item {
+  width: 100%;
+  min-height: 37px;
+
+  padding: 0 10px;
+
+  display: flex;
+  align-items: center;
+  gap: 11px;
+
+  border: none;
+  border-radius: 7px;
+
+  background: transparent;
+
+  color: rgba(255, 255, 255, 0.86);
+
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+
+  text-align: left;
+
+  cursor: pointer;
+
+  transition: background 0.2s ease;
+}
+
+.listing-submenu-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.listing-submenu-item.active {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+.listing-submenu-item svg {
+  width: 15px;
+  height: 15px;
+}
+
+/* =====================================================
+   LOGOUT
+   ===================================================== */
+
+.listing-side-nav-bottom {
+  margin-top: auto;
+
+  padding: 12px;
+
+  border-top: 1px solid rgba(255, 255, 255, 0.22);
+}
+
+.listing-side-nav-logout {
+  width: 100%;
+  min-height: 43px;
+
+  padding: 0 13px;
+
+  display: flex;
+  align-items: center;
+  gap: 13px;
+
+  border: none;
+  border-radius: 8px;
+
+  background: transparent;
+
+  color: #ffffff;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+
+  text-align: left;
+
+  cursor: pointer;
+
+  transition: background 0.2s ease;
+}
 
 .listing-side-nav-logout:hover {
   background: rgba(255, 255, 255, 0.12);
-
-  color: #ffffff;
 }
 
-
-/* =========================================================
-   SCROLLBAR
-========================================================= */
-
-.listing-side-nav::-webkit-scrollbar {
-  width: 4px;
+.listing-side-nav-logout svg {
+  width: 17px;
+  height: 17px;
 }
 
-.listing-side-nav::-webkit-scrollbar-track {
-  background: transparent;
+/* =====================================================
+   KEYBOARD ACCESSIBILITY
+   ===================================================== */
+
+.listing-side-nav button:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
 }
 
-.listing-side-nav::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.25);
-
-  border-radius: 10px;
-}
-
-
-/* =========================================================
+/* =====================================================
    TABLET
-========================================================= */
+   ===================================================== */
 
 @media (max-width: 900px) {
-
   .listing-side-nav {
-    width: 210px;
-  }
-
-  .listing-automarket-logo {
-    width: 80px;
-    height: 80px;
-  }
-
-  .listing-side-nav-item {
-    font-size: 12px;
+    width: 235px;
+    min-width: 235px;
   }
 }
 
-
-/* =========================================================
+/* =====================================================
    MOBILE
-========================================================= */
+   ===================================================== */
 
-@media (max-width: 650px) {
-
+@media (max-width: 700px) {
   .listing-side-nav {
-    width: 70px;
+    position: relative;
+
+    width: 100%;
+    min-width: 0;
+
+    height: auto;
+    min-height: auto;
+
+    overflow: visible;
   }
 
-
-  .listing-side-nav-logo {
-    padding: 18px 8px;
+  .listing-side-nav-brand {
+    min-height: 115px;
   }
 
-
-  .listing-automarket-logo {
-    width: 48px;
-    height: 48px;
+  .listing-side-nav-user {
+    margin: 12px 15px;
   }
-
 
   .listing-side-nav-menu {
-    padding: 15px 8px;
+    padding-bottom: 10px;
   }
-
-
-  .listing-side-nav-item span,
-  .listing-submenu-item span,
-  .listing-side-nav-logout span {
-    display: none;
-  }
-
-
-  .listing-side-nav-item {
-    justify-content: center;
-
-    padding: 12px;
-  }
-
-
-  .listing-side-nav-item-left {
-    justify-content: center;
-  }
-
-
-  .listing-side-nav-arrow {
-    display: none;
-  }
-
-
-  .listing-side-nav-submenu {
-    margin-left: 0;
-
-    padding: 4px 0;
-
-    border-left: none;
-
-    align-items: center;
-  }
-
-
-  .listing-submenu-item {
-    width: 44px;
-
-    justify-content: center;
-
-    padding: 10px;
-  }
-
 
   .listing-side-nav-bottom {
-    padding: 12px 8px 18px;
-  }
-
-
-  .listing-side-nav-logout {
-    justify-content: center;
-
-    padding: 12px;
+    margin-top: 0;
   }
 }

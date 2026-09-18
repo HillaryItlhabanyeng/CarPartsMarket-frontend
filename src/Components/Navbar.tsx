@@ -7,64 +7,334 @@ import {
   FiShoppingCart,
   FiChevronDown,
   FiUser,
-  FiRepeat,
   FiLogOut,
   FiMapPin,
+  FiSettings,
+  FiPackage,
+  FiUsers,
+  FiBarChart2,
+  FiClipboard,
+  FiHeart,
 } from "react-icons/fi";
 
 import { useCart } from "./useCart";
 import "./Navbar.css";
+
+/* =========================================================
+   TYPES
+========================================================= */
+
+type Role = "buyer" | "seller" | "admin";
+
+type CurrentUser = {
+  id?: string | number;
+  firstName?: string;
+  lastName?: string;
+  name?: string;
+  email?: string;
+  mobile?: string;
+  phone?: string;
+  role?: string;
+};
+
+type Address = {
+  id: number;
+  label: string;
+  street: string;
+  city: string;
+  postalCode: string;
+  phone?: string;
+};
+
+/* =========================================================
+   STORAGE KEYS
+========================================================= */
+
+const CURRENT_USER_KEY = "marketplace_current_user";
+const AUTOMARKET_USER_KEY = "automarketUser";
+const ADDRESS_STORAGE_KEY = "marketplace_addresses";
+
+/* =========================================================
+   READ USER
+========================================================= */
+
+function readCurrentUser(): CurrentUser | null {
+  try {
+    /*
+     * First try the main logged-in user key.
+     */
+    const currentUserRaw = window.localStorage.getItem(
+      CURRENT_USER_KEY
+    );
+
+    if (currentUserRaw) {
+      const parsed = JSON.parse(currentUserRaw);
+
+      if (parsed && typeof parsed === "object") {
+        return parsed;
+      }
+    }
+
+    /*
+     * Fallback for your current Register/Profile setup.
+     */
+    const automarketUserRaw =
+      window.localStorage.getItem(AUTOMARKET_USER_KEY);
+
+    if (automarketUserRaw) {
+      const parsed = JSON.parse(automarketUserRaw);
+
+      if (parsed && typeof parsed === "object") {
+        return parsed;
+      }
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/* =========================================================
+   NORMALIZE ROLE
+========================================================= */
+
+function normalizeRole(role?: string): Role {
+  const normalized = role?.toLowerCase().trim();
+
+  if (
+    normalized === "seller" ||
+    normalized === "vendor"
+  ) {
+    return "seller";
+  }
+
+  if (
+    normalized === "admin" ||
+    normalized === "administrator"
+  ) {
+    return "admin";
+  }
+
+  return "buyer";
+}
+
+/* =========================================================
+   USER NAME
+========================================================= */
+
+function getUserName(user: CurrentUser | null): string {
+  if (!user) {
+    return "User";
+  }
+
+  if (user.name?.trim()) {
+    return user.name.trim();
+  }
+
+  const fullName =
+    `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim();
+
+  return fullName || "User";
+}
+
+/* =========================================================
+   USER INITIALS
+========================================================= */
+
+function getInitials(user: CurrentUser | null): string {
+  const firstName = user?.firstName?.trim() || "";
+  const lastName = user?.lastName?.trim() || "";
+
+  if (firstName && lastName) {
+    return `${firstName[0]}${lastName[0]}`.toUpperCase();
+  }
+
+  const name = getUserName(user);
+
+  const parts = name
+    .split(" ")
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  if (parts.length >= 2) {
+    return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+  }
+
+  return name.substring(0, 2).toUpperCase();
+}
+
+/* =========================================================
+   READ ADDRESSES
+========================================================= */
+
+function readAddresses(): Address[] {
+  try {
+    const raw = window.localStorage.getItem(
+      ADDRESS_STORAGE_KEY
+    );
+
+    if (!raw) {
+      return [];
+    }
+
+    const parsed = JSON.parse(raw);
+
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+
+    return parsed;
+  } catch {
+    return [];
+  }
+}
+
+/* =========================================================
+   ADDRESS DISPLAY
+========================================================= */
+
+function getAddressDisplay(
+  addresses: Address[]
+): string {
+  if (!addresses.length) {
+    return "Add address";
+  }
+
+  const address = addresses[0];
+
+  if (address.city && address.street) {
+    return `${address.street}, ${address.city}`;
+  }
+
+  if (address.city) {
+    return address.city;
+  }
+
+  if (address.street) {
+    return address.street;
+  }
+
+  return "Address";
+}
+
+/* =========================================================
+   PROPS
+========================================================= */
 
 type Props = {
   userName?: string;
   showLinks?: boolean;
 };
 
-type CurrentUser = {
-  name?: string;
-  role?: string;
-};
-
-function readCurrentUser(): CurrentUser | null {
-  try {
-    const raw = window.localStorage.getItem("marketplace_current_user");
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
-}
+/* =========================================================
+   NAVBAR
+========================================================= */
 
 export default function Navbar({
-  userName = "Sipho",
+  userName = "User",
   showLinks = true,
 }: Props) {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [search, setSearch] = useState("");
-  const [currentUser] = useState<CurrentUser | null>(() => readCurrentUser());
-
   const navigate = useNavigate();
+
   const { itemCount } = useCart();
 
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const isSeller = currentUser?.role === "Seller";
-  const displayName = currentUser?.name || userName;
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  /* =====================================================
-     CLOSE PROFILE MENU WHEN CLICKING OUTSIDE
-  ===================================================== */
+  const [search, setSearch] = useState("");
+
+  const [currentUser, setCurrentUser] =
+    useState<CurrentUser | null>(() =>
+      readCurrentUser()
+    );
+
+  const [addresses, setAddresses] = useState<Address[]>(
+    () => readAddresses()
+  );
+
+  /* =======================================================
+     DERIVED DATA
+  ======================================================= */
+
+  const role = normalizeRole(currentUser?.role);
+
+  const displayName =
+    getUserName(currentUser) !== "User"
+      ? getUserName(currentUser)
+      : userName;
+
+  const initials = getInitials(currentUser);
+
+  const addressDisplay =
+    getAddressDisplay(addresses);
+
+  /* =======================================================
+     REFRESH USER + ADDRESS
+  ======================================================= */
+
+  useEffect(() => {
+    const refreshData = () => {
+      setCurrentUser(readCurrentUser());
+      setAddresses(readAddresses());
+    };
+
+    refreshData();
+
+    window.addEventListener(
+      "storage",
+      refreshData
+    );
+
+    window.addEventListener(
+      "automarket-user-updated",
+      refreshData
+    );
+
+    window.addEventListener(
+      "automarket-address-updated",
+      refreshData
+    );
+
+    return () => {
+      window.removeEventListener(
+        "storage",
+        refreshData
+      );
+
+      window.removeEventListener(
+        "automarket-user-updated",
+        refreshData
+      );
+
+      window.removeEventListener(
+        "automarket-address-updated",
+        refreshData
+      );
+    };
+  }, []);
+
+  /* =======================================================
+     CLOSE PROFILE MENU
+  ======================================================= */
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
         menuRef.current &&
-        !menuRef.current.contains(event.target as Node)
+        !menuRef.current.contains(
+          event.target as Node
+        )
       ) {
         setIsMenuOpen(false);
       }
     }
 
-    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener(
+      "mousedown",
+      handleClickOutside
+    );
 
     return () => {
       document.removeEventListener(
@@ -74,9 +344,9 @@ export default function Navbar({
     };
   }, []);
 
-  /* =====================================================
+  /* =======================================================
      SEARCH
-  ===================================================== */
+  ======================================================= */
 
   function handleSearch() {
     const query = search.trim();
@@ -90,40 +360,104 @@ export default function Navbar({
     }
   }
 
+  /* =======================================================
+     LOGOUT
+  ======================================================= */
+
+  function handleLogout() {
+    const confirmed = window.confirm(
+      "Are you sure you want to log out?"
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    /*
+     * Clear the frontend authentication information.
+     *
+     * When your backend authentication is connected,
+     * this is where the API logout request can also be made.
+     */
+    localStorage.removeItem(
+      CURRENT_USER_KEY
+    );
+
+    localStorage.removeItem(
+      AUTOMARKET_USER_KEY
+    );
+
+    localStorage.removeItem("marketRole");
+    localStorage.removeItem("token");
+    localStorage.removeItem("authToken");
+
+    setCurrentUser(null);
+    setIsMenuOpen(false);
+
+    navigate("/login");
+  }
+
+  /* =======================================================
+     ROLE LABEL
+  ======================================================= */
+
+  const roleLabel =
+    role === "seller"
+      ? "Seller"
+      : role === "admin"
+        ? "Admin"
+        : "Buyer";
+
+  /* =======================================================
+     RENDER
+  ======================================================= */
+
   return (
     <header className="site-header">
 
-      {/* =================================================
+      {/* ===================================================
           MAIN NAVBAR
-      ================================================= */}
+      =================================================== */}
 
       <nav className="navbar">
 
-        {/* LOGO */}
+        {/* =================================================
+            LOGO
+        ================================================= */}
+
         <Link to="/home" className="navbar-logo">
+  <img
+    src="/automarket - logo.png"
+    alt="AutoMarket"
+    className="navbar-logo-image"
+  />
+</Link>
 
-          <img
-            src="/automarket-logo.svg"
-            alt="AutoMarket"
-            className="navbar-logo-image"
-          />
-
-        </Link>
-
-
-        {/* ADDRESS - now next to the logo */}
+        {/* =================================================
+            ADDRESS
+        ================================================= */}
 
         <Link
           to="/addresses"
-          className="nav-action"
+          className="navbar-address"
+          title={
+            addressDisplay === "Add address"
+              ? "Add your address"
+              : addressDisplay
+          }
         >
-          <FiMapPin className="action-icon" />
+          <span className="navbar-address-icon">
+            <FiMapPin />
+          </span>
 
-          <span className="action-label">
-            Address
+          <span className="navbar-address-content">
+            <small>Deliver to</small>
+
+            <strong>
+              {addressDisplay}
+            </strong>
           </span>
         </Link>
-
 
         {/* =================================================
             SEARCH
@@ -151,44 +485,48 @@ export default function Navbar({
           <button
             type="button"
             onClick={handleSearch}
-            aria-label="Search"
           >
             Search
           </button>
 
         </div>
 
-
         {/* =================================================
-            RIGHT SIDE ACTIONS
+            RIGHT ACTIONS
         ================================================= */}
 
         <div className="navbar-actions">
 
-
-          {/* NOTIFICATIONS */}
+          {/* ===============================================
+              NOTIFICATIONS
+          =============================================== */}
 
           <Link
             to="/notifications"
             className="nav-action"
+            aria-label="Notifications"
           >
-            <FiBell className="action-icon" />
+            <span className="nav-action-icon-wrapper">
+              <FiBell className="action-icon" />
+            </span>
 
             <span className="action-label">
               Notifications
             </span>
           </Link>
 
+          {/* ===============================================
+              CART
+              Buyer only
+          =============================================== */}
 
-          {/* CART - buyers only */}
-
-          {!isSeller && (
+          {role === "buyer" && (
             <Link
               to="/cart"
               className="nav-action nav-cart-action"
+              aria-label="Shopping cart"
             >
-
-              <span className="icon-wrapper">
+              <span className="nav-action-icon-wrapper">
 
                 <FiShoppingCart className="action-icon" />
 
@@ -206,14 +544,12 @@ export default function Navbar({
               <span className="action-label">
                 Cart
               </span>
-
             </Link>
           )}
 
-
-          {/* =================================================
+          {/* ===============================================
               PROFILE
-          ================================================= */}
+          =============================================== */}
 
           <div
             className="nav-profile-wrapper"
@@ -224,33 +560,68 @@ export default function Navbar({
               type="button"
               className="nav-profile"
               onClick={() =>
-                setIsMenuOpen((open) => !open)
+                setIsMenuOpen(
+                  (open) => !open
+                )
               }
               aria-haspopup="true"
               aria-expanded={isMenuOpen}
             >
 
-              <span className="profile-icon">
-                <FiUser />
+              <span className="profile-initials">
+                {initials}
               </span>
 
-              <span className="profile-name">
-                {displayName}
+              <span className="profile-user-info">
+
+                <strong>
+                  {displayName}
+                </strong>
+
+                <small>
+                  {roleLabel}
+                </small>
+
               </span>
 
               <FiChevronDown
                 className={`profile-chevron ${
-                  isMenuOpen ? "open" : ""
+                  isMenuOpen
+                    ? "open"
+                    : ""
                 }`}
               />
 
             </button>
 
-
-            {/* PROFILE DROPDOWN */}
+            {/* =============================================
+                PROFILE DROPDOWN
+            ============================================= */}
 
             {isMenuOpen && (
               <div className="profile-dropdown">
+
+                {/* PROFILE HEADER */}
+
+                <div className="profile-dropdown-header">
+
+                  <span className="profile-dropdown-avatar">
+                    {initials}
+                  </span>
+
+                  <div>
+                    <strong>
+                      {displayName}
+                    </strong>
+
+                    <span>
+                      {roleLabel}
+                    </span>
+                  </div>
+
+                </div>
+
+                {/* PROFILE */}
 
                 <Link
                   to="/profile"
@@ -259,50 +630,129 @@ export default function Navbar({
                     setIsMenuOpen(false)
                   }
                 >
-
                   <FiUser />
 
                   <span>
                     Profile
                   </span>
-
                 </Link>
 
+                {/* ADDRESS */}
 
                 <Link
-                  to="/login"
+                  to="/addresses"
                   className="profile-dropdown-item"
                   onClick={() =>
                     setIsMenuOpen(false)
                   }
                 >
-
-                  <FiRepeat />
+                  <FiMapPin />
 
                   <span>
-                    Switch User
+                    Addresses
                   </span>
-
                 </Link>
 
+                {/* SETTINGS */}
+
+                <Link
+                  to="/settings"
+                  className="profile-dropdown-item"
+                  onClick={() =>
+                    setIsMenuOpen(false)
+                  }
+                >
+                  <FiSettings />
+
+                  <span>
+                    Settings
+                  </span>
+                </Link>
+
+                {/* =========================================
+                    SELLER LINKS
+                ========================================= */}
+
+                {role === "seller" && (
+                  <>
+                    <Link
+                      to="/my-listings"
+                      className="profile-dropdown-item"
+                      onClick={() =>
+                        setIsMenuOpen(false)
+                      }
+                    >
+                      <FiPackage />
+
+                      <span>
+                        My Listings
+                      </span>
+                    </Link>
+                  </>
+                )}
+
+                {/* =========================================
+                    ADMIN LINKS
+                ========================================= */}
+
+                {role === "admin" && (
+                  <>
+                    <Link
+                      to="/admin"
+                      className="profile-dropdown-item"
+                      onClick={() =>
+                        setIsMenuOpen(false)
+                      }
+                    >
+                      <FiBarChart2 />
+
+                      <span>
+                        Admin Dashboard
+                      </span>
+                    </Link>
+
+                    <Link
+                      to="/admin/users"
+                      className="profile-dropdown-item"
+                      onClick={() =>
+                        setIsMenuOpen(false)
+                      }
+                    >
+                      <FiUsers />
+
+                      <span>
+                        Manage Users
+                      </span>
+                    </Link>
+
+                    <Link
+                      to="/admin/orders"
+                      className="profile-dropdown-item"
+                      onClick={() =>
+                        setIsMenuOpen(false)
+                      }
+                    >
+                      <FiClipboard />
+
+                      <span>
+                        Manage Orders
+                      </span>
+                    </Link>
+                  </>
+                )}
+
+                {/* LOGOUT */}
 
                 <button
                   type="button"
                   className="profile-dropdown-item logout"
-                  onClick={() => {
-                    setIsMenuOpen(false);
-
-                    window.localStorage.removeItem("marketplace_current_user");
-                    navigate("/login");
-                  }}
+                  onClick={handleLogout}
                 >
-
                   <FiLogOut />
 
                   <span>
                     Log Out
                   </span>
-
                 </button>
 
               </div>
@@ -314,15 +764,76 @@ export default function Navbar({
 
       </nav>
 
-
-      {/* =====================================================
+      {/* ===================================================
           SECOND NAVIGATION
-      ===================================================== */}
+      =================================================== */}
 
       {showLinks && (
-        <nav className="nav-links-row">
+        <nav
+          className="nav-links-row"
+          aria-label="Main navigation"
+        >
 
-          {isSeller ? (
+          {/* =================================================
+              BUYER NAVIGATION
+          ================================================= */}
+
+          {role === "buyer" && (
+            <>
+              <NavLink
+                to="/home"
+                end
+                className={({ isActive }) =>
+                  isActive ? "active" : ""
+                }
+              >
+                Home
+              </NavLink>
+
+              <NavLink
+                to="/shop"
+                className={({ isActive }) =>
+                  isActive ? "active" : ""
+                }
+              >
+                Browse Listings
+              </NavLink>
+
+              <NavLink
+                to="/categories"
+                className={({ isActive }) =>
+                  isActive ? "active" : ""
+                }
+              >
+                Categories
+              </NavLink>
+
+              <NavLink
+                to="/wishlist"
+                className={({ isActive }) =>
+                  isActive ? "active" : ""
+                }
+              >
+                <FiHeart />
+                Wishlist
+              </NavLink>
+
+              <NavLink
+                to="/contact"
+                className={({ isActive }) =>
+                  isActive ? "active" : ""
+                }
+              >
+                Contact
+              </NavLink>
+            </>
+          )}
+
+          {/* =================================================
+              SELLER NAVIGATION
+          ================================================= */}
+
+          {role === "seller" && (
             <>
               <NavLink
                 to="/dashboard"
@@ -352,6 +863,15 @@ export default function Navbar({
               </NavLink>
 
               <NavLink
+                to="/seller-orders"
+                className={({ isActive }) =>
+                  isActive ? "active" : ""
+                }
+              >
+                Orders Received
+              </NavLink>
+
+              <NavLink
                 to="/contact"
                 className={({ isActive }) =>
                   isActive ? "active" : ""
@@ -360,48 +880,53 @@ export default function Navbar({
                 Contact
               </NavLink>
             </>
-          ) : (
+          )}
+
+          {/* =================================================
+              ADMIN NAVIGATION
+          ================================================= */}
+
+          {role === "admin" && (
             <>
               <NavLink
-                to="/home"
+                to="/admin"
                 end
                 className={({ isActive }) =>
                   isActive ? "active" : ""
                 }
               >
-                Home
+                Dashboard
               </NavLink>
 
-
               <NavLink
-                to="/shop"
+                to="/admin/users"
                 className={({ isActive }) =>
                   isActive ? "active" : ""
                 }
               >
-                Browse Listings
+                <FiUsers />
+                Users
               </NavLink>
 
-
               <NavLink
-                to="/categories"
+                to="/admin/listings"
                 className={({ isActive }) =>
                   isActive ? "active" : ""
                 }
               >
-                Categories
+                <FiPackage />
+                Listings
               </NavLink>
 
-
               <NavLink
-                to="/list-product"
+                to="/admin/orders"
                 className={({ isActive }) =>
                   isActive ? "active" : ""
                 }
               >
-                Sell
+                <FiClipboard />
+                Orders
               </NavLink>
-
 
               <NavLink
                 to="/contact"

@@ -50,6 +50,12 @@
 .notification-dot { position: absolute; top: 6px; right: 6px; width: 6px; height: 6px; border: 1px solid #fff; border-radius: 50%; background: #df725f; }
 .admin-avatar, .member-avatar { display: grid; place-items: center; border-radius: 50%; font-weight: 700; }
 .admin-avatar { width: 33px; height: 33px; color: #fff; background: var(--admin-teal); font-size: 10px; }
+.admin-profile-menu-wrap { position: relative; }
+.admin-profile-trigger { display: flex; align-items: center; gap: 12px; padding: 0; border: 0; background: transparent; color: inherit; cursor: pointer; text-align: left; }
+.admin-profile-menu { position: absolute; top: 46px; right: 0; z-index: 6; display: grid; gap: 3px; width: 175px; padding: 7px; border: 1px solid var(--admin-border); border-radius: 8px; background: #fff; box-shadow: 0 14px 35px rgba(16,42,67,.14); }
+.admin-profile-menu button { display: flex; align-items: center; gap: 9px; width: 100%; padding: 9px 10px; border: 0; border-radius: 5px; color: var(--admin-ink); background: transparent; cursor: pointer; font-size: 11px; font-weight: 600; text-align: left; }
+.admin-profile-menu button:hover { background: #f3f6f8; }
+.admin-profile-menu .logout-menu-item { color: #b45f51; }
 .admin-profile { display: grid; gap: 1px; min-width: 92px; }
 .admin-profile strong { color: var(--admin-ink); font-size: 12px; }
 .admin-profile span { color: var(--admin-muted); font-size: 10px; }

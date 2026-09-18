@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../Components/Navbar";
-import CheckoutSteps from "../Components/CheckoutSteps";
 import OrderSummary from "../Components/OrderSummary";
 import { useCart } from "../Components/useCart";
 import "./DetailsPage.css"
@@ -36,8 +35,6 @@ export default function DetailsPage(){
     <div className="checkout-page">
         <p className="secure-label">SECURE CHECKOUT</p>
         <h2>Your Details</h2>
-
-        <CheckoutSteps currentStep={1} />
 
         <div className="checkout-content">
           <div className="details-form">
