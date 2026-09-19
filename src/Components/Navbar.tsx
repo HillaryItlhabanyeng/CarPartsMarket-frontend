@@ -60,12 +60,8 @@ const ADDRESS_STORAGE_KEY = "marketplace_addresses";
 
 function readCurrentUser(): CurrentUser | null {
   try {
-    /*
-     * First try the main logged-in user key.
-     */
-    const currentUserRaw = window.localStorage.getItem(
-      CURRENT_USER_KEY
-    );
+    const currentUserRaw =
+      window.localStorage.getItem(CURRENT_USER_KEY);
 
     if (currentUserRaw) {
       const parsed = JSON.parse(currentUserRaw);
@@ -75,9 +71,6 @@ function readCurrentUser(): CurrentUser | null {
       }
     }
 
-    /*
-     * Fallback for your current Register/Profile setup.
-     */
     const automarketUserRaw =
       window.localStorage.getItem(AUTOMARKET_USER_KEY);
 
@@ -170,9 +163,8 @@ function getInitials(user: CurrentUser | null): string {
 
 function readAddresses(): Address[] {
   try {
-    const raw = window.localStorage.getItem(
-      ADDRESS_STORAGE_KEY
-    );
+    const raw =
+      window.localStorage.getItem(ADDRESS_STORAGE_KEY);
 
     if (!raw) {
       return [];
@@ -241,7 +233,8 @@ export default function Navbar({
 
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] =
+    useState(false);
 
   const [search, setSearch] = useState("");
 
@@ -250,9 +243,10 @@ export default function Navbar({
       readCurrentUser()
     );
 
-  const [addresses, setAddresses] = useState<Address[]>(
-    () => readAddresses()
-  );
+  const [addresses, setAddresses] =
+    useState<Address[]>(() =>
+      readAddresses()
+    );
 
   /* =======================================================
      DERIVED DATA
@@ -373,12 +367,6 @@ export default function Navbar({
       return;
     }
 
-    /*
-     * Clear the frontend authentication information.
-     *
-     * When your backend authentication is connected,
-     * this is where the API logout request can also be made.
-     */
     localStorage.removeItem(
       CURRENT_USER_KEY
     );
@@ -425,13 +413,16 @@ export default function Navbar({
             LOGO
         ================================================= */}
 
-        <Link to="/home" className="navbar-logo">
-  <img
-    src="/automarket - logo.png"
-    alt="AutoMarket"
-    className="navbar-logo-image"
-  />
-</Link>
+        <Link
+          to="/home"
+          className="navbar-logo"
+        >
+          <img
+            src="/automarket - logo.png"
+            alt="AutoMarket"
+            className="navbar-logo-image"
+          />
+        </Link>
 
         {/* =================================================
             ADDRESS
@@ -517,7 +508,7 @@ export default function Navbar({
 
           {/* ===============================================
               CART
-              Buyer only
+              BUYER ONLY
           =============================================== */}
 
           {role === "buyer" && (
@@ -674,21 +665,19 @@ export default function Navbar({
                 ========================================= */}
 
                 {role === "seller" && (
-                  <>
-                    <Link
-                      to="/my-listings"
-                      className="profile-dropdown-item"
-                      onClick={() =>
-                        setIsMenuOpen(false)
-                      }
-                    >
-                      <FiPackage />
+                  <Link
+                    to="/my-listings"
+                    className="profile-dropdown-item"
+                    onClick={() =>
+                      setIsMenuOpen(false)
+                    }
+                  >
+                    <FiPackage />
 
-                      <span>
-                        My Listings
-                      </span>
-                    </Link>
-                  </>
+                    <span>
+                      My Listings
+                    </span>
+                  </Link>
                 )}
 
                 {/* =========================================
@@ -808,14 +797,18 @@ export default function Navbar({
                 Categories
               </NavLink>
 
+              {/* =================================================
+                  WISHLIST
+              ================================================= */}
+
               <NavLink
                 to="/wishlist"
                 className={({ isActive }) =>
                   isActive ? "active" : ""
                 }
               >
-                {/* <FiHeart /> */}
-                Wishlist
+                <FiHeart />
+                <span>Wishlist</span>
               </NavLink>
 
               <NavLink
@@ -905,7 +898,7 @@ export default function Navbar({
                 }
               >
                 <FiUsers />
-                Users
+                <span>Users</span>
               </NavLink>
 
               <NavLink
@@ -915,7 +908,7 @@ export default function Navbar({
                 }
               >
                 <FiPackage />
-                Listings
+                <span>Listings</span>
               </NavLink>
 
               <NavLink
@@ -925,7 +918,7 @@ export default function Navbar({
                 }
               >
                 <FiClipboard />
-                Orders
+                <span>Orders</span>
               </NavLink>
 
               <NavLink

@@ -41,6 +41,7 @@ import ProductListingPage from "./Pages/ProductListingPage";
 import ProfilePage from "./Pages/ProfilePage";
 import ProductDetailsPage from "./Pages/ProductDetailsPage";
 import AdminPage from "./Pages/AdminPage";
+import AdminUsersPage from "./Pages/AdminUsersPage";
 import ShippingPage from "./Pages/ShippingPage";
 
 
@@ -104,6 +105,7 @@ function App() {
 
         {/* Admin */}
         <Route path="/admin" element={<AdminPage />} />
+        <Route path="/admin/users" element={<AdminUsersPage />} />
         <Route path="/shipping" element={<ShippingPage />} />
 
         {/* Reviews */}

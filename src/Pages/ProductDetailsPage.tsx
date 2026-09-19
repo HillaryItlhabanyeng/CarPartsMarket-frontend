@@ -6,7 +6,7 @@ import { useCart } from "../Components/useCart";
 import "./ProductDetailsPage.css";
 import { FaMinus, FaPlus, FaShoppingCart, FaStar, FaArrowLeft, FaThumbsUp, FaThumbsDown } from "react-icons/fa";
 
-// Product type definition - accepts both string and number for id
+
 interface Product {
   id: string | number;
   name: string;
