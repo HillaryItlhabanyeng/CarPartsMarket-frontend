@@ -3,13 +3,11 @@ import type { FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 
 import SideNavigation from "../Components/SideNavigation";
-import UserInitialsBadge from "../Components/UserInitialsBadge";
-import NotificationBell from "../Components/NotificationBell";
 
 import "../Components/DashboardShell.css";
 import "./AddressesPage.css";
 
-import { FaCog, FaMapMarkerAlt, FaTrash, FaPlus } from "react-icons/fa";
+import { FaBell, FaCog, FaMapMarkerAlt, FaTrash, FaPlus } from "react-icons/fa";
 
 type Address = {
   id: number;
@@ -86,9 +84,14 @@ function AddressesPage() {
             <p>Manage the addresses linked to your account</p>
           </div>
           <div className="dash-header-right">
-            <NotificationBell />
+            <FaBell className="dash-notification" onClick={() => navigate("/notifications")} />
             <FaCog className="dash-settings" onClick={() => navigate("/settings")} />
-            <UserInitialsBadge />
+            <img
+              src="https://i.pravatar.cc/150?img=12"
+              alt="User"
+              className="dash-profile"
+              onClick={() => navigate("/profile")}
+            />
           </div>
         </header>
 

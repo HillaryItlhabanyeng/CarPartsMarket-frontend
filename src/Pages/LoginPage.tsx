@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import type { FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { upsertUser } from "../Components/userStore";
 
 import "./LoginPage.css";
 
@@ -25,7 +24,6 @@ type StoredUser = {
     email?: string;
     mobile?: string;
     role?: string;
-    status?: string;
 };
 
 const LoginPage: React.FC = () => {
@@ -138,15 +136,6 @@ const LoginPage: React.FC = () => {
         );
 
         /* =========================
-           SUSPENDED ACCOUNTS CANNOT LOG IN
-        ========================= */
-
-        if (signedInUser?.status?.toLowerCase() === "suspended") {
-            alert("This account has been suspended. Please contact an administrator.");
-            return;
-        }
-
-        /* =========================
            GET USER INFORMATION
         ========================= */
 
@@ -198,21 +187,6 @@ const LoginPage: React.FC = () => {
              */
             role: selectedRole,
         };
-
-        /* =========================
-           STORE THIS LOGIN
-           (creates the user if new, keeps the admin's list up to date)
-        ========================= */
-
-        upsertUser({
-            email: normalizedEmail,
-            firstName,
-            lastName,
-            name: userName,
-            mobile,
-            role: selectedRole,
-            loggedIn: true,
-        });
 
         /* =========================
            SAVE CURRENT USER

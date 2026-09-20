@@ -3,24 +3,22 @@
    ========================================================= */
 
 .settings-page {
-  --settings-navy: #0d2b45;
-  --settings-dark-navy: #081b2e;
+  --settings-navy: #1e3a5f;
+  --settings-dark-navy: #142c49;
 
-  --settings-accent: #a67b5b;
-  --settings-accent-dark: #8c6547;
+  --settings-teal: #16b3a5;
+  --settings-dark-teal: #0e988d;
 
   --settings-gold: #f5a623;
 
   --settings-white: #ffffff;
-  --settings-light-grey: #f1f3f5;
-  --settings-border: #e5e9ec;
+  --settings-light-grey: #f3f3f3;
+  --settings-border: #dddddd;
 
-  --settings-text: #0d2b45;
-  --settings-muted: #6b7a7f;
+  --settings-text: #151515;
+  --settings-muted: #777777;
 
   --settings-danger: #df1010;
-
-  --settings-toggle-on: #2e9e5b;
 
   width: 100%;
   min-height: 100vh;
@@ -83,7 +81,7 @@
 
   background: var(--settings-white);
 
-  border-bottom: 1px solid var(--settings-border);
+  border-bottom: 1px solid #dddddd;
 }
 
 /* =========================================================
@@ -175,7 +173,7 @@
 }
 
 .settings-top-icon:hover {
-  background: var(--settings-light-grey);
+  background: #f3f3f3;
 }
 
 .settings-top-icon-active {
@@ -185,12 +183,28 @@
 }
 
 .settings-top-icon-active:hover {
-  background: var(--settings-light-grey);
+  background: #f3f3f3;
 }
 
 /* =========================================================
    NOTIFICATION DOT
    ========================================================= */
+
+.settings-notification-dot {
+  position: absolute;
+
+  top: 6px;
+  right: 6px;
+
+  width: 7px;
+  height: 7px;
+
+  background: var(--settings-teal);
+
+  border: 1px solid var(--settings-white);
+
+  border-radius: 50%;
+}
 
 /* =========================================================
    PROFILE AVATAR
@@ -229,10 +243,23 @@
   transform: scale(1.04);
 
   box-shadow:
-    0 2px 8px rgba(13, 43, 69, 0.2);
+    0 2px 8px rgba(20, 44, 73, 0.2);
 }
 
-/* INITIALS (top-corner profile button) */
+/* ACTUAL SIPHO IMAGE */
+
+.settings-avatar-image {
+  width: 100%;
+  height: 100%;
+
+  display: block;
+
+  object-fit: cover;
+
+  border-radius: 50%;
+}
+
+/* FALLBACK ONLY IF IMAGE CANNOT LOAD */
 
 .settings-avatar-fallback {
   width: 100%;
@@ -284,7 +311,7 @@
 
   background: var(--settings-light-grey);
 
-  border: 1px solid #e5e9ec;
+  border: 1px solid #e0e0e0;
 
   border-radius: 9px;
 
@@ -322,7 +349,7 @@
 
   background: var(--settings-white);
 
-  color: var(--settings-accent);
+  color: var(--settings-teal);
 
   font-size: 15px;
 
@@ -367,7 +394,7 @@
 
   padding: 13px 3px;
 
-  border-top: 1px solid #e5e9ec;
+  border-top: 1px solid #d9d9d9;
 }
 
 .settings-row-content {
@@ -415,7 +442,7 @@
 
   background: transparent;
 
-  color: var(--settings-accent-dark);
+  color: var(--settings-dark-teal);
 
   font-family:
     Arial,
@@ -457,7 +484,7 @@
 
   border-radius: 20px;
 
-  background: #c9d1d8;
+  background: #c9c9c9;
 
   cursor: pointer;
 
@@ -485,7 +512,7 @@
 }
 
 .settings-toggle-on {
-  background: var(--settings-toggle-on);
+  background: var(--settings-teal);
 }
 
 .settings-toggle-on .settings-toggle-knob {
@@ -503,13 +530,13 @@
 
   padding: 9px 32px 9px 11px;
 
-  border: 1px solid #c9d1d8;
+  border: 1px solid #cccccc;
 
   border-radius: 6px;
 
   background: var(--settings-white);
 
-  color: #0d2b45;
+  color: #333333;
 
   font-family:
     Arial,
@@ -524,10 +551,10 @@
 }
 
 .settings-language-select:focus {
-  border-color: var(--settings-accent);
+  border-color: var(--settings-teal);
 
   box-shadow:
-    0 0 0 2px rgba(166, 123, 91, 0.15);
+    0 0 0 2px rgba(22, 179, 165, 0.12);
 }
 
 /* =========================================================
@@ -551,7 +578,7 @@
 
   border: none;
 
-  border-top: 1px solid #e5e9ec;
+  border-top: 1px solid #d9d9d9;
 
   background: transparent;
 
@@ -575,11 +602,11 @@
 .settings-clickable-row:hover
   .settings-row-content
   strong {
-  color: var(--settings-accent-dark);
+  color: var(--settings-dark-teal);
 }
 
 .settings-clickable-row:hover > svg {
-  color: var(--settings-accent);
+  color: var(--settings-teal);
 }
 
 /* =========================================================
@@ -603,7 +630,7 @@
 
   border-radius: 6px;
 
-  background: var(--settings-accent);
+  background: var(--settings-teal);
 
   color: var(--settings-white);
 
@@ -624,10 +651,10 @@
 }
 
 .settings-save-button:hover {
-  background: var(--settings-accent-dark);
+  background: var(--settings-dark-teal);
 
   box-shadow:
-    0 5px 12px rgba(166, 123, 91, 0.25);
+    0 5px 12px rgba(22, 179, 165, 0.2);
 }
 
 .settings-save-button:active {
@@ -755,7 +782,7 @@
    ========================================================= */
 
 .settings-dark-mode {
-  background: #0d2b45;
+  background: #142c49;
 
   color: #ffffff;
 }
@@ -763,11 +790,11 @@
 .settings-dark-mode .settings-page-content,
 .settings-dark-mode .settings-main,
 .settings-dark-mode .settings-topbar {
-  background: #0d2b45;
+  background: #142c49;
 }
 
 .settings-dark-mode .settings-topbar {
-  border-bottom-color: #30465d;
+  border-bottom-color: #31516f;
 }
 
 .settings-dark-mode .settings-back-button {
@@ -779,13 +806,13 @@
 }
 
 .settings-dark-mode .settings-top-icon:hover {
-  background: #163a56;
+  background: #1e3a5f;
 }
 
 .settings-dark-mode .settings-card {
-  background: #163a56;
+  background: #1e3a5f;
 
-  border-color: #30465d;
+  border-color: #31516f;
 }
 
 .settings-dark-mode .settings-card-header h2 {
@@ -797,7 +824,7 @@
 }
 
 .settings-dark-mode .settings-row {
-  border-top-color: #30465d;
+  border-top-color: #31516f;
 }
 
 .settings-dark-mode .settings-row-content strong {
@@ -809,7 +836,7 @@
 }
 
 .settings-dark-mode .settings-clickable-row {
-  border-top-color: #30465d;
+  border-top-color: #31516f;
 }
 
 .settings-dark-mode .settings-clickable-row
@@ -819,15 +846,15 @@
 }
 
 .settings-dark-mode .settings-language-select {
-  background: #0d2b45;
+  background: #142c49;
 
-  border-color: #4a6580;
+  border-color: #52708c;
 
   color: #ffffff;
 }
 
 .settings-dark-mode .settings-card-icon {
-  background: #0d2b45;
+  background: #142c49;
 }
 
 .settings-dark-mode .settings-danger-card {
@@ -841,7 +868,7 @@
 }
 
 .settings-dark-mode .settings-logout-button {
-  background: #0d2b45;
+  background: #142c49;
 
   color: #ffffff;
 
@@ -925,7 +952,13 @@
     height: 36px;
   }
 
-    .settings-content {
+  .settings-notification-dot {
+    top: 4px;
+
+    right: 4px;
+  }
+
+  .settings-content {
     padding: 18px 15px 30px;
   }
 

@@ -7,30 +7,11 @@ type UploadedImage = {
   preview: string;
 };
 
-const MAX_IMAGES = 4;
-
-type ImageUploaderProps = {
-  // Called whenever the selection changes, with the files ordered main image first.
-  onChange?: (files: File[]) => void;
-};
-
-function ImageUploader({ onChange }: ImageUploaderProps) {
+function ImageUploader() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const [images, setImages] = useState<UploadedImage[]>([]);
   const [mainImageId, setMainImageId] = useState<string | null>(null);
-
-  // Update the local state and tell the parent form which files are selected (main image first)
-  const applySelection = (nextImages: UploadedImage[], nextMainId: string | null) => {
-    setImages(nextImages);
-    setMainImageId(nextMainId);
-
-    const main = nextImages.find((image) => image.id === nextMainId);
-    const ordered = main
-      ? [main, ...nextImages.filter((image) => image.id !== nextMainId)]
-      : nextImages;
-    onChange?.(ordered.map((image) => image.file));
-  };
 
   // Open the device's file picker
   const handleAddPhotos = () => {
@@ -43,18 +24,23 @@ function ImageUploader({ onChange }: ImageUploaderProps) {
 
     if (!selectedFiles) return;
 
-    // The picker allows multiple files, so only keep as many as there is room for
-    const files = Array.from(selectedFiles).slice(0, MAX_IMAGES - images.length);
+    const files = Array.from(selectedFiles);
     const newImages = files.map((file) => ({
       id: crypto.randomUUID(),
       file: file,
       preview: URL.createObjectURL(file),
     }));
 
-    if (newImages.length > 0) {
+    setImages((previousImages) => {
+      const updatedImages = [...previousImages, ...newImages];
+
       // Make the first image the main image if there isn't one already
-      applySelection([...images, ...newImages], mainImageId ?? newImages[0].id);
-    }
+      if (!mainImageId && newImages.length > 0) {
+        setMainImageId(newImages[0].id);
+      }
+
+      return updatedImages;
+    });
 
     event.target.value = "";
   };
@@ -65,17 +51,21 @@ function ImageUploader({ onChange }: ImageUploaderProps) {
     if (imageToDelete) URL.revokeObjectURL(imageToDelete.preview);
 
     const updatedImages = images.filter((image) => image.id !== id);
+    setImages(updatedImages);
 
     // Adjust main image if deleted
-    const nextMainId =
-      mainImageId === id ? (updatedImages[0]?.id ?? null) : mainImageId;
-
-    applySelection(updatedImages, nextMainId);
+    if (mainImageId === id) {
+      if (updatedImages.length > 0) {
+        setMainImageId(updatedImages[0].id);
+      } else {
+        setMainImageId(null);
+      }
+    }
   };
 
   // Set an image as the main image
   const handleSetMain = (id: string) => {
-    applySelection(images, id);
+    setMainImageId(id);
   };
 
   // Get the current main image object
@@ -136,7 +126,7 @@ function ImageUploader({ onChange }: ImageUploaderProps) {
           type="button"
           className="add-image-button"
           onClick={handleAddPhotos}
-          disabled={images.length >= MAX_IMAGES}
+          disabled={images.length >= 4}
         >
           +
         </button>

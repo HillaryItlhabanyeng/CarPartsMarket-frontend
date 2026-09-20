@@ -1,9 +1,6 @@
 import { useNavigate } from "react-router-dom";
 
 import SideNavigation from "../Components/SideNavigation";
-import UserInitialsBadge from "../Components/UserInitialsBadge";
-import NotificationBell from "../Components/NotificationBell";
-import { getSellerOrderRows } from "../Components/sellerOrders";
 import { useOrders } from "../Components/useOrders";
 import { useSaved } from "../Components/useSaved";
 
@@ -11,6 +8,7 @@ import "../Components/DashboardShell.css";
 import "./DashboardPage.css";
 
 import {
+  FaBell,
   FaCog,
   FaBoxOpen,
   FaClock,
@@ -29,8 +27,6 @@ type CurrentUser = {
 
 type PendingProduct = {
   id: number;
-  sellerEmail?: string;
-  sold?: boolean;
 };
 
 function readFromStorage<T>(key: string, fallback: T): T {
@@ -52,7 +48,6 @@ function DashboardPage() {
     "marketplace_current_user",
     null
   );
-  const isSeller = currentUser?.role?.toLowerCase() === "seller";
   const pendingProducts = readFromStorage<PendingProduct[]>(
     "marketplace_pending_products",
     []
@@ -62,61 +57,38 @@ function DashboardPage() {
     []
   );
 
-  // Only this user's own listings, the same rule the My Listings page uses
-  const email = currentUser?.email?.toLowerCase();
-  const isMine = (product: PendingProduct) =>
-    !email || product.sellerEmail?.toLowerCase() === email;
-  const myPending = pendingProducts.filter(isMine);
-  // Sold items stay in My Listings as "Sold" but are no longer active
-  const myApproved = approvedProducts.filter(isMine).filter((product) => !product.sold);
-
   const stats = [
     {
       label: "Active Listings",
-      value: myApproved.length,
+      value: approvedProducts.length,
       icon: <FaBoxOpen />,
       onClick: () => navigate("/my-listings"),
     },
     {
       label: "Pending Approval",
-      value: myPending.length,
+      value: pendingProducts.length,
       icon: <FaClock />,
       onClick: () => navigate("/my-listings"),
     },
-    // Sellers see the orders buyers placed for their items; buyers see their own purchases
-    isSeller
-      ? {
-          label: "Orders Received",
-          value: getSellerOrderRows(orders, currentUser).length,
-          icon: <FaShoppingBag />,
-          onClick: () => navigate("/seller-orders"),
-        }
-      : {
-          label: "My Orders",
-          value: orders.filter((order) => order.buyerEmail?.toLowerCase() === currentUser?.email?.toLowerCase()).length,
-          icon: <FaShoppingBag />,
-          onClick: () => navigate("/orders"),
-        },
-    // Wishlists belong to buyers, so sellers don't get one
-    ...(isSeller
-      ? []
-      : [
-          {
-            label: "Wishlist",
-            value: savedItems.length,
-            icon: <FaHeart />,
-            onClick: () => navigate("/wishlist"),
-          },
-        ]),
+    {
+      label: "My Orders",
+      value: orders.length,
+      icon: <FaShoppingBag />,
+      onClick: () => navigate("/orders"),
+    },
+    {
+      label: "Wishlist",
+      value: savedItems.length,
+      icon: <FaHeart />,
+      onClick: () => navigate("/wishlist"),
+    },
   ];
 
   const quickActions = [
     { label: "List a Product", onClick: () => navigate("/list-product") },
     { label: "View My Listings", onClick: () => navigate("/my-listings") },
-    isSeller
-      ? { label: "Orders Received", onClick: () => navigate("/seller-orders") }
-      : { label: "My Orders", onClick: () => navigate("/orders") },
-    ...(isSeller ? [] : [{ label: "Wishlist", onClick: () => navigate("/wishlist") }]),
+    { label: "My Orders", onClick: () => navigate("/orders") },
+    { label: "Wishlist", onClick: () => navigate("/wishlist") },
     { label: "Addresses", onClick: () => navigate("/addresses") },
     { label: "Settings", onClick: () => navigate("/settings") },
   ];
@@ -132,9 +104,14 @@ function DashboardPage() {
             <p>Welcome back{currentUser?.name ? `, ${currentUser.name}` : ""}</p>
           </div>
           <div className="dash-header-right">
-            <NotificationBell />
+            <FaBell className="dash-notification" onClick={() => navigate("/notifications")} />
             <FaCog className="dash-settings" onClick={() => navigate("/settings")} />
-            <UserInitialsBadge />
+            <img
+              src="https://i.pravatar.cc/150?img=12"
+              alt="User"
+              className="dash-profile"
+              onClick={() => navigate("/profile")}
+            />
           </div>
         </header>
 

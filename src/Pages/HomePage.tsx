@@ -4,8 +4,7 @@ import { FaMapMarkerAlt, FaShoppingCart } from "react-icons/fa";
 import Navbar from "../Components/Navbar";
 import Footer from "../Components/Footer";
 import { useCart } from "../Components/useCart";
-import { getLiveListings, toDetailsProduct } from "../Components/marketListings";
-import type { StoredListing } from "../Components/adminStore";
+import { products } from "../data/products";
 import "./HomePage.css";
 import { useNavigate } from "react-router-dom";
 
@@ -59,19 +58,17 @@ export default function HomePage() {
   const [showMore, setShowMore] = useState(false);
   const [mode, setMode] = useState<Mode>("buyer");
   const { addItem } = useCart();
-  const [products] = useState<StoredListing[]>(() => getLiveListings());
   const visibleProducts = showMore ? products : products.slice(0, 5);
   // const featuredCategories = categories.filter(
   //   (category) => category !== "All Categories"
   // );
 
-  const handleAddToCart = (product: StoredListing) => {
+  const handleAddToCart = (product: typeof products[number]) => {
     addItem({
-      id: String(product.id),
+      id: product.id,
       name: product.title,
       price: product.price,
       seller: product.seller,
-      sellerEmail: product.sellerEmail,
       category: product.category,
       location: product.location,
       imageUrl: product.image,
@@ -215,27 +212,17 @@ export default function HomePage() {
             View all listings
           </Link>
         </div>
-        {products.length === 0 && (
-          <p style={{ textAlign: "center", color: "#6b7a7f", padding: "24px 0" }}>
-            No parts have been listed yet. Approved seller listings appear here.
-          </p>
-        )}
         <div className="ut-listings">
           {visibleProducts.map((product) => (
             <article className="ut-listing-card" key={product.id}>
               <Link
                 to={`/product/${product.id}`}
-                state={{ product: toDetailsProduct(product) }}
                 className="ut-listing-image-link"
               >
                 <img src={product.image} alt={product.title} />
               </Link>
               <div className="ut-listing-info">
-                <Link
-                  to={`/product/${product.id}`}
-                  state={{ product: toDetailsProduct(product) }}
-                  className="ut-listing-title"
-                >
+                <Link to={`/product/${product.id}`} className="ut-listing-title">
                   {product.title}
                 </Link>
                 <span className="ut-listing-price">
@@ -255,15 +242,13 @@ export default function HomePage() {
             </article>
           ))}
         </div>
-        {products.length > 5 && (
-          <button
-            type="button"
-            className="ut-more-button"
-            onClick={() => setShowMore((current) => !current)}
-          >
-            {showMore ? "Show less" : "More items"}
-          </button>
-        )}
+        <button
+          type="button"
+          className="ut-more-button"
+          onClick={() => setShowMore((current) => !current)}
+        >
+          {showMore ? "Show less" : "More items"}
+        </button>
       </section>
 
       <Footer />

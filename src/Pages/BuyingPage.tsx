@@ -1,14 +1,9 @@
 import Navbar from "../Components/Navbar";
 import { useOrders } from "../Components/useOrders";
-import { getCurrentUser } from "../Components/notificationStore";
 import "./BuyingPage.css";
 
 export default function BuyingPage() {
-  const { orders: allOrders } = useOrders();
-
-  // Orders are shared through storage, so only show the logged-in buyer's own purchases
-  const email = getCurrentUser()?.email?.toLowerCase();
-  const orders = allOrders.filter((order) => !email || order.buyerEmail?.toLowerCase() === email);
+  const { orders } = useOrders();
 
   const formatCurrency = (value: number) => `R${value.toFixed(2)}`;
 
@@ -17,8 +12,8 @@ export default function BuyingPage() {
       <Navbar />
 
       <div className="buying-header">
-        <h1>Orders</h1>
-        <p>Items and orders purchased at AutoMarket</p>
+        <h1>Buying</h1>
+        <p>Items and orders you've purchased on UniTrade</p>
       </div>
 
       {orders.length === 0 ? (

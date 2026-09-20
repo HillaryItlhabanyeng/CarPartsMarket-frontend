@@ -13,7 +13,7 @@
   display: flex;
   flex-direction: column;
 
-  background: #a67b5b;
+  background: #1E3A5F;
   color: #ffffff;
 
   z-index: 1000;
@@ -129,7 +129,7 @@
 /* Active item */
 
 .side-nav-item.active {
-  background: rgba(255, 255, 255, 0.18);
+  background: #16b3a5;
 
   color: #ffffff;
 
@@ -225,7 +225,7 @@
 /* Submenu active */
 
 .submenu-item.active {
-  color: #ffffff;
+  color: #16b3a5;
 
   font-weight: 700;
 }

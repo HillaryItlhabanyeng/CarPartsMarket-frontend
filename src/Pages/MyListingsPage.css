@@ -1,33 +1,52 @@
-/* =========================================================
-   MY LISTINGS (renders inside the shared dashboard shell)
-   Theme: bronze #a67b5b, navy #0d2b45, white cards.
-========================================================= */
+.ml-page {
+  font-family: Arial, Helvetica, sans-serif;
+  color: #1a1a1a;
+}
+
+.ml-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 24px 32px 16px 32px;
+}
+
+.ml-page-header h1 {
+  font-size: 26px;
+  font-weight: 800;
+  margin: 0 0 4px 0;
+}
+
+.ml-page-header p {
+  font-size: 13px;
+  color: #888;
+  margin: 0;
+}
 
 .ml-sell-btn {
-  background: #a67b5b;
+  background: #14b8a6;
   color: #fff;
   border: none;
   padding: 10px 20px;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   height: fit-content;
 }
 
 .ml-sell-btn:hover {
-  filter: brightness(1.06);
+  background: #0d9488;
 }
 
 /* Status filter chips */
 .ml-filter-bar {
   display: flex;
   gap: 10px;
-  padding: 0 0 20px 0;
+  padding: 0 32px 20px 32px;
 }
 
 .ml-filter-chip {
-  border: 1px solid #c9d1d8;
+  border: 1px solid #ddd;
   background: #fff;
   border-radius: 20px;
   padding: 7px 16px;
@@ -42,8 +61,8 @@
 }
 
 .ml-filter-chip.ml-active {
-  background: #a67b5b;
-  border-color: #a67b5b;
+  background: #14b8a6;
+  border-color: #14b8a6;
   color: #fff;
 }
 
@@ -54,8 +73,6 @@
   align-items: center;
   gap: 16px;
   padding: 60px 32px;
-  background: #fff;
-  border-radius: 12px;
   color: #888;
   font-size: 14px;
 }
@@ -65,13 +82,12 @@
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 16px;
-  padding: 0;
+  padding: 0 32px 40px 32px;
 }
 
 .ml-card {
-  border: none;
-  border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(13, 43, 69, 0.06);
+  border: 1px solid #eee;
+  border-radius: 8px;
   overflow: hidden;
   background: #fff;
 }
@@ -101,7 +117,7 @@
 }
 
 .ml-status-active {
-  background: #a67b5b;
+  background: #14b8a6;
 }
 
 .ml-status-sold {
@@ -121,14 +137,13 @@
 
 .ml-card-title {
   font-size: 12px;
-  color: #0d2b45;
-  font-weight: 600;
+  color: #333;
 }
 
 .ml-card-price {
   font-size: 14px;
   font-weight: 700;
-  color: #a67b5b;
+  color: #14b8a6;
 }
 
 .ml-card-location {
