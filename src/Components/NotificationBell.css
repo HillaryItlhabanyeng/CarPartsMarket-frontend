@@ -1,0 +1,226 @@
+/* =========================================================
+   NOTIFICATION BELL + POP-UP PANEL
+   Theme: bronze #a67b5b, navy #0d2b45, white card, #e5e9ec borders.
+========================================================= */
+
+.nb-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.nb-trigger {
+  display: flex;
+  align-items: center;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font-size: 19px;
+  color: #45576a;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.nb-trigger:hover {
+  color: #a67b5b;
+}
+
+/* the buyer navbar item is styled by Navbar.css; only reset the button chrome */
+.nb-wrap button.nav-action {
+  padding: 0;
+  border: none;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+
+.nb-badge {
+  position: absolute;
+  top: -7px;
+  right: -8px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid #ffffff;
+  border-radius: 10px;
+  background: #c0392b;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.nb-wrap-navbar .nb-badge {
+  top: -2px;
+  right: 8px;
+}
+
+/* ---------- Panel ---------- */
+
+.nb-panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: -8px;
+  z-index: 2000;
+  width: 360px;
+  max-width: calc(100vw - 24px);
+  max-height: 480px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #e5e9ec;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 12px 32px rgba(13, 43, 69, 0.18);
+  text-align: left;
+  cursor: default;
+}
+
+.nb-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid #e5e9ec;
+}
+
+.nb-panel-head strong {
+  font-size: 15px;
+  color: #0d2b45;
+}
+
+.nb-link {
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #a67b5b;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.nb-link:hover {
+  text-decoration: underline;
+}
+
+.nb-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-y: auto;
+}
+
+.nb-item {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  border: none;
+  border-bottom: 1px solid #f1f3f5;
+  background: #ffffff;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.nb-item:hover {
+  background: #f8f9fa;
+}
+
+.nb-item.nb-unread {
+  background: rgba(166, 123, 91, 0.07);
+}
+
+.nb-item.nb-unread:hover {
+  background: rgba(166, 123, 91, 0.12);
+}
+
+.nb-item-icon {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #f1f3f5;
+  font-size: 16px;
+}
+
+.nb-item-copy {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nb-item-copy b {
+  font-size: 13px;
+  color: #0d2b45;
+}
+
+.nb-item-copy span {
+  font-size: 12px;
+  line-height: 1.4;
+  color: #45576a;
+}
+
+.nb-item-copy small {
+  font-size: 11px;
+  color: #6b7a7f;
+}
+
+.nb-unread-dot {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  margin-top: 6px;
+  border-radius: 50%;
+  background: #a67b5b;
+}
+
+.nb-empty {
+  padding: 32px 16px;
+  text-align: center;
+  font-size: 13px;
+  color: #6b7a7f;
+}
+
+.nb-footer {
+  padding: 12px 16px;
+  border: none;
+  border-top: 1px solid #e5e9ec;
+  background: #ffffff;
+  color: #a67b5b;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+}
+
+.nb-footer:hover {
+  background: #f8f9fa;
+}
+
+@media (max-width: 480px) {
+  .nb-panel {
+    position: fixed;
+    top: 64px;
+    right: 12px;
+    left: 12px;
+    width: auto;
+    max-width: none;
+  }
+}

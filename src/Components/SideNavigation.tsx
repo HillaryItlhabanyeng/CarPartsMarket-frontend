@@ -99,7 +99,12 @@ function getInitials(user: CurrentUser | null): string {
   return name.substring(0, 2).toUpperCase();
 }
 
-export default function SideNavigation() {
+type SideNavigationProps = {
+  // Lets a page force a sidebar (the admin pages always show the admin menu)
+  role?: Role;
+};
+
+export default function SideNavigation({ role: roleOverride }: SideNavigationProps = {}) {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -121,7 +126,7 @@ export default function SideNavigation() {
    * Seller -> seller sidebar
    * Admin  -> admin sidebar
    */
-  const role = normalizeRole(user?.role);
+  const role = roleOverride ?? normalizeRole(user?.role);
 
   /*
    * Refresh the user if another part of the application
@@ -438,7 +443,7 @@ export default function SideNavigation() {
             <button
               type="button"
               className={`listing-side-nav-item ${
-                isActive("/admin") ? "active" : ""
+                location.pathname === "/admin" ? "active" : ""
               }`}
               onClick={() => navigate("/admin")}
             >

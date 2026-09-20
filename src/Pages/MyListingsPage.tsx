@@ -1,6 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "../Components/Navbar";
+import SideNavigation from "../Components/SideNavigation";
+import UserInitialsBadge from "../Components/UserInitialsBadge";
+import NotificationBell from "../Components/NotificationBell";
+import { FaCog } from "react-icons/fa";
+
+import "../Components/DashboardShell.css";
 import "./MyListingsPage.css";
 
 type ListingStatus = "Active" | "Pending" | "Sold";
@@ -115,17 +120,24 @@ export default function MyListingsPage() {
   const navigate = useNavigate();
 
   return (
-    <div className="ml-page">
-      <Navbar />
+    <div className="dash-app-container">
+      <SideNavigation />
 
-      <div className="ml-page-header">
-        <div>
-          <h1>My Listings</h1>
-          <p>Manage the items you're selling on UniTrade</p>
-        </div>
-        <button className="ml-sell-btn" onClick={() => navigate("/list-product")}>Sell an Item</button>
-      </div>
+      <main className="dash-main-content">
+        <header className="dash-top-header">
+          <div className="dash-header-left">
+            <h1>My Listings</h1>
+            <p>Manage the items you're selling at AutoMarket</p>
+          </div>
+          <div className="dash-header-right">
+            <button className="ml-sell-btn" onClick={() => navigate("/list-product")}>Sell an Item</button>
+            <NotificationBell />
+            <FaCog className="dash-settings" onClick={() => navigate("/settings")} />
+            <UserInitialsBadge />
+          </div>
+        </header>
 
+        <div className="dash-scrollable-area">
       <div className="ml-filter-bar">
         {statusFilters.map((status) => (
           <button
@@ -183,6 +195,8 @@ export default function MyListingsPage() {
           ))}
         </div>
       )}
+        </div>
+      </main>
     </div>
   );
 }

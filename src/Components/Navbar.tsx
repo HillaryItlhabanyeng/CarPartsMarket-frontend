@@ -3,7 +3,6 @@ import { Link, NavLink, useNavigate } from "react-router-dom";
 
 import {
   FiSearch,
-  FiBell,
   FiShoppingCart,
   FiChevronDown,
   FiUser,
@@ -18,6 +17,7 @@ import {
 } from "react-icons/fi";
 
 import { useCart } from "./useCart";
+import NotificationBell from "./NotificationBell";
 import "./Navbar.css";
 
 /* =========================================================
@@ -492,19 +492,7 @@ export default function Navbar({
               NOTIFICATIONS
           =============================================== */}
 
-          <Link
-            to="/notifications"
-            className="nav-action"
-            aria-label="Notifications"
-          >
-            <span className="nav-action-icon-wrapper">
-              <FiBell className="action-icon" />
-            </span>
-
-            <span className="action-label">
-              Notifications
-            </span>
-          </Link>
+          <NotificationBell variant="navbar" />
 
           {/* ===============================================
               CART
