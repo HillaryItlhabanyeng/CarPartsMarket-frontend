@@ -1,0 +1,583 @@
+/* =========================================================
+   ADMIN AREA - shared styles (AdminShell + Admin pages)
+   Same theme as the rest of the app: bronze #a67b5b, navy #0d2b45,
+   white cards, grey #f1f3f5 page and #e5e9ec borders.
+   Every class is prefixed "adm-" to stay clear of AdminUsersPage.css.
+========================================================= */
+
+/* ---------- Header controls ---------- */
+
+.adm-icon-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font-size: 19px;
+  color: #45576a;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.adm-icon-btn:hover {
+  color: #a67b5b;
+}
+
+.adm-initials {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 2px solid #e5e9ec;
+  border-radius: 50%;
+  background: #0d2b45;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.adm-initials:hover {
+  background: #a67b5b;
+}
+
+/* ---------- Stat cards (same look as the Dashboard) ---------- */
+
+.adm-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.adm-stat {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px;
+  border: none;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 2px 10px rgba(13, 43, 69, 0.06);
+  text-align: left;
+  font-family: inherit;
+}
+
+button.adm-stat {
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+button.adm-stat:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(13, 43, 69, 0.1);
+}
+
+.adm-stat-icon {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: rgba(166, 123, 91, 0.12);
+  color: #a67b5b;
+  font-size: 18px;
+}
+
+.adm-stat-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.adm-stat-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: #0d2b45;
+  line-height: 1.2;
+}
+
+.adm-stat-label {
+  font-size: 12px;
+  color: #6b7a7f;
+}
+
+/* ---------- Layout helpers ---------- */
+
+.adm-grid-2 {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.adm-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.adm-card-head .dash-card-title {
+  margin: 0;
+}
+
+.adm-link-btn {
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #a67b5b;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.adm-link-btn:hover {
+  text-decoration: underline;
+}
+
+.adm-empty {
+  padding: 28px 12px;
+  text-align: center;
+  font-size: 14px;
+  color: #6b7a7f;
+}
+
+.adm-notice {
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  border: 1px solid #d5c3b3;
+  border-radius: 8px;
+  background: #f7f0e9;
+  color: #0d2b45;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* ---------- Buttons (same as Dashboard actions) ---------- */
+
+.adm-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: 36px;
+  padding: 0 16px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: filter 0.2s ease, background 0.2s ease;
+}
+
+.adm-btn-primary {
+  background: #a67b5b;
+  color: #ffffff;
+}
+
+.adm-btn-primary:hover {
+  filter: brightness(1.06);
+}
+
+.adm-btn-secondary {
+  border-color: #c9d1d8;
+  background: #ffffff;
+  color: #30465d;
+}
+
+.adm-btn-secondary:hover {
+  background: #f4f5f6;
+}
+
+.adm-btn-danger {
+  border-color: #e6b8b0;
+  background: #ffffff;
+  color: #b4443a;
+}
+
+.adm-btn-danger:hover {
+  background: #fdf1ef;
+}
+
+.adm-actions-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.adm-actions-row .adm-btn {
+  height: 42px;
+  padding: 0 20px;
+  font-size: 14px;
+}
+
+/* ---------- Listing rows (dashboard queue + Listings page) ---------- */
+
+.adm-listing {
+  display: flex;
+  gap: 16px;
+  padding: 16px 0;
+  border-top: 1px solid #e5e9ec;
+}
+
+.adm-listing:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.adm-listing-img {
+  width: 96px;
+  height: 96px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid #e5e9ec;
+  border-radius: 10px;
+  background: #f8f9fa;
+  color: #6b7a7f;
+  font-size: 22px;
+}
+
+.adm-listing-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.adm-listing-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.adm-listing-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.adm-listing-cat {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #a67b5b;
+}
+
+.adm-listing-title {
+  margin: 2px 0 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #0d2b45;
+}
+
+.adm-listing-price {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0d2b45;
+  white-space: nowrap;
+}
+
+.adm-listing-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  font-size: 12px;
+  color: #6b7a7f;
+}
+
+.adm-listing-desc {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: #45576a;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.adm-listing-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+/* ---------- Toolbar, tabs, search ---------- */
+
+.adm-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.adm-tabs {
+  display: flex;
+  gap: 8px;
+}
+
+.adm-tab {
+  height: 36px;
+  padding: 0 16px;
+  border: 1px solid #c9d1d8;
+  border-radius: 20px;
+  background: #ffffff;
+  color: #30465d;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.adm-tab:hover {
+  background: #f4f5f6;
+}
+
+.adm-tab.active {
+  border-color: #a67b5b;
+  background: #a67b5b;
+  color: #ffffff;
+}
+
+.adm-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.adm-input,
+.adm-select {
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid #c9d1d8;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #0d2b45;
+  font-family: inherit;
+  font-size: 13px;
+}
+
+.adm-input:focus,
+.adm-select:focus {
+  outline: none;
+  border-color: #a67b5b;
+  box-shadow: 0 0 0 2px rgba(166, 123, 91, 0.15);
+}
+
+.adm-input {
+  min-width: 220px;
+}
+
+/* ---------- Pills ---------- */
+
+.adm-pill {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: #f1f3f5;
+  color: #45576a;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.adm-pill-pending {
+  background: #fbf1dd;
+  color: #9a6a12;
+}
+
+.adm-pill-paid,
+.adm-pill-live {
+  background: rgba(166, 123, 91, 0.14);
+  color: #8c6547;
+}
+
+.adm-pill-shipped {
+  background: #e3ecf5;
+  color: #30465d;
+}
+
+.adm-pill-delivered {
+  background: #e4f2e9;
+  color: #2c7a4b;
+}
+
+.adm-pill-cancelled,
+.adm-pill-sold {
+  background: #f1f3f5;
+  color: #6b7a7f;
+}
+
+/* ---------- Table ---------- */
+
+.adm-table-wrap {
+  overflow-x: auto;
+}
+
+.adm-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.adm-table th {
+  padding: 10px 12px;
+  border-bottom: 1px solid #e5e9ec;
+  color: #6b7a7f;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-align: left;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.adm-table td {
+  padding: 14px 12px;
+  border-bottom: 1px solid #e5e9ec;
+  color: #0d2b45;
+  vertical-align: middle;
+}
+
+.adm-table tr:last-child td {
+  border-bottom: none;
+}
+
+.adm-table small {
+  display: block;
+  margin-top: 2px;
+  color: #6b7a7f;
+  font-size: 12px;
+}
+
+.adm-ref {
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #a67b5b;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.adm-ref:hover {
+  text-decoration: underline;
+}
+
+/* ---------- Activity feed ---------- */
+
+.adm-activity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-top: 1px solid #e5e9ec;
+}
+
+.adm-activity:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.adm-activity-icon {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(13, 43, 69, 0.08);
+  color: #0d2b45;
+  font-size: 14px;
+}
+
+.adm-activity-icon.bronze {
+  background: rgba(166, 123, 91, 0.12);
+  color: #a67b5b;
+}
+
+.adm-activity-copy {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.adm-activity-copy strong {
+  font-size: 13px;
+  color: #0d2b45;
+}
+
+.adm-activity-copy span,
+.adm-activity time {
+  font-size: 12px;
+  color: #6b7a7f;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 1100px) {
+  .adm-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .adm-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 650px) {
+  .adm-listing {
+    flex-direction: column;
+  }
+
+  .adm-listing-img {
+    width: 100%;
+    height: 180px;
+  }
+
+  .adm-input {
+    min-width: 0;
+    width: 100%;
+  }
+
+}
+
+@media (max-width: 480px) {
+  .adm-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .adm-actions-row {
+    flex-direction: column;
+  }
+
+  .adm-actions-row .adm-btn {
+    width: 100%;
+  }
+}

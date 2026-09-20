@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 
 import {
   FaSearch,
@@ -8,8 +8,6 @@ import {
   FaCheck,
   FaTimes,
   FaChevronUp,
-  FaShoppingCart,
-  FaHeart,
   FaBoxOpen,
   FaUsers,
   FaUser,
@@ -17,7 +15,20 @@ import {
   FaMoneyBillWave,
 } from "react-icons/fa";
 
-import Navbar from "../Components/Navbar";
+import AdminShell from "../Components/AdminShell";
+import {
+  approveListing,
+  declineListing,
+  getApprovedListings,
+  getPendingListings,
+  type StoredListing,
+} from "../Components/adminStore";
+import type { Order } from "../Components/OrdersContext.types";
+import {
+  readUsers as readStoredUsers,
+  writeUsers as writeStoredUsers,
+  type UserRecord,
+} from "../Components/userStore";
 
 import "./AdminUsersPage.css";
 
@@ -45,213 +56,143 @@ type User = {
   listings?: SellerProduct[];
   revenue?: number;
 
-  cartItems?: number;
-  wishlistItems?: number;
   orders?: number;
   spent?: number;
 };
 
-const STORAGE_KEY = "marketplace_users";
-
-const demoUsers: User[] = [
-  {
-    id: 1,
-    initials: "TM",
-    name: "Thabo Moekoena",
-    email: "thabo@example.com",
-    role: "Seller",
-    joined: "12 Jan 2026",
-    status: "Active",
-    revenue: 12450,
-    listings: [
-      {
-        id: 101,
-        name: "Toyota Corolla Brake Pads",
-        price: 850,
-        status: "Live",
-        buyerInterest: 14,
-      },
-      {
-        id: 102,
-        name: "VW Polo Front Bumper",
-        price: 1500,
-        status: "Pending",
-        buyerInterest: 8,
-      },
-      {
-        id: 103,
-        name: "Ford Ranger Headlight",
-        price: 2100,
-        status: "Live",
-        buyerInterest: 6,
-      },
-    ],
-  },
-
-  {
-    id: 2,
-    initials: "LN",
-    name: "Liyabona Ngece",
-    email: "liyabona@example.com",
-    role: "Buyer",
-    joined: "18 Feb 2026",
-    status: "Active",
-    cartItems: 3,
-    wishlistItems: 6,
-    orders: 4,
-    spent: 4850,
-  },
-
-  {
-    id: 3,
-    initials: "KD",
-    name: "Karabo Dlamini",
-    email: "karabo@example.com",
-    role: "Seller",
-    joined: "02 Mar 2026",
-    status: "Pending",
-    revenue: 3200,
-    listings: [
-      {
-        id: 104,
-        name: "BMW 3 Series Grille",
-        price: 1200,
-        status: "Pending",
-        buyerInterest: 5,
-      },
-      {
-        id: 105,
-        name: "Mercedes C-Class Mirror",
-        price: 2000,
-        status: "Pending",
-        buyerInterest: 3,
-      },
-    ],
-  },
-
-  {
-    id: 4,
-    initials: "SN",
-    name: "Sipho Ndlovu",
-    email: "sipho@example.com",
-    role: "Buyer",
-    joined: "11 Mar 2026",
-    status: "Active",
-    cartItems: 1,
-    wishlistItems: 3,
-    orders: 2,
-    spent: 2150,
-  },
-
-  {
-    id: 5,
-    initials: "MP",
-    name: "Mpho Petersen",
-    email: "mpho@example.com",
-    role: "Buyer",
-    joined: "22 Mar 2026",
-    status: "Suspended",
-    cartItems: 0,
-    wishlistItems: 2,
-    orders: 1,
-    spent: 750,
-  },
-];
-
 /* =========================================================
    READ USERS
+   Accounts come from registration / login. Listings, revenue,
+   orders and spend are worked out from what was really uploaded
+   and ordered, never typed in by hand.
 ========================================================= */
 
-function readUsers(): User[] {
+const isCancelled = (order: Order) => order.status === "CANCELLED";
+
+function readOrders(): Order[] {
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-
-    if (!stored) {
-      return demoUsers;
-    }
-
-    const parsed = JSON.parse(stored);
-
-    if (!Array.isArray(parsed)) {
-      return demoUsers;
-    }
-
-    return parsed.map((user: any, index: number) => {
-      const firstName = user.firstName ?? "";
-      const lastName = user.lastName ?? "";
-
-      const fullName =
-        user.name ??
-        `${firstName} ${lastName}`.trim() ??
-        "User";
-
-      const initials =
-        user.initials ??
-        `${firstName?.[0] ?? ""}${lastName?.[0] ?? ""}`.toUpperCase();
-
-      let role: UserRole = "Buyer";
-
-      if (
-        user.role === "Seller" ||
-        user.role === "seller" ||
-        user.role === "vendor"
-      ) {
-        role = "Seller";
-      }
-
-      if (
-        user.role === "Admin" ||
-        user.role === "admin" ||
-        user.role === "administrator"
-      ) {
-        role = "Admin";
-      }
-
-      let status: UserStatus = "Active";
-
-      if (
-        user.status === "Suspended" ||
-        user.status === "suspended"
-      ) {
-        status = "Suspended";
-      } else if (
-        user.status === "Pending" ||
-        user.status === "pending" ||
-        user.status === "Review" ||
-        user.status === "review"
-      ) {
-        status = "Pending";
-      }
-
-      return {
-        id: user.id ?? index + 1,
-        initials: initials || "U",
-        name: fullName || "User",
-        email: user.email ?? "",
-        role,
-        joined: user.joined ?? "Recently",
-        status,
-
-        listings: user.listings ?? [],
-        revenue: Number(user.revenue ?? 0),
-
-        cartItems: Number(user.cartItems ?? 0),
-        wishlistItems: Number(user.wishlistItems ?? 0),
-        orders: Number(user.orders ?? 0),
-        spent: Number(user.spent ?? 0),
-      };
-    });
+    const raw = window.localStorage.getItem("marketplace_orders");
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
   } catch {
-    return demoUsers;
+    return [];
   }
+}
+
+function readUsers(): User[] {
+  const orders = readOrders().filter((order) => !isCancelled(order));
+  const pending = getPendingListings();
+  const approved = getApprovedListings();
+
+  return readStoredUsers().map((user: UserRecord, index: number) => {
+    const fullName =
+      user.name ??
+      `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim();
+
+    const initials =
+      user.initials ??
+      `${user.firstName?.[0] ?? ""}${user.lastName?.[0] ?? ""}`.toUpperCase();
+
+    const roleText = user.role?.toLowerCase();
+    let role: UserRole = "Buyer";
+    if (roleText === "seller" || roleText === "vendor") role = "Seller";
+    if (roleText === "admin" || roleText === "administrator") role = "Admin";
+
+    const statusText = user.status?.toLowerCase();
+    let status: UserStatus = "Active";
+    if (statusText === "suspended") status = "Suspended";
+    else if (statusText === "pending" || statusText === "review") status = "Pending";
+
+    const email = (user.email ?? "").toLowerCase();
+    const isMine = (listing: StoredListing) =>
+      !!email && listing.sellerEmail?.toLowerCase() === email;
+
+    const unitsOrdered = (listingId: number) =>
+      orders.reduce(
+        (sum, order) =>
+          sum +
+          order.items
+            .filter((item) => item.id === String(listingId))
+            .reduce((units, item) => units + item.quantity, 0),
+        0
+      );
+
+    const listings: SellerProduct[] = [
+      ...pending.filter(isMine).map((listing) => ({
+        id: listing.id,
+        name: listing.title,
+        price: listing.price,
+        status: "Pending" as const,
+        buyerInterest: unitsOrdered(listing.id),
+      })),
+      ...approved.filter(isMine).map((listing) => ({
+        id: listing.id,
+        name: listing.title,
+        price: listing.price,
+        status: "Live" as const,
+        buyerInterest: unitsOrdered(listing.id),
+      })),
+    ];
+
+    const revenue = orders.reduce(
+      (sum, order) =>
+        sum +
+        order.items
+          .filter((item) => !!email && item.sellerEmail?.toLowerCase() === email)
+          .reduce((total, item) => total + item.price * item.quantity, 0),
+      0
+    );
+
+    const bought = orders.filter(
+      (order) => !!email && order.buyerEmail?.toLowerCase() === email
+    );
+
+    return {
+      id: Number(user.id ?? index + 1),
+      initials: initials || "U",
+      name: fullName || "User",
+      email: user.email ?? "",
+      role,
+      joined: user.joined ?? "Recently",
+      status,
+
+      listings,
+      revenue,
+
+      orders: bought.length,
+      spent: bought.reduce((sum, order) => sum + order.total, 0),
+    };
+  });
 }
 
 /* =========================================================
    SAVE USERS
+   Only the fields an admin can change are written back, so
+   details from registration (mobile, first/last name, last
+   login) are never lost.
 ========================================================= */
 
 function saveUsers(users: User[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(users));
+  const stored = readStoredUsers();
+
+  writeStoredUsers(
+    users.map((user) => {
+      const base =
+        stored.find((item) => Number(item.id) === user.id) ??
+        stored.find((item) => item.email?.toLowerCase() === user.email.toLowerCase());
+
+      return {
+        ...base,
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        status: user.status,
+        joined: user.joined,
+        initials: user.initials,
+      };
+    })
+  );
 }
 
 /* =========================================================
@@ -404,33 +345,19 @@ function AdminUsersPage() {
   ========================================================= */
 
   const handleListingStatus = (
-    userId: number,
     productId: number,
     status: SellerProduct["status"]
   ) => {
-    const nextUsers = users.map((user) => {
-      if (
-        user.id !== userId ||
-        !user.listings
-      ) {
-        return user;
-      }
+    const listing = getPendingListings().find(
+      (item) => item.id === productId
+    );
 
-      return {
-        ...user,
+    if (listing) {
+      if (status === "Live") approveListing(listing);
+      if (status === "Rejected") declineListing(listing);
+    }
 
-        listings: user.listings.map((product) =>
-          product.id === productId
-            ? {
-                ...product,
-                status,
-              }
-            : product
-        ),
-      };
-    });
-
-    updateUsers(nextUsers);
+    setUsers(readUsers());
   };
 
   /* =========================================================
@@ -458,48 +385,20 @@ function AdminUsersPage() {
   ========================================================= */
 
   return (
-    <div className="admin-users-page">
-
-      {/* =====================================================
-          AUTO MARKET NAVBAR
-      ===================================================== */}
-
-      <Navbar />
-
-      {/* =====================================================
-          MAIN CONTENT
-      ===================================================== */}
-
-      <main className="admin-users-content">
-
-        {/* PAGE HEADER */}
-
-        <section className="admin-users-header">
-          <div>
-            <span className="admin-users-eyebrow">
-              USER MANAGEMENT
-            </span>
-
-            <h1>Users</h1>
-
-            <p>
-              Manage AutoMarket buyers and sellers
-              from one place.
-            </p>
-          </div>
-
-          <div className="admin-users-header-actions">
-            <button
-              type="button"
-              className="admin-users-refresh-btn"
-              onClick={() =>
-                setUsers(readUsers())
-              }
-            >
-              Refresh
-            </button>
-          </div>
-        </section>
+    <AdminShell
+      title="Users"
+      subtitle="Manage AutoMarket buyers and sellers from one place"
+      actions={
+        <button
+          type="button"
+          className="admin-users-refresh-btn"
+          onClick={() => setUsers(readUsers())}
+        >
+          Refresh
+        </button>
+      }
+    >
+      <div className="admin-users-content">
 
         {/* ===================================================
             STATISTICS
@@ -650,7 +549,7 @@ function AdminUsersPage() {
                     expandedUser === user.id;
 
                   return (
-                    <>
+                    <Fragment key={user.id}>
                       {/* USER ROW */}
 
                       <tr
@@ -962,7 +861,7 @@ function AdminUsersPage() {
                                             </strong>
 
                                             <span>
-                                              interested buyers
+                                              units ordered
                                             </span>
 
                                           </div>
@@ -981,9 +880,7 @@ function AdminUsersPage() {
                                               <button
                                                 type="button"
                                                 onClick={() =>
-                                                  handleListingStatus(
-                                                    user.id,
-                                                    product.id,
+                                                  handleListingStatus(product.id,
                                                     "Live"
                                                   )
                                                 }
@@ -995,9 +892,7 @@ function AdminUsersPage() {
                                               <button
                                                 type="button"
                                                 onClick={() =>
-                                                  handleListingStatus(
-                                                    user.id,
-                                                    product.id,
+                                                  handleListingStatus(product.id,
                                                     "Rejected"
                                                   )
                                                 }
@@ -1053,38 +948,6 @@ function AdminUsersPage() {
 
                                   <div className="buyer-activity-card">
 
-                                    <FaShoppingCart />
-
-                                    <div>
-                                      <strong>
-                                        {user.cartItems ?? 0}
-                                      </strong>
-
-                                      <span>
-                                        Cart Items
-                                      </span>
-                                    </div>
-
-                                  </div>
-
-                                  <div className="buyer-activity-card">
-
-                                    <FaHeart />
-
-                                    <div>
-                                      <strong>
-                                        {user.wishlistItems ?? 0}
-                                      </strong>
-
-                                      <span>
-                                        Wishlist
-                                      </span>
-                                    </div>
-
-                                  </div>
-
-                                  <div className="buyer-activity-card">
-
                                     <FaBoxOpen />
 
                                     <div>
@@ -1128,7 +991,7 @@ function AdminUsersPage() {
                         </tr>
                       )}
 
-                    </>
+                    </Fragment>
                   );
                 })}
 
@@ -1161,7 +1024,7 @@ function AdminUsersPage() {
 
         </section>
 
-      </main>
+      </div>
 
       {/* =====================================================
           EDIT USER MODAL
@@ -1324,7 +1187,7 @@ function AdminUsersPage() {
 
       )}
 
-    </div>
+    </AdminShell>
   );
 }
 

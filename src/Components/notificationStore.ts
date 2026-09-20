@@ -26,7 +26,7 @@ const readNotifications = (): MarketplaceNotification[] => {
   }
 };
 
-export const getCurrentUser = (): { name?: string; email?: string } | null => {
+export const getCurrentUser = (): { name?: string; email?: string; role?: string } | null => {
   if (typeof window === "undefined") return null;
 
   try {
@@ -95,5 +95,39 @@ export const saveNotifications = (notifications: MarketplaceNotification[]) => {
     NOTIFICATIONS_STORAGE_KEY,
     JSON.stringify([...notifications, ...preservedNotifications])
   );
+  window.dispatchEvent(new Event("marketplace-notifications-updated"));
+};
+
+// Newest first. Ids look like "notification-<timestamp>-<random>", which sorts reliably
+// (the display timestamp is a formatted string that doesn't).
+const createdAt = (notification: MarketplaceNotification) =>
+  Number(notification.id.split("-")[1]) || 0;
+
+// What the notification bell shows: this user's notifications, plus the admin inbox
+// (new listing submissions) when the logged-in user is an admin.
+export const getBellNotifications = (): MarketplaceNotification[] => {
+  const user = getCurrentUser();
+  if (!user?.email) return [];
+
+  const mine = getNotificationsForCurrentUser();
+  const isAdmin = user.role?.toLowerCase() === "admin";
+  const combined = isAdmin
+    ? [...mine, ...getNotificationsForRecipient(ADMIN_NOTIFICATION_EMAIL)]
+    : mine;
+
+  const unique = new Map(combined.map((notification) => [notification.id, notification]));
+  return Array.from(unique.values()).sort((a, b) => createdAt(b) - createdAt(a));
+};
+
+// Marks the given notifications as read (works on the whole store, so it also covers the admin inbox)
+export const markNotificationsRead = (ids: string[]) => {
+  if (typeof window === "undefined" || ids.length === 0) return;
+
+  const wanted = new Set(ids);
+  const next = readNotifications().map((notification) =>
+    wanted.has(notification.id) ? { ...notification, read: true } : notification
+  );
+
+  window.localStorage.setItem(NOTIFICATIONS_STORAGE_KEY, JSON.stringify(next));
   window.dispatchEvent(new Event("marketplace-notifications-updated"));
 };
