@@ -11,12 +11,11 @@ import {
   FaHeart,
   FaBoxOpen,
   FaUsers,
-  FaUser,
   FaStore,
   FaMoneyBillWave,
 } from "react-icons/fa";
 
-import Navbar from "../Components/Navbar";
+import AdminShell from "../Components/AdminShell";
 import "./AdminUsersPage.css";
 
 type UserRole = "Buyer" | "Seller" | "Admin";
@@ -415,10 +414,6 @@ function AdminUsersPage() {
   const [expandedUser, setExpandedUser] = useState<number | null>(null);
   const [editingUser, setEditingUser] = useState<User | null>(null);
 
-  const refreshUsers = () => {
-    setUsers(buildUsers());
-  };
-
   const filteredUsers = useMemo(() => {
     const query = search.trim().toLowerCase();
 
@@ -442,11 +437,6 @@ function AdminUsersPage() {
       return matchesSearch && matchesFilter;
     });
   }, [users, search, filter]);
-
-  const totalUsers = users.length;
-  const totalBuyers = users.filter((user) => user.role === "Buyer").length;
-  const totalSellers = users.filter((user) => user.role === "Seller").length;
-  const pendingUsers = users.filter((user) => user.status === "Pending").length;
 
   const updateUsers = (nextUsers: User[]) => {
     setUsers(nextUsers);
@@ -506,423 +496,386 @@ function AdminUsersPage() {
   };
 
   return (
-    <div className="admin-users-page">
-      <Navbar />
-
-      <main className="admin-users-content">
-        <section className="admin-users-header">
-          <div>
-            <span className="admin-users-eyebrow">USER MANAGEMENT</span>
-            <h1>Users</h1>
-            <p>Manage the buyers and sellers registered on AutoMarket.</p>
-          </div>
-
-          <div className="admin-users-header-actions">
-            <button
-              type="button"
-              className="admin-users-refresh-btn"
-              onClick={refreshUsers}
-            >
-              Refresh
-            </button>
-          </div>
-        </section>
-
-        <section className="admin-user-stats">
-          <div className="admin-stat-card">
-            <div className="admin-stat-icon"><FaUsers /></div>
-            <div><span>Total Users</span><strong>{totalUsers}</strong></div>
-          </div>
-
-          <div className="admin-stat-card">
-            <div className="admin-stat-icon"><FaUser /></div>
-            <div><span>Buyers</span><strong>{totalBuyers}</strong></div>
-          </div>
-
-          <div className="admin-stat-card">
-            <div className="admin-stat-icon"><FaStore /></div>
-            <div><span>Sellers</span><strong>{totalSellers}</strong></div>
-          </div>
-
-          <div className="admin-stat-card">
-            <div className="admin-stat-icon"><FaMoneyBillWave /></div>
-            <div><span>Pending Approval</span><strong>{pendingUsers}</strong></div>
-          </div>
-        </section>
-
-        <section className="admin-users-toolbar">
-          <div className="admin-user-tabs">
-            {[
-              "All Users",
-              "Buyers",
-              "Sellers",
-              "Pending Approval",
-              "Suspended",
-            ].map((tab) => (
-              <button
-                key={tab}
-                type="button"
-                className={filter === tab ? "admin-user-tab active" : "admin-user-tab"}
-                onClick={() => setFilter(tab as typeof filter)}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
-
-          <div className="admin-user-search">
-            <FaSearch />
-            <input
-              type="text"
-              placeholder="Search users..."
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-            />
-          </div>
-        </section>
-
-        <section className="admin-users-table-card">
-          <div className="admin-table-heading">
-            <div>
-              <h2>All Users</h2>
-              <p>{filteredUsers.length} users found</p>
+    <AdminShell
+      title="Users"
+      subtitle="Manage the buyers and sellers registered on AutoMarket"
+    >
+      <div className="admin-users-page admin-users-embedded">
+        <div className="admin-users-content">
+          <section className="admin-users-toolbar">
+            <div className="admin-user-tabs">
+              {[
+                "All Users",
+                "Buyers",
+                "Sellers",
+                "Pending Approval",
+                "Suspended",
+              ].map((tab) => (
+                <button
+                  key={tab}
+                  type="button"
+                  className={filter === tab ? "admin-user-tab active" : "admin-user-tab"}
+                  onClick={() => setFilter(tab as typeof filter)}
+                >
+                  {tab}
+                </button>
+              ))}
             </div>
-          </div>
 
-          <div className="admin-users-table-wrapper">
-            <table className="admin-users-table">
-              <thead>
-                <tr>
-                  <th>User</th>
-                  <th>Role</th>
-                  <th>Joined</th>
-                  <th>Status</th>
-                  <th>Activity</th>
-                  <th>Revenue / Spent</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
+            <div className="admin-user-search">
+              <FaSearch />
+              <input
+                type="text"
+                placeholder="Search users..."
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+              />
+            </div>
+          </section>
 
-              <tbody>
-                {filteredUsers.map((user) => {
-                  const isExpanded = expandedUser === user.id;
+          <section className="admin-users-table-card">
+            <div className="admin-table-heading">
+              <div>
+                <h2>All Users</h2>
+                <p>{filteredUsers.length} users found</p>
+              </div>
+            </div>
 
-                  return (
-                    <Fragment key={user.id}>
-                      <tr className={isExpanded ? "admin-user-row expanded" : "admin-user-row"}>
-                        <td>
-                          <div className="admin-user-profile">
-                            <div className="admin-user-avatar">{user.initials}</div>
-                            <div>
-                              <strong>{user.name}</strong>
-                              <span>{user.email}</span>
+            <div className="admin-users-table-wrapper">
+              <table className="admin-users-table">
+                <thead>
+                  <tr>
+                    <th>User</th>
+                    <th>Role</th>
+                    <th>Joined</th>
+                    <th>Status</th>
+                    <th>Activity</th>
+                    <th>Revenue / Spent</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {filteredUsers.map((user) => {
+                    const isExpanded = expandedUser === user.id;
+
+                    return (
+                      <Fragment key={user.id}>
+                        <tr className={isExpanded ? "admin-user-row expanded" : "admin-user-row"}>
+                          <td>
+                            <div className="admin-user-profile">
+                              <div className="admin-user-avatar">{user.initials}</div>
+                              <div>
+                                <strong>{user.name}</strong>
+                                <span>{user.email}</span>
+                              </div>
                             </div>
-                          </div>
-                        </td>
+                          </td>
 
-                        <td>
-                          <span className={`admin-role-badge ${user.role.toLowerCase()}`}>
-                            {user.role}
-                          </span>
-                        </td>
+                          <td>
+                            <span className={`admin-role-badge ${user.role.toLowerCase()}`}>
+                              {user.role}
+                            </span>
+                          </td>
 
-                        <td>{user.joined}</td>
+                          <td>{user.joined}</td>
 
-                        <td>
-                          <span className={`admin-status-badge ${user.status.toLowerCase()}`}>
-                            <span />
-                            {user.status}
-                          </span>
-                        </td>
+                          <td>
+                            <span className={`admin-status-badge ${user.status.toLowerCase()}`}>
+                              <span />
+                              {user.status}
+                            </span>
+                          </td>
 
-                        <td>
-                          <div className="admin-activity-value">
-                            <strong>
-                              {user.role === "Seller"
-                                ? user.listings.length
-                                : user.orders}
-                            </strong>
-                            <span>{user.role === "Seller" ? "Listings" : "Orders"}</span>
-                          </div>
-                        </td>
+                          <td>
+                            <div className="admin-activity-value">
+                              <strong>
+                                {user.role === "Seller"
+                                  ? user.listings.length
+                                  : user.orders}
+                              </strong>
+                              <span>{user.role === "Seller" ? "Listings" : "Orders"}</span>
+                            </div>
+                          </td>
 
-                        <td>
-                          <div className="admin-money-value">
-                            <strong>
-                              {formatCurrency(
-                                user.role === "Seller" ? user.revenue : user.spent
+                          <td>
+                            <div className="admin-money-value">
+                              <strong>
+                                {formatCurrency(
+                                  user.role === "Seller" ? user.revenue : user.spent
+                                )}
+                              </strong>
+                              <span>{user.role === "Seller" ? "Revenue" : "Spent"}</span>
+                            </div>
+                          </td>
+
+                          <td>
+                            <div className="admin-user-actions">
+                              <button
+                                type="button"
+                                title="View details"
+                                onClick={() =>
+                                  setExpandedUser(isExpanded ? null : user.id)
+                                }
+                              >
+                                {isExpanded ? <FaChevronUp /> : <FaEye />}
+                              </button>
+
+                              <button
+                                type="button"
+                                title="Edit user"
+                                onClick={() => setEditingUser({ ...user })}
+                              >
+                                <FaEdit />
+                              </button>
+
+                              {user.status === "Pending" ? (
+                                <button
+                                  type="button"
+                                  title="Approve user"
+                                  onClick={() => handleApprove(user)}
+                                >
+                                  <FaCheck />
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  title={user.status === "Suspended" ? "Activate user" : "Suspend user"}
+                                  onClick={() => handleSuspend(user)}
+                                >
+                                  {user.status === "Suspended" ? <FaCheck /> : <FaBan />}
+                                </button>
                               )}
-                            </strong>
-                            <span>{user.role === "Seller" ? "Revenue" : "Spent"}</span>
-                          </div>
-                        </td>
-
-                        <td>
-                          <div className="admin-user-actions">
-                            <button
-                              type="button"
-                              title="View details"
-                              onClick={() =>
-                                setExpandedUser(isExpanded ? null : user.id)
-                              }
-                            >
-                              {isExpanded ? <FaChevronUp /> : <FaEye />}
-                            </button>
-
-                            <button
-                              type="button"
-                              title="Edit user"
-                              onClick={() => setEditingUser({ ...user })}
-                            >
-                              <FaEdit />
-                            </button>
-
-                            {user.status === "Pending" ? (
-                              <button
-                                type="button"
-                                title="Approve user"
-                                onClick={() => handleApprove(user)}
-                              >
-                                <FaCheck />
-                              </button>
-                            ) : (
-                              <button
-                                type="button"
-                                title={user.status === "Suspended" ? "Activate user" : "Suspend user"}
-                                onClick={() => handleSuspend(user)}
-                              >
-                                {user.status === "Suspended" ? <FaCheck /> : <FaBan />}
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-
-                      {isExpanded && (
-                        <tr className="admin-user-details-row">
-                          <td colSpan={7}>
-                            {user.role === "Seller" ? (
-                              <div className="admin-expanded-content">
-                                <div className="admin-expanded-header">
-                                  <div>
-                                    <span>SELLER ACTIVITY</span>
-                                    <h3>{user.name}'s Listings</h3>
-                                  </div>
-
-                                  <div className="seller-summary">
-                                    <div>
-                                      <strong>{user.listings.length}</strong>
-                                      <span>Listings</span>
-                                    </div>
-                                    <div>
-                                      <strong>
-                                        {user.listings.reduce(
-                                          (total, product) => total + product.buyerInterest,
-                                          0
-                                        )}
-                                      </strong>
-                                      <span>Interested Buyers</span>
-                                    </div>
-                                    <div>
-                                      <strong>{formatCurrency(user.revenue)}</strong>
-                                      <span>Revenue</span>
-                                    </div>
-                                  </div>
-                                </div>
-
-                                <div className="seller-products">
-                                  {user.listings.length > 0 ? (
-                                    user.listings.map((product) => (
-                                      <div className="seller-product" key={product.id}>
-                                        <div className="seller-product-info">
-                                          <div className="seller-product-icon"><FaStore /></div>
-                                          <div>
-                                            <strong>{product.name}</strong>
-                                            <span>{formatCurrency(product.price)}</span>
-                                          </div>
-                                        </div>
-
-                                        <div className="seller-interest">
-                                          <strong>{product.buyerInterest}</strong>
-                                          <span>interested buyers</span>
-                                        </div>
-
-                                        <span className={`listing-status ${product.status.toLowerCase()}`}>
-                                          {product.status}
-                                        </span>
-
-                                        {product.status === "Pending" && (
-                                          <div className="listing-actions">
-                                            <button
-                                              type="button"
-                                              onClick={() =>
-                                                handleListingStatus(user.id, product.id, "Live")
-                                              }
-                                            >
-                                              <FaCheck /> Approve
-                                            </button>
-
-                                            <button
-                                              type="button"
-                                              onClick={() =>
-                                                handleListingStatus(user.id, product.id, "Rejected")
-                                              }
-                                            >
-                                              <FaTimes /> Reject
-                                            </button>
-                                          </div>
-                                        )}
-                                      </div>
-                                    ))
-                                  ) : (
-                                    <div className="admin-no-data">
-                                      This seller has no listings yet.
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            ) : (
-                              <div className="admin-expanded-content">
-                                <div className="admin-expanded-header">
-                                  <div>
-                                    <span>BUYER ACTIVITY</span>
-                                    <h3>{user.name}'s Account Activity</h3>
-                                  </div>
-                                </div>
-
-                                <div className="buyer-activity-grid">
-                                  <div className="buyer-activity-card">
-                                    <FaShoppingCart />
-                                    <div><strong>{user.cartItems}</strong><span>Cart Items</span></div>
-                                  </div>
-                                  <div className="buyer-activity-card">
-                                    <FaHeart />
-                                    <div><strong>{user.wishlistItems}</strong><span>Wishlist</span></div>
-                                  </div>
-                                  <div className="buyer-activity-card">
-                                    <FaBoxOpen />
-                                    <div><strong>{user.orders}</strong><span>Orders</span></div>
-                                  </div>
-                                  <div className="buyer-activity-card">
-                                    <FaMoneyBillWave />
-                                    <div><strong>{formatCurrency(user.spent)}</strong><span>Total Spent</span></div>
-                                  </div>
-                                </div>
-                              </div>
-                            )}
+                            </div>
                           </td>
                         </tr>
-                      )}
-                    </Fragment>
-                  );
-                })}
-              </tbody>
-            </table>
 
-            {filteredUsers.length === 0 && (
-              <div className="admin-users-empty">
-                <FaUsers />
-                <h3>No registered users found</h3>
-                <p>
-                  Register or log in to an account, then return here and press Refresh.
-                </p>
-              </div>
-            )}
-          </div>
-        </section>
-      </main>
+                        {isExpanded && (
+                          <tr className="admin-user-details-row">
+                            <td colSpan={7}>
+                              {user.role === "Seller" ? (
+                                <div className="admin-expanded-content">
+                                  <div className="admin-expanded-header">
+                                    <div>
+                                      <span>SELLER ACTIVITY</span>
+                                      <h3>{user.name}'s Listings</h3>
+                                    </div>
 
-      {editingUser && (
-        <div className="admin-modal-overlay" onClick={() => setEditingUser(null)}>
-          <div className="admin-edit-modal" onClick={(event) => event.stopPropagation()}>
-            <div className="admin-modal-header">
-              <div>
-                <span>EDIT USER</span>
-                <h2>Edit {editingUser.name}</h2>
-              </div>
-              <button type="button" onClick={() => setEditingUser(null)}>
-                <FaTimes />
-              </button>
+                                    <div className="seller-summary">
+                                      <div>
+                                        <strong>{user.listings.length}</strong>
+                                        <span>Listings</span>
+                                      </div>
+                                      <div>
+                                        <strong>
+                                          {user.listings.reduce(
+                                            (total, product) => total + product.buyerInterest,
+                                            0
+                                          )}
+                                        </strong>
+                                        <span>Interested Buyers</span>
+                                      </div>
+                                      <div>
+                                        <strong>{formatCurrency(user.revenue)}</strong>
+                                        <span>Revenue</span>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  <div className="seller-products">
+                                    {user.listings.length > 0 ? (
+                                      user.listings.map((product) => (
+                                        <div className="seller-product" key={product.id}>
+                                          <div className="seller-product-info">
+                                            <div className="seller-product-icon"><FaStore /></div>
+                                            <div>
+                                              <strong>{product.name}</strong>
+                                              <span>{formatCurrency(product.price)}</span>
+                                            </div>
+                                          </div>
+
+                                          <div className="seller-interest">
+                                            <strong>{product.buyerInterest}</strong>
+                                            <span>interested buyers</span>
+                                          </div>
+
+                                          <span className={`listing-status ${product.status.toLowerCase()}`}>
+                                            {product.status}
+                                          </span>
+
+                                          {product.status === "Pending" && (
+                                            <div className="listing-actions">
+                                              <button
+                                                type="button"
+                                                onClick={() =>
+                                                  handleListingStatus(user.id, product.id, "Live")
+                                                }
+                                              >
+                                                <FaCheck /> Approve
+                                              </button>
+
+                                              <button
+                                                type="button"
+                                                onClick={() =>
+                                                  handleListingStatus(user.id, product.id, "Rejected")
+                                                }
+                                              >
+                                                <FaTimes /> Reject
+                                              </button>
+                                            </div>
+                                          )}
+                                        </div>
+                                      ))
+                                    ) : (
+                                      <div className="admin-no-data">
+                                        This seller has no listings yet.
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="admin-expanded-content">
+                                  <div className="admin-expanded-header">
+                                    <div>
+                                      <span>BUYER ACTIVITY</span>
+                                      <h3>{user.name}'s Account Activity</h3>
+                                    </div>
+                                  </div>
+
+                                  <div className="buyer-activity-grid">
+                                    <div className="buyer-activity-card">
+                                      <FaShoppingCart />
+                                      <div><strong>{user.cartItems}</strong><span>Cart Items</span></div>
+                                    </div>
+                                    <div className="buyer-activity-card">
+                                      <FaHeart />
+                                      <div><strong>{user.wishlistItems}</strong><span>Wishlist</span></div>
+                                    </div>
+                                    <div className="buyer-activity-card">
+                                      <FaBoxOpen />
+                                      <div><strong>{user.orders}</strong><span>Orders</span></div>
+                                    </div>
+                                    <div className="buyer-activity-card">
+                                      <FaMoneyBillWave />
+                                      <div><strong>{formatCurrency(user.spent)}</strong><span>Total Spent</span></div>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+                            </td>
+                          </tr>
+                        )}
+                      </Fragment>
+                    );
+                  })}
+                </tbody>
+              </table>
+
+              {filteredUsers.length === 0 && (
+                <div className="admin-users-empty">
+                  <FaUsers />
+                  <h3>No registered users found</h3>
+                  <p>
+                    Users will appear here once they register or log in.
+                  </p>
+                </div>
+              )}
             </div>
-
-            <div className="admin-edit-form">
-              <label>
-                Name
-                <input
-                  type="text"
-                  value={editingUser.name}
-                  onChange={(event) =>
-                    setEditingUser({ ...editingUser, name: event.target.value })
-                  }
-                />
-              </label>
-
-              <label>
-                Email
-                <input
-                  type="email"
-                  value={editingUser.email}
-                  onChange={(event) =>
-                    setEditingUser({ ...editingUser, email: event.target.value })
-                  }
-                />
-              </label>
-
-              <label>
-                Role
-                <select
-                  value={editingUser.role}
-                  onChange={(event) =>
-                    setEditingUser({
-                      ...editingUser,
-                      role: event.target.value as UserRole,
-                    })
-                  }
-                >
-                  <option value="Buyer">Buyer</option>
-                  <option value="Seller">Seller</option>
-                  <option value="Admin">Admin</option>
-                </select>
-              </label>
-
-              <label>
-                Status
-                <select
-                  value={editingUser.status}
-                  onChange={(event) =>
-                    setEditingUser({
-                      ...editingUser,
-                      status: event.target.value as UserStatus,
-                    })
-                  }
-                >
-                  <option value="Active">Active</option>
-                  <option value="Pending">Pending</option>
-                  <option value="Suspended">Suspended</option>
-                </select>
-              </label>
-            </div>
-
-            <div className="admin-modal-actions">
-              <button
-                type="button"
-                className="admin-modal-cancel"
-                onClick={() => setEditingUser(null)}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                className="admin-modal-save"
-                onClick={handleSaveEdit}
-              >
-                Save Changes
-              </button>
-            </div>
-          </div>
+          </section>
         </div>
-      )}
-    </div>
+
+        {editingUser && (
+          <div className="admin-modal-overlay" onClick={() => setEditingUser(null)}>
+            <div className="admin-edit-modal" onClick={(event) => event.stopPropagation()}>
+              <div className="admin-modal-header">
+                <div>
+                  <span>EDIT USER</span>
+                  <h2>Edit {editingUser.name}</h2>
+                </div>
+                <button type="button" onClick={() => setEditingUser(null)}>
+                  <FaTimes />
+                </button>
+              </div>
+
+              <div className="admin-edit-form">
+                <label>
+                  Name
+                  <input
+                    type="text"
+                    value={editingUser.name}
+                    onChange={(event) =>
+                      setEditingUser({ ...editingUser, name: event.target.value })
+                    }
+                  />
+                </label>
+
+                <label>
+                  Email
+                  <input
+                    type="email"
+                    value={editingUser.email}
+                    onChange={(event) =>
+                      setEditingUser({ ...editingUser, email: event.target.value })
+                    }
+                  />
+                </label>
+
+                <label>
+                  Role
+                  <select
+                    value={editingUser.role}
+                    onChange={(event) =>
+                      setEditingUser({
+                        ...editingUser,
+                        role: event.target.value as UserRole,
+                      })
+                    }
+                  >
+                    <option value="Buyer">Buyer</option>
+                    <option value="Seller">Seller</option>
+                    <option value="Admin">Admin</option>
+                  </select>
+                </label>
+
+                <label>
+                  Status
+                  <select
+                    value={editingUser.status}
+                    onChange={(event) =>
+                      setEditingUser({
+                        ...editingUser,
+                        status: event.target.value as UserStatus,
+                      })
+                    }
+                  >
+                    <option value="Active">Active</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Suspended">Suspended</option>
+                  </select>
+                </label>
+              </div>
+
+              <div className="admin-modal-actions">
+                <button
+                  type="button"
+                  className="admin-modal-cancel"
+                  onClick={() => setEditingUser(null)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="admin-modal-save"
+                  onClick={handleSaveEdit}
+                >
+                  Save Changes
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </AdminShell>
   );
 }
 
