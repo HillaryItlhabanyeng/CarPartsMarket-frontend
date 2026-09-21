@@ -5,10 +5,6 @@ import {
   FaHome,
   FaBoxOpen,
   FaShoppingBag,
-  FaBullhorn,
-  FaUsers,
-  FaComments,
-  FaCalendarAlt,
   FaUser,
   FaSignOutAlt,
   FaChevronDown,
@@ -22,7 +18,6 @@ export default function SideNav() {
   const location = useLocation();
 
   const [myProductsOpen, setMyProductsOpen] = useState(true);
-  const [communityOpen, setCommunityOpen] = useState(true);
 
   const isActive = (path) => {
     return location.pathname === path;
@@ -49,7 +44,7 @@ export default function SideNav() {
         <img
           src="automarket_-_logo-removebg-preview.png"
           alt="automarket logo"
-          className="unitrade-logo"
+          className="automarket-logo"
         />
       </div>
 
@@ -168,90 +163,6 @@ export default function SideNav() {
 
           <span>Products</span>
         </button>
-
-
-        {/* =========================================
-            COMMUNITY
-        ========================================== */}
-
-        <button
-          type="button"
-          className="side-nav-item side-nav-parent"
-          onClick={() =>
-            setCommunityOpen(!communityOpen)
-          }
-        >
-          <span className="side-nav-item-left">
-
-            <FaUsers className="side-nav-icon" />
-
-            <span>Community</span>
-
-          </span>
-
-          {communityOpen ? (
-            <FaChevronUp className="side-nav-arrow" />
-          ) : (
-            <FaChevronDown className="side-nav-arrow" />
-          )}
-        </button>
-
-
-        {communityOpen && (
-          <div className="side-nav-submenu">
-
-            <button
-              type="button"
-              className={`submenu-item ${
-                isActive("/announcements")
-                  ? "active"
-                  : ""
-              }`}
-              onClick={() =>
-                navigate("/announcements")
-              }
-            >
-              <FaBullhorn />
-
-              <span>Announcements</span>
-            </button>
-
-
-            <button
-              type="button"
-              className={`submenu-item ${
-                isActive("/services")
-                  ? "active"
-                  : ""
-              }`}
-              onClick={() =>
-                navigate("/services")
-              }
-            >
-              <FaComments />
-
-              <span>Services</span>
-            </button>
-
-
-            <button
-              type="button"
-              className={`submenu-item ${
-                isActive("/events")
-                  ? "active"
-                  : ""
-              }`}
-              onClick={() =>
-                navigate("/events")
-              }
-            >
-              <FaCalendarAlt />
-
-              <span>Events</span>
-            </button>
-
-          </div>
-        )}
 
 
         {/* =========================================

@@ -1,5 +1,5 @@
 /* =========================================================
-   UNiTRADE SIDE NAVIGATION
+   AUTOMARKET SIDE NAVIGATION
 ========================================================= */
 
 .side-nav {
@@ -13,8 +13,8 @@
   display: flex;
   flex-direction: column;
 
-  background: #a67b5b;
-  color: #ffffff;
+  background: linear-gradient(180deg, #d8c3a5, #c2a978);
+  color: #1a1a1a;
 
   z-index: 1000;
   overflow-y: auto;
@@ -38,9 +38,9 @@
 }
 
 
-/* Actual UniTrade logo */
+/* AutoMarket logo */
 
-.unitrade-logo {
+.automarket-logo {
   display: block;
 
   width: 140px;
@@ -88,7 +88,7 @@
 
   background: transparent;
 
-  color: #ffffff;
+  color: #1a1a1a;
 
   font-family: Arial, Helvetica, sans-serif;
 
@@ -122,16 +122,16 @@
 /* Hover */
 
 .side-nav-item:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.06);
 }
 
 
 /* Active item */
 
 .side-nav-item.active {
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.55);
 
-  color: #ffffff;
+  color: #1a1a1a;
 
   border-radius: 0 18px 18px 0;
 
@@ -179,7 +179,7 @@
 }
 
 
-/* Submenu buttons */
+
 
 .submenu-item {
   min-height: 30px;
@@ -195,7 +195,7 @@
 
   background: transparent;
 
-  color: rgba(255, 255, 255, 0.76);
+  color: rgba(26, 26, 26, 0.72);
 
   font-family: Arial, Helvetica, sans-serif;
 
@@ -216,16 +216,16 @@
 /* Submenu hover */
 
 .submenu-item:hover {
-  color: #ffffff;
+  color: #1a1a1a;
 
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(0, 0, 0, 0.05);
 }
 
 
 /* Submenu active */
 
 .submenu-item.active {
-  color: #ffffff;
+  color: #1a1a1a;
 
   font-weight: 700;
 }
@@ -249,7 +249,7 @@
 
   padding: 18px 15px 25px;
 
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
 
   box-sizing: border-box;
 }
@@ -269,7 +269,7 @@
 
   background: transparent;
 
-  color: #ffffff;
+  color: #1a1a1a;
 
   font-family: Arial, Helvetica, sans-serif;
 
@@ -286,7 +286,7 @@
 
 
 .side-nav-logout:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.06);
 
   border-radius: 7px;
 }
@@ -312,7 +312,7 @@
 
 
 .side-nav::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.2);
 
   border-radius: 10px;
 }
@@ -333,7 +333,7 @@
     padding-right: 10px;
   }
 
-  .unitrade-logo {
+  .automarket-logo {
     width: 125px;
   }
 
