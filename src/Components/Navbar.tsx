@@ -54,6 +54,12 @@ const CURRENT_USER_KEY = "marketplace_current_user";
 const AUTOMARKET_USER_KEY = "automarketUser";
 const ADDRESS_STORAGE_KEY = "marketplace_addresses";
 
+/*
+  IMPORTANT:
+  This must remain exactly the same key used by ProfilePage.
+*/
+const PROFILE_IMAGE_KEY = "automarketProfileImage";
+
 /* =========================================================
    READ USER
 ========================================================= */
@@ -66,18 +72,28 @@ function readCurrentUser(): CurrentUser | null {
     if (currentUserRaw) {
       const parsed = JSON.parse(currentUserRaw);
 
-      if (parsed && typeof parsed === "object") {
+      if (
+        parsed &&
+        typeof parsed === "object"
+      ) {
         return parsed;
       }
     }
 
     const automarketUserRaw =
-      window.localStorage.getItem(AUTOMARKET_USER_KEY);
+      window.localStorage.getItem(
+        AUTOMARKET_USER_KEY
+      );
 
     if (automarketUserRaw) {
-      const parsed = JSON.parse(automarketUserRaw);
+      const parsed = JSON.parse(
+        automarketUserRaw
+      );
 
-      if (parsed && typeof parsed === "object") {
+      if (
+        parsed &&
+        typeof parsed === "object"
+      ) {
         return parsed;
       }
     }
@@ -89,11 +105,30 @@ function readCurrentUser(): CurrentUser | null {
 }
 
 /* =========================================================
+   READ PROFILE IMAGE
+========================================================= */
+
+function readProfileImage(): string {
+  try {
+    return (
+      window.localStorage.getItem(
+        PROFILE_IMAGE_KEY
+      ) || ""
+    );
+  } catch {
+    return "";
+  }
+}
+
+/* =========================================================
    NORMALIZE ROLE
 ========================================================= */
 
-function normalizeRole(role?: string): Role {
-  const normalized = role?.toLowerCase().trim();
+function normalizeRole(
+  role?: string
+): Role {
+  const normalized =
+    role?.toLowerCase().trim();
 
   if (
     normalized === "seller" ||
@@ -116,7 +151,9 @@ function normalizeRole(role?: string): Role {
    USER NAME
 ========================================================= */
 
-function getUserName(user: CurrentUser | null): string {
+function getUserName(
+  user: CurrentUser | null
+): string {
   if (!user) {
     return "User";
   }
@@ -126,35 +163,11 @@ function getUserName(user: CurrentUser | null): string {
   }
 
   const fullName =
-    `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim();
+    `${user.firstName ?? ""} ${
+      user.lastName ?? ""
+    }`.trim();
 
   return fullName || "User";
-}
-
-/* =========================================================
-   USER INITIALS
-========================================================= */
-
-function getInitials(user: CurrentUser | null): string {
-  const firstName = user?.firstName?.trim() || "";
-  const lastName = user?.lastName?.trim() || "";
-
-  if (firstName && lastName) {
-    return `${firstName[0]}${lastName[0]}`.toUpperCase();
-  }
-
-  const name = getUserName(user);
-
-  const parts = name
-    .split(" ")
-    .map((part) => part.trim())
-    .filter(Boolean);
-
-  if (parts.length >= 2) {
-    return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
-  }
-
-  return name.substring(0, 2).toUpperCase();
 }
 
 /* =========================================================
@@ -164,7 +177,9 @@ function getInitials(user: CurrentUser | null): string {
 function readAddresses(): Address[] {
   try {
     const raw =
-      window.localStorage.getItem(ADDRESS_STORAGE_KEY);
+      window.localStorage.getItem(
+        ADDRESS_STORAGE_KEY
+      );
 
     if (!raw) {
       return [];
@@ -195,7 +210,10 @@ function getAddressDisplay(
 
   const address = addresses[0];
 
-  if (address.city && address.street) {
+  if (
+    address.city &&
+    address.street
+  ) {
     return `${address.street}, ${address.city}`;
   }
 
@@ -231,16 +249,27 @@ export default function Navbar({
 
   const { itemCount } = useCart();
 
-  const menuRef = useRef<HTMLDivElement>(null);
+  const menuRef =
+    useRef<HTMLDivElement>(null);
 
   const [isMenuOpen, setIsMenuOpen] =
     useState(false);
 
-  const [search, setSearch] = useState("");
+  const [search, setSearch] =
+    useState("");
 
   const [currentUser, setCurrentUser] =
     useState<CurrentUser | null>(() =>
       readCurrentUser()
+    );
+
+  /*
+    The Navbar reads ONLY from the shared
+    automarketProfileImage localStorage key.
+  */
+  const [profileImage, setProfileImage] =
+    useState<string>(() =>
+      readProfileImage()
     );
 
   const [addresses, setAddresses] =
@@ -252,59 +281,114 @@ export default function Navbar({
      DERIVED DATA
   ======================================================= */
 
-  const role = normalizeRole(currentUser?.role);
+  const role = normalizeRole(
+    currentUser?.role
+  );
+
+  const currentUserName =
+    getUserName(currentUser);
 
   const displayName =
-    getUserName(currentUser) !== "User"
-      ? getUserName(currentUser)
+    currentUserName !== "User"
+      ? currentUserName
       : userName;
-
-  const initials = getInitials(currentUser);
 
   const addressDisplay =
     getAddressDisplay(addresses);
 
   /* =======================================================
-     REFRESH USER + ADDRESS
+     REFRESH USER + PROFILE IMAGE + ADDRESS
   ======================================================= */
 
   useEffect(() => {
-    const refreshData = () => {
-      setCurrentUser(readCurrentUser());
-      setAddresses(readAddresses());
+    const refreshUserData = () => {
+      setCurrentUser(
+        readCurrentUser()
+      );
+
+      setAddresses(
+        readAddresses()
+      );
     };
 
-    refreshData();
+    refreshUserData();
 
     window.addEventListener(
       "storage",
-      refreshData
+      refreshUserData
     );
 
     window.addEventListener(
       "automarket-user-updated",
-      refreshData
+      refreshUserData
     );
 
     window.addEventListener(
       "automarket-address-updated",
-      refreshData
+      refreshUserData
     );
 
     return () => {
       window.removeEventListener(
         "storage",
-        refreshData
+        refreshUserData
       );
 
       window.removeEventListener(
         "automarket-user-updated",
-        refreshData
+        refreshUserData
       );
 
       window.removeEventListener(
         "automarket-address-updated",
-        refreshData
+        refreshUserData
+      );
+    };
+  }, []);
+
+  /* =======================================================
+     PROFILE IMAGE SYNC
+  ======================================================= */
+
+  useEffect(() => {
+    const refreshProfileImage = () => {
+      setProfileImage(
+        readProfileImage()
+      );
+    };
+
+    /*
+      Load the image immediately when the Navbar mounts.
+    */
+    refreshProfileImage();
+
+    /*
+      This event is dispatched by ProfilePage after
+      uploading or removing the profile image.
+    */
+    window.addEventListener(
+      "automarket-profile-image-updated",
+      refreshProfileImage
+    );
+
+    /*
+      This also handles localStorage changes made
+      from another browser tab/window.
+    */
+    window.addEventListener(
+      "storage",
+      refreshProfileImage
+    );
+
+    return () => {
+      window.removeEventListener(
+        "automarket-profile-image-updated",
+        refreshProfileImage
+      );
+
+      window.removeEventListener(
+        "storage",
+        refreshProfileImage
       );
     };
   }, []);
@@ -314,7 +398,9 @@ export default function Navbar({
   ======================================================= */
 
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
+    function handleClickOutside(
+      event: MouseEvent
+    ) {
       if (
         menuRef.current &&
         !menuRef.current.contains(
@@ -343,11 +429,14 @@ export default function Navbar({
   ======================================================= */
 
   function handleSearch() {
-    const query = search.trim();
+    const query =
+      search.trim();
 
     if (query) {
       navigate(
-        `/shop?search=${encodeURIComponent(query)}`
+        `/shop?search=${encodeURIComponent(
+          query
+        )}`
       );
     } else {
       navigate("/shop");
@@ -359,9 +448,10 @@ export default function Navbar({
   ======================================================= */
 
   function handleLogout() {
-    const confirmed = window.confirm(
-      "Are you sure you want to log out?"
-    );
+    const confirmed =
+      window.confirm(
+        "Are you sure you want to log out?"
+      );
 
     if (!confirmed) {
       return;
@@ -375,12 +465,44 @@ export default function Navbar({
       AUTOMARKET_USER_KEY
     );
 
-    localStorage.removeItem("marketRole");
-    localStorage.removeItem("token");
-    localStorage.removeItem("authToken");
+    localStorage.removeItem(
+      "marketRole"
+    );
+
+    localStorage.removeItem(
+      "token"
+    );
+
+    localStorage.removeItem(
+      "authToken"
+    );
+
+    /*
+      Remove the shared profile image key.
+    */
+    localStorage.removeItem(
+      PROFILE_IMAGE_KEY
+    );
 
     setCurrentUser(null);
+    setProfileImage("");
     setIsMenuOpen(false);
+
+    /*
+      Notify every component that the user
+      and profile image have changed.
+    */
+    window.dispatchEvent(
+      new Event(
+        "automarket-user-updated"
+      )
+    );
+
+    window.dispatchEvent(
+      new Event(
+        "automarket-profile-image-updated"
+      )
+    );
 
     navigate("/login");
   }
@@ -402,13 +524,11 @@ export default function Navbar({
 
   return (
     <header className="site-header">
-
       {/* ===================================================
           MAIN NAVBAR
       =================================================== */}
 
       <nav className="navbar">
-
         {/* =================================================
             LOGO
         ================================================= */}
@@ -432,7 +552,8 @@ export default function Navbar({
           to="/addresses"
           className="navbar-address"
           title={
-            addressDisplay === "Add address"
+            addressDisplay ===
+            "Add address"
               ? "Add your address"
               : addressDisplay
           }
@@ -442,7 +563,9 @@ export default function Navbar({
           </span>
 
           <span className="navbar-address-content">
-            <small>Deliver to</small>
+            <small>
+              Deliver to
+            </small>
 
             <strong>
               {addressDisplay}
@@ -455,17 +578,22 @@ export default function Navbar({
         ================================================= */}
 
         <div className="navbar-search">
-
-          <FiSearch className="search-icon" />
+          <FiSearch
+            className="search-icon"
+          />
 
           <input
             type="text"
             value={search}
             onChange={(event) =>
-              setSearch(event.target.value)
+              setSearch(
+                event.target.value
+              )
             }
             onKeyDown={(event) => {
-              if (event.key === "Enter") {
+              if (
+                event.key === "Enter"
+              ) {
                 handleSearch();
               }
             }}
@@ -479,7 +607,6 @@ export default function Navbar({
           >
             Search
           </button>
-
         </div>
 
         {/* =================================================
@@ -487,12 +614,13 @@ export default function Navbar({
         ================================================= */}
 
         <div className="navbar-actions">
-
           {/* ===============================================
               NOTIFICATIONS
           =============================================== */}
 
-          <NotificationBell variant="navbar" />
+          <NotificationBell
+            variant="navbar"
+          />
 
           {/* ===============================================
               CART
@@ -506,8 +634,9 @@ export default function Navbar({
               aria-label="Shopping cart"
             >
               <span className="nav-action-icon-wrapper">
-
-                <FiShoppingCart className="action-icon" />
+                <FiShoppingCart
+                  className="action-icon"
+                />
 
                 {itemCount > 0 && (
                   <span
@@ -517,7 +646,6 @@ export default function Navbar({
                     {itemCount}
                   </span>
                 )}
-
               </span>
 
               <span className="action-label">
@@ -534,7 +662,6 @@ export default function Navbar({
             className="nav-profile-wrapper"
             ref={menuRef}
           >
-
             <button
               type="button"
               className="nav-profile"
@@ -544,15 +671,31 @@ export default function Navbar({
                 )
               }
               aria-haspopup="true"
-              aria-expanded={isMenuOpen}
+              aria-expanded={
+                isMenuOpen
+              }
             >
+              {/* =========================================
+                  PROFILE IMAGE
+              ========================================= */}
 
-              <span className="profile-initials">
-                {initials}
-              </span>
+              {profileImage ? (
+                <img
+                  src={profileImage}
+                  alt={`${displayName} profile`}
+                  className="profile-avatar-image"
+                />
+              ) : (
+                <span className="profile-avatar-placeholder">
+                  <FiUser />
+                </span>
+              )}
+
+              {/* =========================================
+                  USER INFORMATION
+              ========================================= */}
 
               <span className="profile-user-info">
-
                 <strong>
                   {displayName}
                 </strong>
@@ -560,7 +703,6 @@ export default function Navbar({
                 <small>
                   {roleLabel}
                 </small>
-
               </span>
 
               <FiChevronDown
@@ -570,7 +712,6 @@ export default function Navbar({
                     : ""
                 }`}
               />
-
             </button>
 
             {/* =============================================
@@ -579,14 +720,22 @@ export default function Navbar({
 
             {isMenuOpen && (
               <div className="profile-dropdown">
-
-                {/* PROFILE HEADER */}
+                {/* =========================================
+                    PROFILE HEADER
+                ========================================= */}
 
                 <div className="profile-dropdown-header">
-
-                  <span className="profile-dropdown-avatar">
-                    {initials}
-                  </span>
+                  {profileImage ? (
+                    <img
+                      src={profileImage}
+                      alt={`${displayName} profile`}
+                      className="profile-dropdown-avatar-image"
+                    />
+                  ) : (
+                    <span className="profile-dropdown-avatar-placeholder">
+                      <FiUser />
+                    </span>
+                  )}
 
                   <div>
                     <strong>
@@ -597,16 +746,19 @@ export default function Navbar({
                       {roleLabel}
                     </span>
                   </div>
-
                 </div>
 
-                {/* PROFILE */}
+                {/* =========================================
+                    PROFILE
+                ========================================= */}
 
                 <Link
                   to="/profile"
                   className="profile-dropdown-item"
                   onClick={() =>
-                    setIsMenuOpen(false)
+                    setIsMenuOpen(
+                      false
+                    )
                   }
                 >
                   <FiUser />
@@ -616,13 +768,17 @@ export default function Navbar({
                   </span>
                 </Link>
 
-                {/* ADDRESS */}
+                {/* =========================================
+                    ADDRESS
+                ========================================= */}
 
                 <Link
                   to="/addresses"
                   className="profile-dropdown-item"
                   onClick={() =>
-                    setIsMenuOpen(false)
+                    setIsMenuOpen(
+                      false
+                    )
                   }
                 >
                   <FiMapPin />
@@ -632,13 +788,17 @@ export default function Navbar({
                   </span>
                 </Link>
 
-                {/* SETTINGS */}
+                {/* =========================================
+                    SETTINGS
+                ========================================= */}
 
                 <Link
                   to="/settings"
                   className="profile-dropdown-item"
                   onClick={() =>
-                    setIsMenuOpen(false)
+                    setIsMenuOpen(
+                      false
+                    )
                   }
                 >
                   <FiSettings />
@@ -657,7 +817,9 @@ export default function Navbar({
                     to="/my-listings"
                     className="profile-dropdown-item"
                     onClick={() =>
-                      setIsMenuOpen(false)
+                      setIsMenuOpen(
+                        false
+                      )
                     }
                   >
                     <FiPackage />
@@ -678,7 +840,9 @@ export default function Navbar({
                       to="/admin"
                       className="profile-dropdown-item"
                       onClick={() =>
-                        setIsMenuOpen(false)
+                        setIsMenuOpen(
+                          false
+                        )
                       }
                     >
                       <FiBarChart2 />
@@ -692,7 +856,9 @@ export default function Navbar({
                       to="/admin/users"
                       className="profile-dropdown-item"
                       onClick={() =>
-                        setIsMenuOpen(false)
+                        setIsMenuOpen(
+                          false
+                        )
                       }
                     >
                       <FiUsers />
@@ -706,7 +872,9 @@ export default function Navbar({
                       to="/admin/orders"
                       className="profile-dropdown-item"
                       onClick={() =>
-                        setIsMenuOpen(false)
+                        setIsMenuOpen(
+                          false
+                        )
                       }
                     >
                       <FiClipboard />
@@ -718,12 +886,16 @@ export default function Navbar({
                   </>
                 )}
 
-                {/* LOGOUT */}
+                {/* =========================================
+                    LOGOUT
+                ========================================= */}
 
                 <button
                   type="button"
                   className="profile-dropdown-item logout"
-                  onClick={handleLogout}
+                  onClick={
+                    handleLogout
+                  }
                 >
                   <FiLogOut />
 
@@ -731,14 +903,10 @@ export default function Navbar({
                     Log Out
                   </span>
                 </button>
-
               </div>
             )}
-
           </div>
-
         </div>
-
       </nav>
 
       {/* ===================================================
@@ -750,7 +918,6 @@ export default function Navbar({
           className="nav-links-row"
           aria-label="Main navigation"
         >
-
           {/* =================================================
               BUYER NAVIGATION
           ================================================= */}
@@ -760,8 +927,12 @@ export default function Navbar({
               <NavLink
                 to="/home"
                 end
-                className={({ isActive }) =>
-                  isActive ? "active" : ""
+                className={({
+                  isActive,
+                }) =>
+                  isActive
+                    ? "active"
+                    : ""
                 }
               >
                 Home
@@ -769,8 +940,12 @@ export default function Navbar({
 
               <NavLink
                 to="/shop"
-                className={({ isActive }) =>
-                  isActive ? "active" : ""
+                className={({
+                  isActive,
+                }) =>
+                  isActive
+                    ? "active"
+                    : ""
                 }
               >
                 Browse Listings
@@ -778,31 +953,42 @@ export default function Navbar({
 
               <NavLink
                 to="/categories"
-                className={({ isActive }) =>
-                  isActive ? "active" : ""
+                className={({
+                  isActive,
+                }) =>
+                  isActive
+                    ? "active"
+                    : ""
                 }
               >
                 Categories
               </NavLink>
 
-              {/* =================================================
-                  WISHLIST
-              ================================================= */}
-
               <NavLink
                 to="/wishlist"
-                className={({ isActive }) =>
-                  isActive ? "active" : ""
+                className={({
+                  isActive,
+                }) =>
+                  isActive
+                    ? "active"
+                    : ""
                 }
               >
                 <FiHeart />
-                <span>Wishlist</span>
+
+                <span>
+                  Wishlist
+                </span>
               </NavLink>
 
               <NavLink
                 to="/contact"
-                className={({ isActive }) =>
-                  isActive ? "active" : ""
+                className={({
+                  isActive,
+                }) =>
+                  isActive
+                    ? "active"
+                    : ""
                 }
               >
                 Contact
@@ -818,8 +1004,12 @@ export default function Navbar({
             <>
               <NavLink
                 to="/dashboard"
-                className={({ isActive }) =>
-                  isActive ? "active" : ""
+                className={({
+                  isActive,
+                }) =>
+                  isActive
+                    ? "active"
+                    : ""
                 }
               >
                 Dashboard
@@ -827,8 +1017,12 @@ export default function Navbar({
 
               <NavLink
                 to="/list-product"
-                className={({ isActive }) =>
-                  isActive ? "active" : ""
+                className={({
+                  isActive,
+                }) =>
+                  isActive
+                    ? "active"
+                    : ""
                 }
               >
                 List a Product
@@ -836,8 +1030,12 @@ export default function Navbar({
 
               <NavLink
                 to="/my-listings"
-                className={({ isActive }) =>
-                  isActive ? "active" : ""
+                className={({
+                  isActive,
+                }) =>
+                  isActive
+                    ? "active"
+                    : ""
                 }
               >
                 My Listings
@@ -845,8 +1043,12 @@ export default function Navbar({
 
               <NavLink
                 to="/seller-orders"
-                className={({ isActive }) =>
-                  isActive ? "active" : ""
+                className={({
+                  isActive,
+                }) =>
+                  isActive
+                    ? "active"
+                    : ""
                 }
               >
                 Orders Received
@@ -854,8 +1056,12 @@ export default function Navbar({
 
               <NavLink
                 to="/contact"
-                className={({ isActive }) =>
-                  isActive ? "active" : ""
+                className={({
+                  isActive,
+                }) =>
+                  isActive
+                    ? "active"
+                    : ""
                 }
               >
                 Contact
@@ -872,8 +1078,12 @@ export default function Navbar({
               <NavLink
                 to="/admin"
                 end
-                className={({ isActive }) =>
-                  isActive ? "active" : ""
+                className={({
+                  isActive,
+                }) =>
+                  isActive
+                    ? "active"
+                    : ""
                 }
               >
                 Dashboard
@@ -881,48 +1091,71 @@ export default function Navbar({
 
               <NavLink
                 to="/admin/users"
-                className={({ isActive }) =>
-                  isActive ? "active" : ""
+                className={({
+                  isActive,
+                }) =>
+                  isActive
+                    ? "active"
+                    : ""
                 }
               >
                 <FiUsers />
-                <span>Users</span>
+
+                <span>
+                  Users
+                </span>
               </NavLink>
 
               <NavLink
                 to="/admin/listings"
-                className={({ isActive }) =>
-                  isActive ? "active" : ""
+                className={({
+                  isActive,
+                }) =>
+                  isActive
+                    ? "active"
+                    : ""
                 }
               >
                 <FiPackage />
-                <span>Listings</span>
+
+                <span>
+                  Listings
+                </span>
               </NavLink>
 
               <NavLink
                 to="/admin/orders"
-                className={({ isActive }) =>
-                  isActive ? "active" : ""
+                className={({
+                  isActive,
+                }) =>
+                  isActive
+                    ? "active"
+                    : ""
                 }
               >
                 <FiClipboard />
-                <span>Orders</span>
+
+                <span>
+                  Orders
+                </span>
               </NavLink>
 
               <NavLink
                 to="/contact"
-                className={({ isActive }) =>
-                  isActive ? "active" : ""
+                className={({
+                  isActive,
+                }) =>
+                  isActive
+                    ? "active"
+                    : ""
                 }
               >
                 Contact
               </NavLink>
             </>
           )}
-
         </nav>
       )}
-
     </header>
   );
 }
