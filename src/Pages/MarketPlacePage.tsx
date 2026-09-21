@@ -1,6 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import {
+  FaCheck,
+  FaChevronDown,
   FaMapMarkerAlt,
   FaSearch,
   FaSlidersH,
@@ -9,6 +11,7 @@ import {
 import Navbar from "../Components/Navbar";
 import { partCategories } from "../data/partCategories";
 import { carBrands } from "../data/carBrands";
+
 import "./MarketPlacePage.css";
 
 interface Listing {
@@ -29,9 +32,17 @@ interface Listing {
 
 const API_URL = "http://localhost:5000/api/listings";
 
-const categories = ["All Categories", ...partCategories];
+const ALL_CATEGORIES = "All Categories";
+const ALL_BRANDS = "All Brands";
+const ALL_CONDITIONS = "All Conditions";
 
-// Listings a seller submitted and the admin approved (sold ones are hidden from buyers)
+const categories = [ALL_CATEGORIES, ...partCategories];
+const conditions = [ALL_CONDITIONS, "New", "Used", "Refurbished"];
+
+/* =========================================================
+   LOAD APPROVED SELLER LISTINGS
+========================================================= */
+
 function loadApprovedListings(): Listing[] {
   try {
     const raw = window.localStorage.getItem("marketplace_approved_products");
@@ -45,37 +56,217 @@ function loadApprovedListings(): Listing[] {
         ...item,
         createdAt:
           item.createdAt ||
-          (typeof item.id === "number" ? new Date(item.id).toISOString() : undefined),
+          (typeof item.id === "number"
+            ? new Date(item.id).toISOString()
+            : undefined),
       }));
   } catch {
     return [];
   }
 }
 
-const conditions = [
-  "All Conditions",
-  "New",
-  "Used",
-  "Refurbished",
-];
+/* =========================================================
+   CUSTOM SELECT
+   Real website-style dropdown: always opens DOWNWARD, scrolls
+   inside itself, closes on outside click, full keyboard support.
+========================================================= */
+
+interface CustomSelectProps {
+  id: string;
+  value: string;
+  options: string[];
+  onChange: (value: string) => void;
+}
+
+function CustomSelect({ id, value, options, onChange }: CustomSelectProps) {
+  const [open, setOpen] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLUListElement>(null);
+
+  const selectedIndex = Math.max(options.indexOf(value), 0);
+  const listboxId = `${id}-listbox`;
+
+  const openMenu = () => {
+    setActiveIndex(selectedIndex);
+    setOpen(true);
+  };
+
+  const choose = (item: string) => {
+    onChange(item);
+    setOpen(false);
+  };
+
+  /* Close on outside click */
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        wrapperRef.current &&
+        !wrapperRef.current.contains(e.target as Node)
+      ) {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  /* Keep the highlighted option visible inside the menu */
+  useEffect(() => {
+    if (!open) return;
+
+    const menu = menuRef.current;
+    const item = menu?.children[activeIndex] as HTMLElement | undefined;
+
+    if (!menu || !item) return;
+
+    const top = item.offsetTop;
+    const bottom = top + item.offsetHeight;
+
+    if (top < menu.scrollTop) {
+      menu.scrollTop = top - 6;
+    } else if (bottom > menu.scrollTop + menu.clientHeight) {
+      menu.scrollTop = bottom - menu.clientHeight + 6;
+    }
+  }, [open, activeIndex]);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
+    if (!open) {
+      if (["ArrowDown", "ArrowUp", "Enter", " "].includes(e.key)) {
+        e.preventDefault();
+        openMenu();
+      }
+      return;
+    }
+
+    switch (e.key) {
+      case "ArrowDown":
+        e.preventDefault();
+        setActiveIndex((i) => Math.min(i + 1, options.length - 1));
+        break;
+      case "ArrowUp":
+        e.preventDefault();
+        setActiveIndex((i) => Math.max(i - 1, 0));
+        break;
+      case "Home":
+        e.preventDefault();
+        setActiveIndex(0);
+        break;
+      case "End":
+        e.preventDefault();
+        setActiveIndex(options.length - 1);
+        break;
+      case "Enter":
+      case " ":
+        e.preventDefault();
+        choose(options[activeIndex]);
+        break;
+      case "Escape":
+        e.preventDefault();
+        setOpen(false);
+        break;
+      case "Tab":
+        setOpen(false);
+        break;
+    }
+  };
+
+  return (
+    <div className="customSelect" ref={wrapperRef}>
+      <button
+        id={id}
+        type="button"
+        className="filter-form-select customSelectButton"
+        role="combobox"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-controls={listboxId}
+        aria-activedescendant={open ? `${id}-option-${activeIndex}` : undefined}
+        onClick={() => (open ? setOpen(false) : openMenu())}
+        onKeyDown={handleKeyDown}
+        onKeyUp={(e) => {
+          // Stops the browser from also "clicking" the button on Space
+          if (e.key === " ") e.preventDefault();
+        }}
+      >
+        <span className="customSelectValue">{value}</span>
+        <FaChevronDown
+          className={open ? "customSelectArrow open" : "customSelectArrow"}
+        />
+      </button>
+
+      {open && (
+        <ul
+          className="customSelectMenu"
+          id={listboxId}
+          role="listbox"
+          ref={menuRef}
+        >
+          {options.map((item, index) => {
+            const isSelected = item === value;
+
+            return (
+              <li
+                key={item}
+                id={`${id}-option-${index}`}
+                role="option"
+                aria-selected={isSelected}
+                className={
+                  "customSelectOption" +
+                  (isSelected ? " selected" : "") +
+                  (index === activeIndex ? " active" : "")
+                }
+                onMouseEnter={() => setActiveIndex(index)}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => choose(item)}
+              >
+                <span>{item}</span>
+                {isSelected && <FaCheck className="customSelectCheck" />}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+/* =========================================================
+   MARKETPLACE PAGE
+========================================================= */
 
 function MarketPlacePage() {
-  const [listings, setListings] = useState<Listing[]>(() => loadApprovedListings());
+  /* ---------- Listings ---------- */
+
+  const [listings, setListings] = useState<Listing[]>(() =>
+    loadApprovedListings()
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  /* ---------- Filters ---------- */
+
   const [search, setSearch] = useState("");
   const [location, setLocation] = useState("");
-  const [condition, setCondition] = useState("All Conditions");
-  const [brand, setBrand] = useState("");
+  const [condition, setCondition] = useState(ALL_CONDITIONS);
+  const [brand, setBrand] = useState(ALL_BRANDS);
+
   const [searchParams] = useSearchParams();
+
   const [category, setCategory] = useState(() => {
     const requested = searchParams.get("category");
-    return requested && categories.includes(requested) ? requested : "All Categories";
+
+    return requested && categories.includes(requested)
+      ? requested
+      : ALL_CATEGORIES;
   });
+
   const [sort, setSort] = useState("newest");
 
-  // Get listings from backend
+  /* ---------- Load listings ---------- */
+
   useEffect(() => {
     const fetchListings = async () => {
       try {
@@ -90,14 +281,27 @@ function MarketPlacePage() {
 
         const data = await response.json();
 
-        // Supports either:
-        // { listings: [...] }
-        // or directly [...]
-        // Seller-approved listings stay in front of whatever the backend returns
-        setListings([...loadApprovedListings(), ...(data.listings || data)]);
+        const backendListings: Listing[] = Array.isArray(data)
+          ? data
+          : Array.isArray(data.listings)
+          ? data.listings
+          : [];
+
+        // Seller-approved local listings stay first.
+        setListings([...loadApprovedListings(), ...backendListings]);
       } catch (err) {
         console.error(err);
-        setError("Unable to load listings.");
+
+        // Backend unavailable: still show approved frontend listings.
+        const localListings = loadApprovedListings();
+
+        if (localListings.length > 0) {
+          setListings(localListings);
+          setError("");
+        } else {
+          setListings([]);
+          setError("Unable to load listings.");
+        }
       } finally {
         setLoading(false);
       }
@@ -106,60 +310,61 @@ function MarketPlacePage() {
     fetchListings();
   }, []);
 
-  // All South African car brands, plus any other brand a seller typed that isn't in the list
+  /* ---------- Brands ---------- */
+
   const brands = useMemo(() => {
     const known = new Set(carBrands.map((item) => item.toLowerCase()));
     const extraBrands = new Set<string>();
 
     listings.forEach((listing) => {
       const name = listing.brand?.trim();
-      if (name && !known.has(name.toLowerCase())) extraBrands.add(name);
+
+      if (name && !known.has(name.toLowerCase())) {
+        extraBrands.add(name);
+      }
     });
 
-    return ["All Brands", ...carBrands, ...Array.from(extraBrands).sort()];
+    return [ALL_BRANDS, ...carBrands, ...Array.from(extraBrands).sort()];
   }, [listings]);
 
-  // Filter and sort listings
+  /* ---------- Filter + sort ---------- */
+
   const filteredListings = useMemo(() => {
     let result = [...listings];
 
     if (search.trim()) {
-      const searchText = search.toLowerCase();
+      const searchText = search.trim().toLowerCase();
 
       result = result.filter((listing) =>
         `${listing.title} ${listing.description || ""} ${
           listing.brand || ""
-        } ${listing.category || ""}`
+        } ${listing.category || ""} ${listing.location || ""}`
           .toLowerCase()
           .includes(searchText)
       );
     }
 
     if (location.trim()) {
+      const locationText = location.trim().toLowerCase();
+
       result = result.filter((listing) =>
-        listing.location
-          ?.toLowerCase()
-          .includes(location.toLowerCase())
+        listing.location?.toLowerCase().includes(locationText)
       );
     }
 
-    if (condition !== "All Conditions") {
-      result = result.filter(
-        (listing) => listing.condition === condition
-      );
+    if (condition !== ALL_CONDITIONS) {
+      result = result.filter((listing) => listing.condition === condition);
     }
 
-    if (brand && brand !== "All Brands") {
+    if (brand !== ALL_BRANDS) {
       result = result.filter(
         (listing) =>
           listing.brand?.trim().toLowerCase() === brand.toLowerCase()
       );
     }
 
-    if (category !== "All Categories") {
-      result = result.filter(
-        (listing) => listing.category === category
-      );
+    if (category !== ALL_CATEGORIES) {
+      result = result.filter((listing) => listing.category === category);
     }
 
     if (sort === "price-low") {
@@ -174,225 +379,174 @@ function MarketPlacePage() {
       result.sort((a, b) => {
         const dateA = new Date(a.createdAt || 0).getTime();
         const dateB = new Date(b.createdAt || 0).getTime();
-
         return dateB - dateA;
       });
     }
 
     return result;
-  }, [
-    listings,
-    search,
-    location,
-    condition,
-    brand,
-    category,
-    sort,
-  ]);
+  }, [listings, search, location, condition, brand, category, sort]);
+
+  /* ---------- Clear filters ---------- */
 
   const clearFilters = () => {
     setSearch("");
     setLocation("");
-    setCondition("All Conditions");
-    setBrand("");
-    setCategory("All Categories");
+    setCondition(ALL_CONDITIONS);
+    setBrand(ALL_BRANDS);
+    setCategory(ALL_CATEGORIES);
     setSort("newest");
   };
 
+  const hasActiveFilters =
+    search.trim() !== "" ||
+    location.trim() !== "" ||
+    brand !== ALL_BRANDS ||
+    condition !== ALL_CONDITIONS ||
+    category !== ALL_CATEGORIES;
+
+  const showResults = !loading && (!error || listings.length > 0);
+
+  /* ---------- Page ---------- */
+
   return (
     <div className="marketPlaceContainer">
-      <Navbar />
+      <div className="marketplaceNavbarWrapper">
+        <Navbar />
+      </div>
 
-      {/* HERO */}
-      <section className="marketplaceHeader">
-        <div className="marketplaceHeroContent">
-          <span className="marketplaceEyebrow">
-            AUTOPARTS MARKETPLACE
-          </span>
+      <div className="marketplacePageContent">
+        {/* HERO */}
+        <section className="marketplaceHeader">
+          <div className="marketplaceHeroContent">
+            <span className="marketplaceEyebrow">AUTOPARTS MARKETPLACE</span>
 
-          <h1>Browse Listed Car Parts</h1>
+            <h1>Browse Listed Car Parts</h1>
 
-          <p>
-            Find the exact part you need from sellers on our
-            marketplace.
-          </p>
-        </div>
+            <p>Find the exact part you need from sellers on our marketplace.</p>
+          </div>
 
-        {/* FILTERS */}
-        <div className="marketplaceFilters">
+          {/* FILTERS */}
+          <div className="marketplaceFilters">
+            {/* Search */}
+            <div className="filter-form-group searchGroup">
+              <label htmlFor="marketplace-search">Search</label>
 
-          {/* Search */}
-          <div className="filter-form-group searchGroup">
-            <label>Search</label>
+              <div className="searchInputWrapper">
+                <FaSearch />
 
-            <div className="searchInputWrapper">
-              <FaSearch />
+                <input
+                  id="marketplace-search"
+                  type="text"
+                  placeholder="Search car parts..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="filter-form-input"
+                />
+              </div>
+            </div>
 
-              <input
-                type="text"
-                placeholder="Search car parts..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="filter-form-input"
+            {/* Location */}
+            <div className="filter-form-group">
+              <label htmlFor="marketplace-location">Location</label>
+
+              <div className="inputIconWrapper">
+                <FaMapMarkerAlt />
+
+                <input
+                  id="marketplace-location"
+                  type="text"
+                  placeholder="Cape Town"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  className="filter-form-input"
+                />
+              </div>
+            </div>
+
+            {/* Condition (custom, opens down) */}
+            <div className="filter-form-group">
+              <label htmlFor="marketplace-condition">Condition</label>
+
+              <CustomSelect
+                id="marketplace-condition"
+                value={condition}
+                options={conditions}
+                onChange={setCondition}
+              />
+            </div>
+
+            {/* Brand (custom, opens down) */}
+            <div className="filter-form-group">
+              <label htmlFor="marketplace-brand">Brand</label>
+
+              <CustomSelect
+                id="marketplace-brand"
+                value={brand}
+                options={brands}
+                onChange={setBrand}
+              />
+            </div>
+
+            {/* Category (custom, opens down) */}
+            <div className="filter-form-group">
+              <label htmlFor="marketplace-category">Category</label>
+
+              <CustomSelect
+                id="marketplace-category"
+                value={category}
+                options={categories}
+                onChange={setCategory}
               />
             </div>
           </div>
+        </section>
 
-          {/* Location */}
-          <div className="filter-form-group">
-            <label>Location</label>
+        {/* RESULTS */}
+        <main className="marketplaceResults">
+          <div className="resultsTopBar">
+            <div>
+              <h2>{filteredListings.length} Parts Found</h2>
+              <p>Browse available car parts listed by sellers.</p>
+            </div>
 
-            <div className="inputIconWrapper">
-              <FaMapMarkerAlt />
+            <div className="resultsActions">
+              <FaSlidersH />
 
-              <input
-                type="text"
-                placeholder="Cape Town"
-                value={location}
-                onChange={(e) =>
-                  setLocation(e.target.value)
-                }
-                className="filter-form-input"
-              />
+              <label htmlFor="sort">Sort:</label>
+
+              <select
+                id="sort"
+                value={sort}
+                onChange={(e) => setSort(e.target.value)}
+              >
+                <option value="newest">Newest</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
+              </select>
             </div>
           </div>
 
-          {/* Condition */}
-          <div className="filter-form-group">
-            <label>Condition</label>
-
-            <select
-              value={condition}
-              onChange={(e) =>
-                setCondition(e.target.value)
-              }
-              className="filter-form-select"
+          {hasActiveFilters && (
+            <button
+              type="button"
+              className="clearFiltersButton"
+              onClick={clearFilters}
             >
-              {conditions.map((item) => (
-                <option key={item} value={item}>
-                  {item}
-                </option>
-              ))}
-            </select>
-          </div>
+              Clear Filters
+            </button>
+          )}
 
-          {/* Brand */}
-          <div className="filter-form-group">
-            <label>Brand</label>
+          {loading && (
+            <div className="marketplaceMessage">Loading listings...</div>
+          )}
 
-            <select
-              value={brand}
-              onChange={(e) =>
-                setBrand(e.target.value)
-              }
-              className="filter-form-select"
-            >
-              {brands.map((item) => (
-                <option key={item} value={item}>
-                  {item}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Category */}
-          <div className="filter-form-group">
-            <label>Category</label>
-
-            <select
-              value={category}
-              onChange={(e) =>
-                setCategory(e.target.value)
-              }
-              className="filter-form-select"
-            >
-              {categories.map((item) => (
-                <option key={item} value={item}>
-                  {item}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-      </section>
-
-      {/* RESULTS */}
-      <main className="marketplaceResults">
-
-        <div className="resultsTopBar">
-          <div>
-            <h2>
-              {filteredListings.length} Parts Found
-            </h2>
-
-            <p>
-              Browse available car parts listed by sellers.
-            </p>
-          </div>
-
-          <div className="resultsActions">
-            <FaSlidersH />
-
-            <label htmlFor="sort">Sort:</label>
-
-            <select
-              id="sort"
-              value={sort}
-              onChange={(e) =>
-                setSort(e.target.value)
-              }
-            >
-              <option value="newest">Newest</option>
-              <option value="price-low">
-                Price: Low to High
-              </option>
-              <option value="price-high">
-                Price: High to Low
-              </option>
-            </select>
-          </div>
-        </div>
-
-        {/* CLEAR FILTERS */}
-        {(search ||
-          location ||
-          brand ||
-          condition !== "All Conditions" ||
-          category !== "All Categories") && (
-          <button
-            className="clearFiltersButton"
-            onClick={clearFilters}
-          >
-            Clear Filters
-          </button>
-        )}
-
-        {/* LOADING */}
-        {loading && (
-          <div className="marketplaceMessage">
-            Loading listings...
-          </div>
-        )}
-
-        {/* ERROR (only when the backend failed AND there is nothing local to show) */}
-        {!loading && error && listings.length === 0 && (
-          <div className="marketplaceMessage errorMessage">
-            {error}
-          </div>
-        )}
-
-        {/* EMPTY */}
-        {!loading &&
-          (!error || listings.length > 0) &&
-          filteredListings.length === 0 && (
-            <div className="marketplaceMessage">
-              <h3>No parts found</h3>
-
-              <p>
-                Try changing your search or filters.
-              </p>
+          {!loading && error && listings.length === 0 && (
+            <div className="marketplaceMessage errorMessage">
+              <h3>Unable to load listings</h3>
+              <p>{error}</p>
 
               <button
+                type="button"
                 onClick={clearFilters}
                 className="clearButton"
               >
@@ -401,21 +555,26 @@ function MarketPlacePage() {
             </div>
           )}
 
-        {/* PRODUCT GRID */}
-        {!loading &&
-          (!error || listings.length > 0) &&
-          filteredListings.length > 0 && (
+          {showResults && filteredListings.length === 0 && (
+            <div className="marketplaceMessage">
+              <h3>No parts found</h3>
+              <p>Try changing your search or filters.</p>
+
+              <button
+                type="button"
+                onClick={clearFilters}
+                className="clearButton"
+              >
+                Clear Filters
+              </button>
+            </div>
+          )}
+
+          {showResults && filteredListings.length > 0 && (
             <div className="listingGrid">
-
               {filteredListings.map((listing) => (
-                <article
-                  className="listingCard"
-                  key={listing.id}
-                >
-
-                  {/* IMAGE */}
+                <article className="listingCard" key={listing.id}>
                   <div className="listingImageWrapper">
-
                     {listing.image ? (
                       <img
                         src={listing.image}
@@ -423,9 +582,7 @@ function MarketPlacePage() {
                         className="listingImage"
                       />
                     ) : (
-                      <div className="noImage">
-                        No Image
-                      </div>
+                      <div className="noImage">No Image</div>
                     )}
 
                     {listing.condition && (
@@ -435,9 +592,7 @@ function MarketPlacePage() {
                     )}
                   </div>
 
-                  {/* CARD CONTENT */}
                   <div className="listingContent">
-
                     {listing.category && (
                       <span className="listingCategory">
                         {listing.category}
@@ -447,9 +602,7 @@ function MarketPlacePage() {
                     <h3>{listing.title}</h3>
 
                     {listing.brand && (
-                      <p className="listingBrand">
-                        {listing.brand}
-                      </p>
+                      <p className="listingBrand">{listing.brand}</p>
                     )}
 
                     {listing.description && (
@@ -466,12 +619,8 @@ function MarketPlacePage() {
                     )}
 
                     <div className="listingBottom">
-
                       <strong className="listingPrice">
-                        R{" "}
-                        {Number(listing.price).toLocaleString(
-                          "en-ZA"
-                        )}
+                        R {Number(listing.price).toLocaleString("en-ZA")}
                       </strong>
 
                       <Link
@@ -494,15 +643,14 @@ function MarketPlacePage() {
                       >
                         View Part
                       </Link>
-
                     </div>
                   </div>
                 </article>
               ))}
-
             </div>
           )}
-      </main>
+        </main>
+      </div>
     </div>
   );
 }
