@@ -1,6 +1,7 @@
 import "./RegisterPage.css";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { upsertUser } from "../Components/userStore";
 
 function RegisterPage() {
     const navigate = useNavigate();
@@ -54,6 +55,14 @@ function RegisterPage() {
             "automarketUser",
             JSON.stringify(user)
         );
+
+        // Keep a permanent record so the admin can see this account
+        upsertUser({
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            mobile: user.mobile,
+        });
 
         console.log("Registration data saved:", user);
 

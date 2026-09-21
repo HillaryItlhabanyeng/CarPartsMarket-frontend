@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import {
   FaMapMarkerAlt,
   FaSearch,
@@ -7,6 +7,8 @@ import {
 } from "react-icons/fa";
 
 import Navbar from "../Components/Navbar";
+import { partCategories } from "../data/partCategories";
+import { carBrands } from "../data/carBrands";
 import "./MarketPlacePage.css";
 
 interface Listing {
@@ -20,21 +22,35 @@ interface Listing {
   location?: string;
   image?: string;
   createdAt?: string;
+  quantity?: number;
+  seller?: string;
+  sellerEmail?: string;
 }
 
 const API_URL = "http://localhost:5000/api/listings";
 
-const categories = [
-  "All Categories",
-  "Brakes",
-  "Engine",
-  "Electrical",
-  "Lighting",
-  "Suspension",
-  "Interior",
-  "Body Parts",
-  "Wheels & Tyres",
-];
+const categories = ["All Categories", ...partCategories];
+
+// Listings a seller submitted and the admin approved (sold ones are hidden from buyers)
+function loadApprovedListings(): Listing[] {
+  try {
+    const raw = window.localStorage.getItem("marketplace_approved_products");
+    const parsed = raw ? JSON.parse(raw) : [];
+
+    if (!Array.isArray(parsed)) return [];
+
+    return parsed
+      .filter((item) => !item.sold)
+      .map((item) => ({
+        ...item,
+        createdAt:
+          item.createdAt ||
+          (typeof item.id === "number" ? new Date(item.id).toISOString() : undefined),
+      }));
+  } catch {
+    return [];
+  }
+}
 
 const conditions = [
   "All Conditions",
@@ -44,7 +60,7 @@ const conditions = [
 ];
 
 function MarketPlacePage() {
-  const [listings, setListings] = useState<Listing[]>([]);
+  const [listings, setListings] = useState<Listing[]>(() => loadApprovedListings());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -52,7 +68,11 @@ function MarketPlacePage() {
   const [location, setLocation] = useState("");
   const [condition, setCondition] = useState("All Conditions");
   const [brand, setBrand] = useState("");
-  const [category, setCategory] = useState("All Categories");
+  const [searchParams] = useSearchParams();
+  const [category, setCategory] = useState(() => {
+    const requested = searchParams.get("category");
+    return requested && categories.includes(requested) ? requested : "All Categories";
+  });
   const [sort, setSort] = useState("newest");
 
   // Get listings from backend
@@ -73,7 +93,8 @@ function MarketPlacePage() {
         // Supports either:
         // { listings: [...] }
         // or directly [...]
-        setListings(data.listings || data);
+        // Seller-approved listings stay in front of whatever the backend returns
+        setListings([...loadApprovedListings(), ...(data.listings || data)]);
       } catch (err) {
         console.error(err);
         setError("Unable to load listings.");
@@ -85,13 +106,17 @@ function MarketPlacePage() {
     fetchListings();
   }, []);
 
-  // Get unique brands from listings
+  // All South African car brands, plus any other brand a seller typed that isn't in the list
   const brands = useMemo(() => {
-    const uniqueBrands = listings
-      .map((listing) => listing.brand)
-      .filter(Boolean) as string[];
+    const known = new Set(carBrands.map((item) => item.toLowerCase()));
+    const extraBrands = new Set<string>();
 
-    return ["All Brands", ...Array.from(new Set(uniqueBrands))];
+    listings.forEach((listing) => {
+      const name = listing.brand?.trim();
+      if (name && !known.has(name.toLowerCase())) extraBrands.add(name);
+    });
+
+    return ["All Brands", ...carBrands, ...Array.from(extraBrands).sort()];
   }, [listings]);
 
   // Filter and sort listings
@@ -126,7 +151,8 @@ function MarketPlacePage() {
 
     if (brand && brand !== "All Brands") {
       result = result.filter(
-        (listing) => listing.brand === brand
+        (listing) =>
+          listing.brand?.trim().toLowerCase() === brand.toLowerCase()
       );
     }
 
@@ -348,8 +374,8 @@ function MarketPlacePage() {
           </div>
         )}
 
-        {/* ERROR */}
-        {!loading && error && (
+        {/* ERROR (only when the backend failed AND there is nothing local to show) */}
+        {!loading && error && listings.length === 0 && (
           <div className="marketplaceMessage errorMessage">
             {error}
           </div>
@@ -357,7 +383,7 @@ function MarketPlacePage() {
 
         {/* EMPTY */}
         {!loading &&
-          !error &&
+          (!error || listings.length > 0) &&
           filteredListings.length === 0 && (
             <div className="marketplaceMessage">
               <h3>No parts found</h3>
@@ -377,7 +403,7 @@ function MarketPlacePage() {
 
         {/* PRODUCT GRID */}
         {!loading &&
-          !error &&
+          (!error || listings.length > 0) &&
           filteredListings.length > 0 && (
             <div className="listingGrid">
 
@@ -450,6 +476,20 @@ function MarketPlacePage() {
 
                       <Link
                         to={`/product/${listing.id}`}
+                        state={{
+                          product: {
+                            id: listing.id,
+                            name: listing.title,
+                            category: listing.category || "",
+                            price: listing.price,
+                            image: listing.image || "",
+                            brand: listing.brand,
+                            description: listing.description,
+                            seller: listing.seller,
+                            sellerEmail: listing.sellerEmail,
+                            available: listing.quantity,
+                          },
+                        }}
                         className="viewPartButton"
                       >
                         View Part

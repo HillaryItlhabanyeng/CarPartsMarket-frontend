@@ -18,17 +18,17 @@ import {
   FaTrash,
   FaSave,
 } from "react-icons/fa";
-/*
- * Use the SAME profile image as the Profile page.
- *
- * Your Profile page already uses:
- * /Sipho.png
- *
- * Make sure the file exists here:
- *
- * public/Sipho.png
- */
-const SIPHO_PROFILE_IMAGE = "/Sipho.png";
+import { getCurrentUser } from "../Components/notificationStore";
+import NotificationBell from "../Components/NotificationBell";
+// Initials of the logged-in user, shown in the top-corner profile button (no photo)
+function getInitials(): string {
+  const user = getCurrentUser();
+  const name = user?.name?.trim() || user?.email?.split("@")[0] || "User";
+  const parts = name.split(/\s+/).filter(Boolean);
+
+  if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+  return name.substring(0, 2).toUpperCase();
+}
 
 const SettingsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -57,9 +57,6 @@ const SettingsPage: React.FC = () => {
   const [language, setLanguage] =
     useState<string>("English");
 
-  const [profileImageError, setProfileImageError] =
-    useState<boolean>(false);
-
   /*
    * =========================================================
    * HANDLERS
@@ -68,10 +65,6 @@ const SettingsPage: React.FC = () => {
 
   const handleBack = () => {
     navigate(-1);
-  };
-
-  const handleNotifications = () => {
-    navigate("/notifications");
   };
 
   const handleSettings = () => {
@@ -146,24 +139,9 @@ const SettingsPage: React.FC = () => {
    * =========================================================
    */
 
-  const renderProfileImage = () => {
-    if (!profileImageError) {
-      return (
-        <img
-          src={SIPHO_PROFILE_IMAGE}
-          alt="Sipho Khubeka"
-          className="settings-avatar-image"
-          onError={() => setProfileImageError(true)}
-        />
-      );
-    }
-
-    return (
-      <span className="settings-avatar-fallback">
-        S
-      </span>
-    );
-  };
+  const renderProfileImage = () => (
+    <span className="settings-avatar-fallback">{getInitials()}</span>
+  );
 
   /*
    * =========================================================
@@ -212,16 +190,7 @@ const SettingsPage: React.FC = () => {
 
               {/* NOTIFICATIONS */}
 
-              <button
-                type="button"
-                className="settings-top-icon"
-                onClick={handleNotifications}
-                aria-label="Notifications"
-              >
-                <FaBell />
-
-                <span className="settings-notification-dot" />
-              </button>
+              <NotificationBell triggerClassName="settings-top-icon" />
 
               {/* SETTINGS */}
 

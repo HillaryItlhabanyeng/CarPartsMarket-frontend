@@ -42,6 +42,9 @@ import ProfilePage from "./Pages/ProfilePage";
 import ProductDetailsPage from "./Pages/ProductDetailsPage";
 import AdminPage from "./Pages/AdminPage";
 import AdminUsersPage from "./Pages/AdminUsersPage";
+import AdminListingsPage from "./Pages/AdminListingsPage";
+import AdminOrdersPage from "./Pages/AdminOrdersPage";
+import SellerOrdersPage from "./Pages/SellerOrdersPage";
 import ShippingPage from "./Pages/ShippingPage";
 
 
@@ -80,6 +83,7 @@ function App() {
         <Route path="/wishlist" element={<SavedPage />} />
         <Route path="/buying" element={<BuyingPage />} />
         <Route path="/orders" element={<BuyingPage />} />
+        <Route path="/seller-orders" element={<SellerOrdersPage />} />
         <Route path="/orders/:reference" element={<OrderDetailPage />} />
 
         {/* Cart / Checkout */}
@@ -106,6 +110,8 @@ function App() {
         {/* Admin */}
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/admin/users" element={<AdminUsersPage />} />
+        <Route path="/admin/listings" element={<AdminListingsPage />} />
+        <Route path="/admin/orders" element={<AdminOrdersPage />} />
         <Route path="/shipping" element={<ShippingPage />} />
 
         {/* Reviews */}
