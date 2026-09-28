@@ -1,13 +1,13 @@
 /* =========================================================
-   UNITRADE SETTINGS PAGE
+   AUTOMARKET SETTINGS PAGE
    ========================================================= */
 
 .settings-page {
   --settings-navy: #0d2b45;
   --settings-dark-navy: #081b2e;
 
-  --settings-accent: #a67b5b;
-  --settings-accent-dark: #8c6547;
+  --settings-accent: #d8c3a5;
+  --settings-accent-dark: #c2a978;
 
   --settings-gold: #f5a623;
 
@@ -139,8 +139,6 @@
 
 /* =========================================================
    TOP ICONS
-   Matches Profile page:
-   plain navy icons on white background
    ========================================================= */
 
 .settings-top-icon {
@@ -189,10 +187,6 @@
 }
 
 /* =========================================================
-   NOTIFICATION DOT
-   ========================================================= */
-
-/* =========================================================
    PROFILE AVATAR
    ========================================================= */
 
@@ -231,8 +225,6 @@
   box-shadow:
     0 2px 8px rgba(13, 43, 69, 0.2);
 }
-
-/* INITIALS (top-corner profile button) */
 
 .settings-avatar-fallback {
   width: 100%;
@@ -322,7 +314,7 @@
 
   background: var(--settings-white);
 
-  color: var(--settings-accent);
+  color: var(--settings-accent-dark);
 
   font-size: 15px;
 
@@ -524,10 +516,10 @@
 }
 
 .settings-language-select:focus {
-  border-color: var(--settings-accent);
+  border-color: var(--settings-accent-dark);
 
   box-shadow:
-    0 0 0 2px rgba(166, 123, 91, 0.15);
+    0 0 0 2px rgba(216, 195, 165, 0.25);
 }
 
 /* =========================================================
@@ -579,7 +571,7 @@
 }
 
 .settings-clickable-row:hover > svg {
-  color: var(--settings-accent);
+  color: var(--settings-accent-dark);
 }
 
 /* =========================================================
@@ -605,7 +597,7 @@
 
   background: var(--settings-accent);
 
-  color: var(--settings-white);
+  color: var(--settings-text);
 
   font-family:
     Arial,
@@ -627,7 +619,7 @@
   background: var(--settings-accent-dark);
 
   box-shadow:
-    0 5px 12px rgba(166, 123, 91, 0.25);
+    0 5px 12px rgba(216, 195, 165, 0.35);
 }
 
 .settings-save-button:active {
