@@ -2,6 +2,7 @@ import "./RegisterPage.css";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { upsertUser } from "../Components/userStore";
+import { registerBuyer } from "../api/authService"; 
 
 function RegisterPage() {
     const navigate = useNavigate();
@@ -9,14 +10,14 @@ function RegisterPage() {
     const [formData, setFormData] = useState({
         firstName: "",
         lastName: "",
-        // city: "",
-        // province: "",
-        // gender: "",
         email: "",
         mobile: "",
         password: "",
         confirmPassword: "",
     });
+
+    const [error, setError] = useState<string | null>(null);
+    const [loading, setLoading] = useState(false);
 
     const handleChange = (
         e: React.ChangeEvent<
@@ -24,103 +25,108 @@ function RegisterPage() {
         >
     ) => {
         const { name, value } = e.target;
-
-        setFormData((prev) => ({
-            ...prev,
-            [name]: value,
-        }));
+        setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        setError(null);
 
-        // Check that the passwords match
         if (formData.password !== formData.confirmPassword) {
             alert("Passwords do not match.");
             return;
         }
 
-        // Save only the information that should appear on the profile
-        // DO NOT save the password here.
-        const user = {
-            firstName: formData.firstName.trim(),
-            lastName: formData.lastName.trim(),
-            email: formData.email.trim(),
-            mobile: formData.mobile.trim(),
-            role: "buyer",
-        };
+        setLoading(true);
+        try {
+            // 1. Save to backend
+            const { data } = await registerBuyer({
+                firstName: formData.firstName.trim(),
+                lastName: formData.lastName.trim(),
+                email: formData.email.trim(),
+                password: formData.password,          
+                buyingPart: "Engine",                 
+            });
 
-        // Save the user so ProfilePage.tsx can read it
-        localStorage.setItem(
-            "automarketUser",
-            JSON.stringify(user)
-        );
+            
+            const user = {
+                firstName: data.firstName ?? formData.firstName.trim(),
+                lastName: data.lastName ?? formData.lastName.trim(),
+                email: data.email ?? formData.email.trim(),
+                mobile: formData.mobile.trim(),
+                role: "buyer",
+            };
 
-        // Keep a permanent record so the admin can see this account
-        upsertUser({
-            email: user.email,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            mobile: user.mobile,
-        });
+            localStorage.setItem("automarketUser", JSON.stringify(user));
+            upsertUser({
+                email: user.email,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                mobile: user.mobile,
+            });
 
-        console.log("Registration data saved:", user);
+            console.log("Registered:", data);
 
-        // Continue to the address page
-        navigate("/address");
+            // 3. Continue
+            navigate("/address");
+        } catch (err: any) {
+            console.error(
+                "Register failed:",
+                err.response?.status,
+                err.response?.data
+            );
+            setError(
+                typeof err.response?.data === "string"
+                    ? err.response.data
+                    : "Registration failed. Please try again."
+            );
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const handleSignIn = () => {
-        console.log('Navigate to sign-in');
-        navigate("/login");
-    };
-
-    const handleCancel = () => {
-        console.log('Navigate to sign-in');
-        navigate("/");
-    };
+    const handleSignIn = () => navigate("/login");
+    const handleCancel = () => navigate("/");
 
     return (
         <div className="RegisterContainer">
-
             <div className="Registerlogo-card">
-
                 <img
                     src="logoIcon2.png"
                     className="registerLogo"
                     alt="AutoMarket Logo"
                 />
-
                 <h1 className="logoTitle">
                     <span>Auto</span>Market
                 </h1>
 
                 <div className="logoButtons">
-                    <button type="submit" className="RegisterLogoButton" onClick={(handleSignIn)}>
+                    {/* type="button" so they don't submit the form */}
+                    <button
+                        type="button"
+                        className="RegisterLogoButton"
+                        onClick={handleSignIn}
+                    >
                         Login
                     </button>
-
-                    <button type="submit" className="RegisterLogoButton" onClick={(handleCancel)}>
+                    <button
+                        type="button"
+                        className="RegisterLogoButton"
+                        onClick={handleCancel}
+                    >
                         Cancel
                     </button>
-
                 </div>
             </div>
 
             <div className="Register-card">
-
                 <h1>Create an Account</h1>
 
                 <form onSubmit={handleSubmit}>
-
-                    {/* First Name + Last Name */}
+                    {/* First + Last name */}
                     <div className="RegisterformRow">
-
                         <div className="Registerform-group">
-                            <label htmlFor="firstName">
-                                First Name
-                            </label>
-
+                            <label htmlFor="firstName">First Name</label>
                             <input
                                 id="firstName"
                                 type="text"
@@ -130,12 +136,8 @@ function RegisterPage() {
                                 required
                             />
                         </div>
-
                         <div className="Registerform-group">
-                            <label htmlFor="lastName">
-                                Last Name
-                            </label>
-
+                            <label htmlFor="lastName">Last Name</label>
                             <input
                                 id="lastName"
                                 type="text"
@@ -145,93 +147,12 @@ function RegisterPage() {
                                 required
                             />
                         </div>
-
                     </div>
-
-                    {/* City + Province
-                    <div className="RegisterformRow">
-
-                        <div className="Registerform-group">
-                            <label htmlFor="city">
-                                City
-                            </label>
-
-                            <input
-                                id="city"
-                                type="text"
-                                name="city"
-                                value={formData.city}
-                                onChange={handleChange}
-                                required
-                            />
-                        </div>
-
-                        <div className="Registerform-group">
-                            <label htmlFor="province">
-                                Province
-                            </label>
-
-                            <select
-                                id="province"
-                                name="province"
-                                value={formData.province}
-                                onChange={handleChange}
-                                required
-                            >
-                                <option value="">
-                                    Select Province
-                                </option>
-
-                                <option value="Eastern Cape">
-                                    Eastern Cape
-                                </option>
-
-                                <option value="Free State">
-                                    Free State
-                                </option>
-
-                                <option value="Gauteng">
-                                    Gauteng
-                                </option>
-
-                                <option value="KwaZulu-Natal">
-                                    KwaZulu-Natal
-                                </option>
-
-                                <option value="Limpopo">
-                                    Limpopo
-                                </option>
-
-                                <option value="Mpumalanga">
-                                    Mpumalanga
-                                </option>
-
-                                <option value="Northern Cape">
-                                    Northern Cape
-                                </option>
-
-                                <option value="North West">
-                                    North West
-                                </option>
-
-                                <option value="Western Cape">
-                                    Western Cape
-                                </option>
-
-                            </select>
-                        </div>
-
-                    </div>
-                    */}
 
                     {/* Email + Mobile */}
                     <div className="RegisterformRow">
-
                         <div className="Registerform-group">
-                            <label htmlFor="email">
-                                Email
-                            </label>
-
+                            <label htmlFor="email">Email</label>
                             <input
                                 id="email"
                                 type="email"
@@ -241,12 +162,8 @@ function RegisterPage() {
                                 required
                             />
                         </div>
-
                         <div className="Registerform-group">
-                            <label htmlFor="mobile">
-                                Mobile Number
-                            </label>
-
+                            <label htmlFor="mobile">Mobile Number</label>
                             <input
                                 id="mobile"
                                 type="tel"
@@ -256,17 +173,12 @@ function RegisterPage() {
                                 required
                             />
                         </div>
-
                     </div>
 
-                    {/* Password + Confirm Password */}
+                    {/* Passwords */}
                     <div className="RegisterformRow">
-
                         <div className="Registerform-group">
-                            <label htmlFor="password">
-                                Password
-                            </label>
-
+                            <label htmlFor="password">Password</label>
                             <input
                                 id="password"
                                 type="password"
@@ -276,12 +188,8 @@ function RegisterPage() {
                                 required
                             />
                         </div>
-
                         <div className="Registerform-group">
-                            <label htmlFor="confirmPassword">
-                                Confirm Password
-                            </label>
-
+                            <label htmlFor="confirmPassword">Confirm Password</label>
                             <input
                                 id="confirmPassword"
                                 type="password"
@@ -291,60 +199,46 @@ function RegisterPage() {
                                 required
                             />
                         </div>
-
                     </div>
 
-                    {/* Terms and Conditions */}
+                    {/* Terms */}
                     <div className="checkboxes">
-
                         <label>
-
-                            <input
-                                type="checkbox"
-                                name="option1"
-                                required
-                            />
-
+                            <input type="checkbox" name="option1" required />
                             <span className="label-text">
-                                Creating your account and accepting
-                                terms & conditions
+                                Creating your account and accepting terms & conditions
                             </span>
-
                         </label>
-
                     </div>
 
-                    {/* Continue */}
+                    {error && (
+                        <p style={{ color: "red", marginTop: "0.5rem" }}>{error}</p>
+                    )}
+
                     <button
                         type="submit"
                         className="RegisterButton"
+                        disabled={loading}
                     >
-                        Continue
+                        {loading ? "Creating..." : "Continue"}
                     </button>
 
                     <div className="bottomButtons">
-
                         <button
                             type="button"
                             className="RegisterBottomButton1"
                             onClick={() => navigate("/register")}
                             aria-label="Register"
-                        >
-                        </button>
-
+                        />
                         <button
                             type="submit"
                             className="RegisterBottomButton2"
                             aria-label="Continue registration"
-                        >
-                        </button>
-
+                            disabled={loading}
+                        />
                     </div>
-
                 </form>
-
             </div>
-
         </div>
     );
 }
