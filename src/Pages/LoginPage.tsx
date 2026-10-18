@@ -6,13 +6,16 @@ import { loginUser } from "../api/authService";
 
 import "./LoginPage.css";
 
-import { FaEnvelope, FaLock, FaRegEye, FaRegEyeSlash } from "react-icons/fa";
+import { FaEnvelope, FaLock, FaRegEye, FaRegEyeSlash, FaUserTag } from "react-icons/fa";
+
+const ROLE_OPTIONS = ["Buyer", "Seller", "Admin"] as const;
 
 const LoginPage: React.FC = () => {
     const navigate = useNavigate();
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [selectedRole, setSelectedRole] = useState("");
     const [rememberMe, setRememberMe] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState("");
@@ -37,12 +40,30 @@ const LoginPage: React.FC = () => {
             return;
         }
 
+        if (!selectedRole) {
+            alert("Please select your role.");
+            return;
+        }
+
         const normalizedEmail = email.trim().toLowerCase();
 
         try {
             const res = await loginUser({ email: normalizedEmail, password });
-            const { userid, firstName, lastName, email: returnedEmail, role } = res.data;
+            const { userid, firstName, lastName, email: returnedEmail, role: backendRole } = res.data;
 
+            // Buyers and sellers are interchangeable; only admin is restricted.
+            const chosenRole = selectedRole.toLowerCase();
+            const accountRole = String(backendRole).toLowerCase();
+            if (chosenRole === "admin" && accountRole !== "admin") {
+                setError("This account is not an admin account.");
+                return;
+            }
+            if (accountRole === "admin" && chosenRole !== "admin") {
+                setError("Admin accounts must log in as Admin.");
+                return;
+            }
+
+            const role = chosenRole;
             const userName = firstName && lastName ? `${firstName} ${lastName}` : returnedEmail.split("@")[0];
 
             const currentUser = {
@@ -147,6 +168,29 @@ const LoginPage: React.FC = () => {
                             >
                                 {showPassword ? <FaRegEyeSlash /> : <FaRegEye />}
                             </button>
+                        </div>
+                    </div>
+
+                    <div className="Loginform-group">
+                        <label htmlFor="role">Account Type</label>
+                        <div className="Login-input-wrapper">
+                            <FaUserTag />
+                            <select
+                                id="role"
+                                name="role"
+                                value={selectedRole}
+                                onChange={(e) => setSelectedRole(e.target.value)}
+                                required
+                            >
+                                <option value="" disabled>
+                                    Select Role
+                                </option>
+                                {ROLE_OPTIONS.map((option) => (
+                                    <option key={option} value={option}>
+                                        {option}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
                     </div>
 
