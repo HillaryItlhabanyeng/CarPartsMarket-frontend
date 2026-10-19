@@ -1,3 +1,4 @@
+
 import {
   useEffect,
   useMemo,
@@ -48,6 +49,7 @@ type Section =
 
 type StoredUser = {
   id?: string | number;
+  userid?: string | number;
   firstName?: string;
   lastName?: string;
   name?: string;
@@ -78,6 +80,15 @@ type RoleConfig = {
   icon: IconType;
 };
 
+type SavedProfile = {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  mobile?: string;
+  profileImage?: string;
+  coverImage?: string;
+};
+
 /* =========================================================
    STORAGE KEYS
 ========================================================= */
@@ -93,32 +104,35 @@ const APPROVED_KEY = "marketplace_approved_products";
 const PENDING_KEY = "marketplace_pending_products";
 const NOTIFY_KEY = "marketplace_notifications_enabled";
 
-/*
-  IMPORTANT:
-  This is the single profile-image storage key used
-  throughout the frontend, including Navbar.tsx.
-*/
-const PROFILE_IMAGE_KEY =
-  "automarketProfileImage";
+const PROFILE_IMAGE_KEY = "automarketProfileImage";
+const COVER_IMAGE_KEY = "automarket_profile_cover";
 
-const COVER_IMAGE_KEY =
-  "automarket_profile_cover";
-
-/* =========================================================
-   EVENTS
-========================================================= */
-
+const PROFILE_UPDATED_EVENT = "automarket-user-updated";
+const ADDRESS_UPDATED_EVENT = "automarket-address-updated";
 const PROFILE_IMAGE_UPDATED_EVENT =
   "automarket-profile-image-updated";
+
+/*
+  Persistent account-specific profile storage.
+
+  These keys remain when the user logs out.
+  Images and profile details are kept separately for each email.
+*/
+const PROFILE_PREFIX = "automarket_saved_profile:";
+
+function getProfileStorageKey(email?: string): string {
+  const normalizedEmail = (email || "").trim().toLowerCase();
+
+  return normalizedEmail
+    ? `${PROFILE_PREFIX}${normalizedEmail}`
+    : "";
+}
 
 /* =========================================================
    ROLE CONFIG
 ========================================================= */
 
-const roleConfig: Record<
-  UserRole,
-  RoleConfig
-> = {
+const roleConfig: Record<UserRole, RoleConfig> = {
   buyer: {
     label: "Buyer",
     tagline:
@@ -156,133 +170,169 @@ const sections: {
   label: string;
   icon: IconType;
 }[] = [
-  {
-    id: "overview",
-    label: "Overview",
-    icon: FaThLarge,
-  },
-  {
-    id: "details",
-    label: "Personal details",
-    icon: FaIdCard,
-  },
-  {
-    id: "addresses",
-    label: "Addresses",
-    icon: FaMapMarkerAlt,
-  },
-  {
-    id: "preferences",
-    label: "Preferences",
-    icon: FaCog,
-  },
+  { id: "overview", label: "Overview", icon: FaThLarge },
+  { id: "details", label: "Personal details", icon: FaIdCard },
+  { id: "addresses", label: "Addresses", icon: FaMapMarkerAlt },
+  { id: "preferences", label: "Preferences", icon: FaCog },
 ];
 
 /* =========================================================
-   HELPERS
+   STORAGE HELPERS
 ========================================================= */
 
 function readArray(key: string): any[] {
   try {
-    const raw =
-      window.localStorage.getItem(key);
+    const raw = window.localStorage.getItem(key);
+    const parsed = raw ? JSON.parse(raw) : [];
 
-    const parsed = raw
-      ? JSON.parse(raw)
-      : [];
-
-    return Array.isArray(parsed)
-      ? parsed
-      : [];
+    return Array.isArray(parsed) ? parsed : [];
   } catch {
     return [];
   }
 }
 
+function readSavedProfile(email?: string): SavedProfile | null {
+  const key = getProfileStorageKey(email);
+
+  if (!key) return null;
+
+  try {
+    const raw = window.localStorage.getItem(key);
+
+    if (!raw) return null;
+
+    const parsed = JSON.parse(raw);
+
+    return parsed && typeof parsed === "object"
+      ? parsed
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveAccountProfile(
+  email: string,
+  profile: SavedProfile
+): void {
+  const key = getProfileStorageKey(email);
+
+  if (!key) return;
+
+  try {
+    const existing = readSavedProfile(email) || {};
+
+    window.localStorage.setItem(
+      key,
+      JSON.stringify({
+        ...existing,
+        ...profile,
+        email: email.trim().toLowerCase(),
+      })
+    );
+  } catch (error) {
+    console.error("Could not save the local profile:", error);
+    throw error;
+  }
+}
+
 function readStoredUser(): StoredUser | null {
   try {
+    let activeUser: StoredUser | null = null;
+
     for (const key of USER_KEYS) {
-      const raw =
-        window.localStorage.getItem(key);
+      const raw = window.localStorage.getItem(key);
 
       if (!raw) continue;
 
       const parsed = JSON.parse(raw);
 
-      if (
-        parsed &&
-        typeof parsed === "object"
-      ) {
-        return parsed;
+      if (parsed && typeof parsed === "object") {
+        activeUser = parsed;
+        break;
       }
     }
 
-    return null;
+    if (!activeUser) return null;
+
+    const savedProfile = readSavedProfile(activeUser.email);
+
+    if (!savedProfile) return activeUser;
+
+    /*
+      Preserve the role and ID from the active login.
+      Restore the user's previously saved profile details.
+    */
+    return {
+      ...activeUser,
+      firstName:
+        savedProfile.firstName ?? activeUser.firstName,
+      lastName:
+        savedProfile.lastName ?? activeUser.lastName,
+      email:
+        activeUser.email || savedProfile.email,
+      mobile:
+        savedProfile.mobile ?? activeUser.mobile,
+      profileImage:
+        savedProfile.profileImage ?? activeUser.profileImage,
+      coverImage:
+        savedProfile.coverImage ?? activeUser.coverImage,
+    };
   } catch {
     return null;
   }
 }
 
-function readProfileImage(): string {
-  try {
-    return (
-      window.localStorage.getItem(
-        PROFILE_IMAGE_KEY
-      ) || ""
-    );
-  } catch {
-    return "";
-  }
-}
+function normalizeRole(role?: string): UserRole {
+  const value = String(role || "").toLowerCase();
 
-function normalizeRole(
-  role?: string
-): UserRole {
-  const value = String(
-    role || ""
-  ).toLowerCase();
-
-  if (
-    value === "seller" ||
-    value === "vendor"
-  ) {
+  if (value === "seller" || value === "vendor") {
     return "seller";
   }
 
-  if (
-    value === "admin" ||
-    value === "administrator"
-  ) {
+  if (value === "admin" || value === "administrator") {
     return "admin";
   }
 
   return "buyer";
 }
 
-function getUserName(
-  user: StoredUser
-) {
-  const full =
+function getUserName(user: StoredUser): string {
+  const fullName =
     `${user.firstName?.trim() || ""} ${
       user.lastName?.trim() || ""
     }`.trim();
 
-  return (
-    full ||
-    user.name?.trim() ||
-    "AutoMarket User"
+  return fullName || user.name?.trim() || "AutoMarket User";
+}
+
+function getPhone(user: StoredUser): string {
+  return user.mobile || user.phone || user.phoneNumber || "";
+}
+
+function readProfileImage(email?: string): string {
+  return readSavedProfile(email)?.profileImage || "";
+}
+
+function readCoverImage(email?: string): string {
+  return readSavedProfile(email)?.coverImage || "";
+}
+
+function writeActiveUser(user: StoredUser): void {
+  /*
+    Keep both keys consistent for existing components.
+  */
+  const serialized = JSON.stringify(user);
+
+  window.localStorage.setItem("automarketUser", serialized);
+  window.localStorage.setItem(
+    "marketplace_current_user",
+    serialized
   );
 }
 
-function getPhone(
-  user: StoredUser
-) {
-  return (
-    user.mobile ||
-    user.phone ||
-    user.phoneNumber ||
-    ""
-  );
+function notifyProfileUpdated(): void {
+  window.dispatchEvent(new Event(PROFILE_UPDATED_EVENT));
 }
 
 /* =========================================================
@@ -295,111 +345,64 @@ function compressImage(
   maxHeight: number,
   quality = 0.82
 ): Promise<string> {
-  return new Promise(
-    (resolve, reject) => {
-      const reader =
-        new FileReader();
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
 
-      reader.onload = () => {
-        const source =
-          reader.result;
+    reader.onload = () => {
+      const source = reader.result;
 
-        if (
-          typeof source !== "string"
-        ) {
+      if (typeof source !== "string") {
+        reject(new Error("Could not read image."));
+        return;
+      }
+
+      const image = new Image();
+
+      image.onload = () => {
+        let width = image.width;
+        let height = image.height;
+
+        const scale = Math.min(
+          maxWidth / width,
+          maxHeight / height,
+          1
+        );
+
+        width = Math.round(width * scale);
+        height = Math.round(height * scale);
+
+        const canvas = document.createElement("canvas");
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const context = canvas.getContext("2d");
+
+        if (!context) {
           reject(
-            new Error(
-              "Could not read image."
-            )
+            new Error("Your browser could not process the image.")
           );
           return;
         }
 
-        const image = new Image();
+        context.drawImage(image, 0, 0, width, height);
 
-        image.onload = () => {
-          let width =
-            image.width;
-
-          let height =
-            image.height;
-
-          const scale =
-            Math.min(
-              maxWidth / width,
-              maxHeight / height,
-              1
-            );
-
-          width = Math.round(
-            width * scale
-          );
-
-          height = Math.round(
-            height * scale
-          );
-
-          const canvas =
-            document.createElement(
-              "canvas"
-            );
-
-          canvas.width = width;
-          canvas.height = height;
-
-          const context =
-            canvas.getContext(
-              "2d"
-            );
-
-          if (!context) {
-            reject(
-              new Error(
-                "Your browser could not process the image."
-              )
-            );
-            return;
-          }
-
-          context.drawImage(
-            image,
-            0,
-            0,
-            width,
-            height
-          );
-
-          const compressed =
-            canvas.toDataURL(
-              "image/jpeg",
-              quality
-            );
-
-          resolve(compressed);
-        };
-
-        image.onerror = () => {
-          reject(
-            new Error(
-              "Could not process this image."
-            )
-          );
-        };
-
-        image.src = source;
+        resolve(canvas.toDataURL("image/jpeg", quality));
       };
 
-      reader.onerror = () => {
-        reject(
-          new Error(
-            "Could not read the selected image."
-          )
-        );
+      image.onerror = () => {
+        reject(new Error("Could not process this image."));
       };
 
-      reader.readAsDataURL(file);
-    }
-  );
+      image.src = source;
+    };
+
+    reader.onerror = () => {
+      reject(new Error("Could not read the selected image."));
+    };
+
+    reader.readAsDataURL(file);
+  });
 }
 
 /* =========================================================
@@ -409,82 +412,63 @@ function compressImage(
 function syncRegisteredUser(
   previousEmail: string,
   updated: StoredUser
-) {
-  const previous =
-    previousEmail
-      .trim()
-      .toLowerCase();
+): void {
+  const previous = previousEmail.trim().toLowerCase();
 
-  let changed = false;
+  if (!previous) return;
 
-  const next =
-    readArray(USERS_KEY).map(
-      (item) => {
-        if (
-          String(item?.email || "")
-            .trim()
-            .toLowerCase() !==
-          previous
-        ) {
-          return item;
-        }
+  const users = readArray(USERS_KEY);
 
-        changed = true;
+  const next = users.map((item) => {
+    if (
+      String(item?.email || "").trim().toLowerCase() !==
+      previous
+    ) {
+      return item;
+    }
 
-        return {
-          ...item,
-          firstName:
-            updated.firstName,
-          lastName:
-            updated.lastName,
-          email:
-            updated.email,
-          mobile:
-            updated.mobile,
-        };
-      }
-    );
+    return {
+      ...item,
+      firstName: updated.firstName,
+      lastName: updated.lastName,
+      email: updated.email,
+      mobile: updated.mobile,
+      role: updated.role,
+    };
+  });
 
-  if (changed) {
-    window.localStorage.setItem(
-      USERS_KEY,
-      JSON.stringify(next)
-    );
-  }
+  window.localStorage.setItem(USERS_KEY, JSON.stringify(next));
 }
 
-function removeRegisteredUser(
-  email: string
-) {
-  const target =
-    email.trim().toLowerCase();
+function removeRegisteredUser(email: string): void {
+  const target = email.trim().toLowerCase();
 
-  const next =
-    readArray(USERS_KEY).filter(
-      (item) =>
-        String(item?.email || "")
-          .trim()
-          .toLowerCase() !==
-        target
-    );
-
-  window.localStorage.setItem(
-    USERS_KEY,
-    JSON.stringify(next)
+  const next = readArray(USERS_KEY).filter(
+    (item) =>
+      String(item?.email || "").trim().toLowerCase() !==
+      target
   );
+
+  window.localStorage.setItem(USERS_KEY, JSON.stringify(next));
 }
 
-function clearSession() {
+/*
+  Logging out removes active user/session keys only.
+  It does not delete the saved profile, images or addresses.
+*/
+function clearSession(): void {
   [
     "automarketUser",
     "marketplace_current_user",
     "marketplace_token",
     "authToken",
+    "token",
   ].forEach((key) => {
-    window.localStorage.removeItem(
-      key
-    );
+    window.localStorage.removeItem(key);
   });
+
+  window.dispatchEvent(new Event(PROFILE_UPDATED_EVENT));
+  window.dispatchEvent(new Event(PROFILE_IMAGE_UPDATED_EVENT));
 }
 
 /* =========================================================
@@ -500,15 +484,9 @@ function Field({
 }) {
   return (
     <div className="pf-field">
-      <span className="pf-field-label">
-        {label}
-      </span>
+      <span className="pf-field-label">{label}</span>
 
-      {value ? (
-        <strong>{value}</strong>
-      ) : (
-        <em>Not added</em>
-      )}
+      {value ? <strong>{value}</strong> : <em>Not added</em>}
     </div>
   );
 }
@@ -518,223 +496,175 @@ function Field({
 ========================================================= */
 
 function ProfilePage() {
-  const navigate =
-    useNavigate();
+  const navigate = useNavigate();
 
-  const [user, setUser] =
-    useState<StoredUser | null>(
-      () => readStoredUser()
-    );
-
-  const [addresses, setAddresses] =
-    useState<Address[]>(() =>
-      readArray(ADDRESS_KEY)
-    );
-
-  const [section, setSection] =
-    useState<Section>(
-      "overview"
-    );
-
-  const [isEditing, setIsEditing] =
-    useState(false);
-
-  const [editForm, setEditForm] =
-    useState({
-      firstName: "",
-      lastName: "",
-      email: "",
-      mobile: "",
-    });
-
-  const [
-    notificationsEnabled,
-    setNotificationsEnabled,
-  ] = useState(
-    () =>
-      window.localStorage.getItem(
-        NOTIFY_KEY
-      ) !== "false"
+  const [user, setUser] = useState<StoredUser | null>(
+    () => readStoredUser()
   );
 
-  const [
-    showDeleteModal,
-    setShowDeleteModal,
-  ] = useState(false);
-
-  /* =======================================================
-     IMAGE STATE
-  ======================================================= */
-
-  const [profileImage, setProfileImage] =
-    useState<string>(() =>
-      readProfileImage()
-    );
-
-  const [coverImage, setCoverImage] =
-    useState<string>(() => {
-      const storedUser =
-        readStoredUser();
-
-      return (
-        storedUser?.coverImage ||
-        window.localStorage.getItem(
-          COVER_IMAGE_KEY
-        ) ||
-        ""
-      );
-    });
-
-  const [imageMessage, setImageMessage] =
-    useState("");
-
-  /* =======================================================
-     ROLE
-  ======================================================= */
-
-  const role = normalizeRole(
-    user?.role
+  const [addresses, setAddresses] = useState<Address[]>(() =>
+    readArray(ADDRESS_KEY)
   );
 
-  const config =
-    roleConfig[role];
+  const [section, setSection] = useState<Section>("overview");
+  const [isEditing, setIsEditing] = useState(false);
 
-  const RoleIcon =
-    config.icon;
+  const [editForm, setEditForm] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    mobile: "",
+  });
 
-  const fullName = user
-    ? getUserName(user)
-    : "AutoMarket User";
+  const [notificationsEnabled, setNotificationsEnabled] =
+    useState(
+      () =>
+        window.localStorage.getItem(NOTIFY_KEY) !== "false"
+    );
 
-  const phone = user
-    ? getPhone(user)
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  const [profileImage, setProfileImage] = useState<string>(
+    () => readProfileImage(readStoredUser()?.email)
+  );
+
+  const [coverImage, setCoverImage] = useState<string>(
+    () => readCoverImage(readStoredUser()?.email)
+  );
+
+  const [imageMessage, setImageMessage] = useState("");
+
+  /* =======================================================
+     ROLE AND PROFILE
+  ======================================================= */
+
+  const role = normalizeRole(user?.role);
+  const config = roleConfig[role];
+  const RoleIcon = config.icon;
+
+  const fullName = user ? getUserName(user) : "AutoMarket User";
+  const phone = user ? getPhone(user) : "";
+
+  const primaryAddress = addresses[0];
+
+  const addressText = primaryAddress
+    ? `${primaryAddress.city}, ${primaryAddress.postalCode}`
     : "";
 
-  const primaryAddress =
-    addresses[0];
-
-  const addressText =
-    primaryAddress
-      ? `${primaryAddress.city}, ${primaryAddress.postalCode}`
-      : "";
-
   /* =======================================================
-     EDIT FORM
+     LOAD SAVED PROFILE WHEN ACCOUNT CHANGES
   ======================================================= */
 
   useEffect(() => {
-    if (!user) return;
+    if (!user?.email) return;
+
+    const savedProfile = readSavedProfile(user.email);
+
+    const nextUser: StoredUser = {
+      ...user,
+      firstName:
+        savedProfile?.firstName ?? user.firstName,
+      lastName:
+        savedProfile?.lastName ?? user.lastName,
+      mobile:
+        savedProfile?.mobile ?? user.mobile,
+      profileImage:
+        savedProfile?.profileImage ?? user.profileImage,
+      coverImage:
+        savedProfile?.coverImage ?? user.coverImage,
+    };
 
     setEditForm({
-      firstName:
-        user.firstName || "",
-      lastName:
-        user.lastName || "",
-      email:
-        user.email || "",
-      mobile:
-        getPhone(user),
+      firstName: nextUser.firstName || "",
+      lastName: nextUser.lastName || "",
+      email: nextUser.email || "",
+      mobile: getPhone(nextUser),
     });
 
-    /*
-      Profile image always comes from the shared
-      automarketProfileImage key.
-    */
     setProfileImage(
-      readProfileImage()
+      savedProfile?.profileImage || ""
     );
 
     setCoverImage(
-      user.coverImage ||
-        window.localStorage.getItem(
-          COVER_IMAGE_KEY
-        ) ||
-        ""
+      savedProfile?.coverImage || ""
     );
-  }, [user]);
+
+    /*
+      Refresh the active objects with the saved account details.
+      Keep the active role unchanged.
+    */
+    writeActiveUser(nextUser);
+    setUser(nextUser);
+  // Only reload when the active account changes.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.email]);
 
   /* =======================================================
-     REFRESH USER DATA
+     REFRESH USER AND ADDRESS DATA
   ======================================================= */
 
   useEffect(() => {
     const refresh = () => {
-      setUser(
-        readStoredUser()
-      );
+      const refreshedUser = readStoredUser();
 
-      setAddresses(
-        readArray(ADDRESS_KEY)
-      );
+      setUser(refreshedUser);
+      setAddresses(readArray(ADDRESS_KEY));
+
+      if (refreshedUser?.email) {
+        setProfileImage(readProfileImage(refreshedUser.email));
+        setCoverImage(readCoverImage(refreshedUser.email));
+      } else {
+        setProfileImage("");
+        setCoverImage("");
+      }
     };
 
-    window.addEventListener(
-      "storage",
-      refresh
-    );
-
-    window.addEventListener(
-      "automarket-user-updated",
-      refresh
-    );
-
-    window.addEventListener(
-      "automarket-address-updated",
-      refresh
-    );
+    window.addEventListener("storage", refresh);
+    window.addEventListener(PROFILE_UPDATED_EVENT, refresh);
+    window.addEventListener(ADDRESS_UPDATED_EVENT, refresh);
 
     return () => {
-      window.removeEventListener(
-        "storage",
-        refresh
-      );
-
-      window.removeEventListener(
-        "automarket-user-updated",
-        refresh
-      );
-
-      window.removeEventListener(
-        "automarket-address-updated",
-        refresh
-      );
+      window.removeEventListener("storage", refresh);
+      window.removeEventListener(PROFILE_UPDATED_EVENT, refresh);
+      window.removeEventListener(ADDRESS_UPDATED_EVENT, refresh);
     };
   }, []);
 
   /* =======================================================
-     PROFILE IMAGE SYNC
+     PROFILE IMAGE REFRESH
   ======================================================= */
 
   useEffect(() => {
-    const refreshProfileImage =
-      () => {
-        setProfileImage(
-          readProfileImage()
-        );
-      };
+    const refreshImage = () => {
+      const activeUser = readStoredUser();
 
-    refreshProfileImage();
+      setProfileImage(
+        activeUser?.email
+          ? readProfileImage(activeUser.email)
+          : ""
+      );
+
+      setCoverImage(
+        activeUser?.email
+          ? readCoverImage(activeUser.email)
+          : ""
+      );
+    };
 
     window.addEventListener(
       PROFILE_IMAGE_UPDATED_EVENT,
-      refreshProfileImage
+      refreshImage
     );
 
-    window.addEventListener(
-      "storage",
-      refreshProfileImage
-    );
+    window.addEventListener("storage", refreshImage);
 
     return () => {
       window.removeEventListener(
         PROFILE_IMAGE_UPDATED_EVENT,
-        refreshProfileImage
+        refreshImage
       );
 
-      window.removeEventListener(
-        "storage",
-        refreshProfileImage
-      );
+      window.removeEventListener("storage", refreshImage);
     };
   }, []);
 
@@ -743,45 +673,28 @@ function ProfilePage() {
   ======================================================= */
 
   const stats = useMemo(() => {
-    const approved =
-      readArray(APPROVED_KEY);
+    const approved = readArray(APPROVED_KEY);
+    const pending = readArray(PENDING_KEY);
 
-    const pending =
-      readArray(PENDING_KEY);
+    const email = (user?.email || "").trim().toLowerCase();
 
-    const email =
-      (user?.email || "")
-        .trim()
-        .toLowerCase();
-
-    const mine = (
-      list: any[]
-    ) =>
+    const mine = (list: any[]) =>
       list.filter(
         (item) =>
           String(
-            item.sellerEmail ??
-              item.seller_email ??
-              ""
-          )
-            .trim()
-            .toLowerCase() ===
-          email
+            item.sellerEmail ?? item.seller_email ?? ""
+          ).trim().toLowerCase() === email
       );
 
     if (role === "admin") {
       return [
         {
           label: "Live listings",
-          value:
-            approved.filter(
-              (p) => !p.sold
-            ).length,
+          value: approved.filter((product) => !product.sold).length,
           icon: FaBoxOpen,
         },
         {
-          label:
-            "Awaiting approval",
+          label: "Awaiting approval",
           value: pending.length,
           icon: FaClock,
         },
@@ -789,30 +702,22 @@ function ProfilePage() {
     }
 
     if (role === "seller") {
-      const myApproved =
-        mine(approved);
+      const myApproved = mine(approved);
 
       return [
         {
           label: "Live listings",
-          value:
-            myApproved.filter(
-              (p) => !p.sold
-            ).length,
+          value: myApproved.filter((product) => !product.sold).length,
           icon: FaBoxOpen,
         },
         {
           label: "Pending review",
-          value:
-            mine(pending).length,
+          value: mine(pending).length,
           icon: FaClock,
         },
         {
           label: "Sold",
-          value:
-            myApproved.filter(
-              (p) => p.sold
-            ).length,
+          value: myApproved.filter((product) => product.sold).length,
           icon: FaTag,
         },
       ];
@@ -820,55 +725,30 @@ function ProfilePage() {
 
     return [
       {
-        label:
-          "Saved addresses",
-        value:
-          addresses.length,
+        label: "Saved addresses",
+        value: addresses.length,
         icon: FaMapMarkerAlt,
       },
       {
         label: "Notifications",
-        value:
-          notificationsEnabled
-            ? "On"
-            : "Off",
+        value: notificationsEnabled ? "On" : "Off",
         icon: FaBell,
       },
     ];
-  }, [
-    user,
-    role,
-    addresses,
-    notificationsEnabled,
-  ]);
+  }, [user, role, addresses, notificationsEnabled]);
 
   /* =======================================================
-     IMAGE HELPERS
+     IMAGE VALIDATION
   ======================================================= */
 
-  const validateImage = (
-    file: File
-  ) => {
-    if (
-      !file.type.startsWith(
-        "image/"
-      )
-    ) {
-      setImageMessage(
-        "Please select an image file."
-      );
-
+  const validateImage = (file: File): boolean => {
+    if (!file.type.startsWith("image/")) {
+      setImageMessage("Please select an image file.");
       return false;
     }
 
-    if (
-      file.size >
-      15 * 1024 * 1024
-    ) {
-      setImageMessage(
-        "Please choose an image smaller than 15MB."
-      );
-
+    if (file.size > 15 * 1024 * 1024) {
+      setImageMessage("Please choose an image smaller than 15MB.");
       return false;
     }
 
@@ -876,237 +756,182 @@ function ProfilePage() {
   };
 
   /* =======================================================
-     PROFILE IMAGE
+     SAVE PROFILE IMAGE
   ======================================================= */
 
-  const handleProfileImageChange =
-    async (
-      event: ChangeEvent<HTMLInputElement>
-    ) => {
-      const file =
-        event.target.files?.[0];
+  const handleProfileImageChange = async (
+    event: ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
 
-      if (!file) return;
+    if (!file) return;
 
-      event.target.value = "";
+    event.target.value = "";
 
-      if (!validateImage(file)) {
-        return;
-      }
+    if (!validateImage(file)) return;
 
-      try {
-        setImageMessage(
-          "Updating profile picture..."
-        );
+    if (!user?.email) {
+      setImageMessage("Please sign in before updating your picture.");
+      return;
+    }
 
-        const compressed =
-          await compressImage(
-            file,
-            512,
-            512,
-            0.82
-          );
+    try {
+      setImageMessage("Updating profile picture...");
 
-        /*
-          Update React immediately.
-        */
-        setProfileImage(
-          compressed
-        );
+      const compressed = await compressImage(file, 512, 512, 0.82);
 
-        /*
-          Save the exact same image under the
-          shared Navbar/Profile key.
-        */
-        window.localStorage.setItem(
-          PROFILE_IMAGE_KEY,
-          compressed
-        );
+      saveAccountProfile(user.email, {
+        profileImage: compressed,
+      });
 
-        setImageMessage(
-          "Profile picture updated."
-        );
+      setProfileImage(compressed);
 
-        /*
-          Notify Navbar immediately.
-        */
-        window.dispatchEvent(
-          new Event(
-            PROFILE_IMAGE_UPDATED_EVENT
-          )
-        );
-      } catch {
-        setImageMessage(
-          "We could not use that image. Please try another one."
-        );
-      }
-    };
+      const updatedUser: StoredUser = {
+        ...user,
+        profileImage: compressed,
+      };
 
-  const removeProfileImage =
-    () => {
-      /*
-        Immediately clear the local React state.
-      */
-      setProfileImage("");
+      writeActiveUser(updatedUser);
+      setUser(updatedUser);
 
       /*
-        Remove the SAME shared storage key.
+        Keep the shared key for older components that still use it.
+        The account-specific key above remains the source of truth
+        for this page.
       */
-      window.localStorage.removeItem(
-        PROFILE_IMAGE_KEY
+      window.localStorage.setItem(
+        PROFILE_IMAGE_KEY,
+        compressed
       );
 
-      /*
-        Keep the user records synchronized too,
-        but do not use them as the Navbar's
-        profile-image source.
-      */
-      if (user) {
-        const updatedUser: StoredUser = {
-          ...user,
-          profileImage: "",
-        };
+      setImageMessage("Profile picture updated.");
 
-        window.localStorage.setItem(
-          "automarketUser",
-          JSON.stringify(
-            updatedUser
-          )
-        );
-
-        window.localStorage.setItem(
-          "marketplace_current_user",
-          JSON.stringify(
-            updatedUser
-          )
-        );
-
-        setUser(updatedUser);
-      }
-
+      window.dispatchEvent(
+        new Event(PROFILE_IMAGE_UPDATED_EVENT)
+      );
+      notifyProfileUpdated();
+    } catch {
       setImageMessage(
-        "Profile picture removed."
+        "We could not save that image. Please try a smaller image."
       );
+    }
+  };
 
-      /*
-        Notify Navbar so it immediately switches
-        back to the neutral user icon.
-      */
-      window.dispatchEvent(
-        new Event(
-          PROFILE_IMAGE_UPDATED_EVENT
-        )
-      );
+  const removeProfileImage = () => {
+    if (!user?.email) return;
 
-      /*
-        Preserve the existing user update notification
-        for the rest of the application.
-      */
-      window.dispatchEvent(
-        new Event(
-          "automarket-user-updated"
-        )
-      );
+    saveAccountProfile(user.email, {
+      profileImage: "",
+    });
+
+    setProfileImage("");
+
+    window.localStorage.removeItem(PROFILE_IMAGE_KEY);
+
+    const updatedUser: StoredUser = {
+      ...user,
+      profileImage: "",
     };
+
+    writeActiveUser(updatedUser);
+    setUser(updatedUser);
+
+    setImageMessage("Profile picture removed.");
+
+    window.dispatchEvent(
+      new Event(PROFILE_IMAGE_UPDATED_EVENT)
+    );
+    notifyProfileUpdated();
+  };
 
   /* =======================================================
      COVER IMAGE
   ======================================================= */
 
-  const handleCoverImageChange =
-    async (
-      event: ChangeEvent<HTMLInputElement>
-    ) => {
-      const file =
-        event.target.files?.[0];
+  const handleCoverImageChange = async (
+    event: ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
 
-      if (!file) return;
+    if (!file) return;
 
-      event.target.value = "";
+    event.target.value = "";
 
-      if (!validateImage(file)) {
-        return;
-      }
+    if (!validateImage(file)) return;
 
-      try {
-        setImageMessage(
-          "Updating cover image..."
-        );
+    if (!user?.email) {
+      setImageMessage("Please sign in before updating your cover.");
+      return;
+    }
 
-        const compressed =
-          await compressImage(
-            file,
-            1600,
-            650,
-            0.82
-          );
+    try {
+      setImageMessage("Updating cover image...");
 
-        setCoverImage(
-          compressed
-        );
-
-        window.localStorage.setItem(
-          COVER_IMAGE_KEY,
-          compressed
-        );
-
-        setImageMessage(
-          "Cover image updated."
-        );
-
-        window.dispatchEvent(
-          new Event(
-            "automarket-user-updated"
-          )
-        );
-      } catch {
-        setImageMessage(
-          "We could not use that image. Please try another one."
-        );
-      }
-    };
-
-  const removeCoverImage =
-    () => {
-      setCoverImage("");
-
-      window.localStorage.removeItem(
-        COVER_IMAGE_KEY
+      const compressed = await compressImage(
+        file,
+        1600,
+        650,
+        0.82
       );
 
-      if (user) {
-        const updatedUser: StoredUser = {
-          ...user,
-          coverImage: "",
-        };
+      saveAccountProfile(user.email, {
+        coverImage: compressed,
+      });
 
-        window.localStorage.setItem(
-          "automarketUser",
-          JSON.stringify(
-            updatedUser
-          )
-        );
+      setCoverImage(compressed);
 
-        window.localStorage.setItem(
-          "marketplace_current_user",
-          JSON.stringify(
-            updatedUser
-          )
-        );
+      const updatedUser: StoredUser = {
+        ...user,
+        coverImage: compressed,
+      };
 
-        setUser(updatedUser);
-      }
+      writeActiveUser(updatedUser);
+      setUser(updatedUser);
 
-      setImageMessage(
-        "Cover image removed."
+      window.localStorage.setItem(
+        COVER_IMAGE_KEY,
+        compressed
       );
+
+      setImageMessage("Cover image updated.");
 
       window.dispatchEvent(
-        new Event(
-          "automarket-user-updated"
-        )
+        new Event(PROFILE_IMAGE_UPDATED_EVENT)
       );
+      notifyProfileUpdated();
+    } catch {
+      setImageMessage(
+        "We could not save that image. Please try another one."
+      );
+    }
+  };
+
+  const removeCoverImage = () => {
+    if (!user?.email) return;
+
+    saveAccountProfile(user.email, {
+      coverImage: "",
+    });
+
+    setCoverImage("");
+
+    window.localStorage.removeItem(COVER_IMAGE_KEY);
+
+    const updatedUser: StoredUser = {
+      ...user,
+      coverImage: "",
     };
+
+    writeActiveUser(updatedUser);
+    setUser(updatedUser);
+
+    setImageMessage("Cover image removed.");
+
+    window.dispatchEvent(
+      new Event(PROFILE_IMAGE_UPDATED_EVENT)
+    );
+    notifyProfileUpdated();
+  };
 
   /* =======================================================
      PROFILE EDIT
@@ -1114,23 +939,26 @@ function ProfilePage() {
 
   const startEditing = () => {
     setSection("details");
+
+    setEditForm({
+      firstName: user?.firstName || "",
+      lastName: user?.lastName || "",
+      email: user?.email || "",
+      mobile: getPhone(user || {}),
+    });
+
     setIsEditing(true);
   };
 
   const handleEditChange = (
     event: ChangeEvent<HTMLInputElement>
   ) => {
-    const {
-      name,
-      value,
-    } = event.target;
+    const { name, value } = event.target;
 
-    setEditForm(
-      (previous) => ({
-        ...previous,
-        [name]: value,
-      })
-    );
+    setEditForm((previous) => ({
+      ...previous,
+      [name]: value,
+    }));
   };
 
   const handleSaveProfile = (
@@ -1140,146 +968,118 @@ function ProfilePage() {
 
     if (!user) return;
 
-    const updatedUser: StoredUser =
-      {
-        ...user,
+    const newEmail = editForm.email.trim().toLowerCase();
 
-        firstName:
-          editForm.firstName.trim(),
-
-        lastName:
-          editForm.lastName.trim(),
-
-        email:
-          editForm.email.trim(),
-
-        mobile:
-          editForm.mobile.trim(),
-
-        profileImage,
-        coverImage,
-      };
-
-    window.localStorage.setItem(
-      "automarketUser",
-      JSON.stringify(
-        updatedUser
-      )
-    );
-
-    window.localStorage.setItem(
-      "marketplace_current_user",
-      JSON.stringify(
-        updatedUser
-      )
-    );
-
-    /*
-      Keep the shared profile-image key authoritative.
-    */
-    if (profileImage) {
-      window.localStorage.setItem(
-        PROFILE_IMAGE_KEY,
-        profileImage
-      );
-    } else {
-      window.localStorage.removeItem(
-        PROFILE_IMAGE_KEY
-      );
+    if (!newEmail) {
+      setImageMessage("Please enter a valid email address.");
+      return;
     }
 
-    syncRegisteredUser(
-      user.email || "",
-      updatedUser
-    );
+    const updatedUser: StoredUser = {
+      ...user,
+      firstName: editForm.firstName.trim(),
+      lastName: editForm.lastName.trim(),
+      email: newEmail,
+      mobile: editForm.mobile.trim(),
+      profileImage,
+      coverImage,
+    };
 
-    setUser(updatedUser);
-    setIsEditing(false);
+    try {
+      /*
+        Save account details independently of the active login.
+        They can be restored when the user logs in again.
+      */
+      saveAccountProfile(newEmail, {
+        firstName: updatedUser.firstName,
+        lastName: updatedUser.lastName,
+        email: newEmail,
+        mobile: updatedUser.mobile,
+        profileImage,
+        coverImage,
+      });
 
-    window.dispatchEvent(
-      new Event(
-        "automarket-user-updated"
-      )
-    );
+      writeActiveUser(updatedUser);
 
-    window.dispatchEvent(
-      new Event(
-        PROFILE_IMAGE_UPDATED_EVENT
-      )
-    );
+      syncRegisteredUser(user.email || "", updatedUser);
+
+      setUser(updatedUser);
+      setIsEditing(false);
+      setImageMessage("Profile details saved in this browser.");
+
+      notifyProfileUpdated();
+      window.dispatchEvent(
+        new Event(PROFILE_IMAGE_UPDATED_EVENT)
+      );
+    } catch {
+      setImageMessage(
+        "Could not save your profile. Your browser storage may be full."
+      );
+    }
   };
 
   /* =======================================================
      NOTIFICATIONS
   ======================================================= */
 
-  const toggleNotifications =
-    () => {
-      const next =
-        !notificationsEnabled;
+  const toggleNotifications = () => {
+    const next = !notificationsEnabled;
 
-      setNotificationsEnabled(
-        next
-      );
+    setNotificationsEnabled(next);
 
-      window.localStorage.setItem(
-        NOTIFY_KEY,
-        String(next)
-      );
-    };
+    window.localStorage.setItem(
+      NOTIFY_KEY,
+      String(next)
+    );
+  };
 
   /* =======================================================
      LOGOUT
   ======================================================= */
 
   const handleLogout = () => {
+    /*
+      Do not delete account-specific profile details,
+      profile pictures, cover pictures or saved addresses.
+    */
     clearSession();
 
-    navigate("/login");
+    navigate("/login", { replace: true });
   };
 
   /* =======================================================
      DELETE ACCOUNT
   ======================================================= */
 
-  const handleDeleteAccount =
-    () => {
-      if (user?.email) {
-        removeRegisteredUser(
-          user.email
-        );
+  const handleDeleteAccount = () => {
+    if (user?.email) {
+      removeRegisteredUser(user.email);
+
+      const key = getProfileStorageKey(user.email);
+
+      if (key) {
+        window.localStorage.removeItem(key);
       }
+    }
 
-      clearSession();
+    clearSession();
 
-      window.localStorage.removeItem(
-        ADDRESS_KEY
-      );
+    /*
+      This is a local-browser deletion only.
+      It does not delete a MySQL account.
+    */
+    window.localStorage.removeItem(ADDRESS_KEY);
+    window.localStorage.removeItem(PROFILE_IMAGE_KEY);
+    window.localStorage.removeItem(COVER_IMAGE_KEY);
 
-      window.localStorage.removeItem(
-        PROFILE_IMAGE_KEY
-      );
+    window.dispatchEvent(
+      new Event(PROFILE_IMAGE_UPDATED_EVENT)
+    );
 
-      window.localStorage.removeItem(
-        COVER_IMAGE_KEY
-      );
+    setShowDeleteModal(false);
 
-      /*
-        Ensure any mounted Navbar immediately
-        clears its profile image.
-      */
-      window.dispatchEvent(
-        new Event(
-          PROFILE_IMAGE_UPDATED_EVENT
-        )
-      );
-
-      setShowDeleteModal(
-        false
-      );
-
-      navigate("/register");
-    };
+    navigate("/register", { replace: true });
+  };
 
   /* =======================================================
      NOT SIGNED IN
@@ -1296,21 +1096,16 @@ function ProfilePage() {
               <FaShieldAlt />
             </div>
 
-            <h2>
-              You're not signed in
-            </h2>
+            <h2>You're not signed in</h2>
 
             <p>
-              Sign in to view and manage
-              your AutoMarket profile.
+              Sign in to view and manage your AutoMarket profile.
             </p>
 
             <button
               type="button"
               className="pf-btn pf-btn-primary"
-              onClick={() =>
-                navigate("/login")
-              }
+              onClick={() => navigate("/login")}
             >
               Go to login
             </button>
@@ -1328,33 +1123,21 @@ function ProfilePage() {
     <>
       <div className="pf-panel-head">
         <h3>Overview</h3>
-
-        <p>
-          A quick look at your account.
-        </p>
+        <p>A quick look at your account.</p>
       </div>
 
       <div className="pf-stats">
         {stats.map((stat) => {
-          const StatIcon =
-            stat.icon;
+          const StatIcon = stat.icon;
 
           return (
-            <div
-              className="pf-stat"
-              key={stat.label}
-            >
+            <div className="pf-stat" key={stat.label}>
               <span className="pf-stat-icon">
                 <StatIcon />
               </span>
 
-              <strong>
-                {stat.value}
-              </strong>
-
-              <span>
-                {stat.label}
-              </span>
+              <strong>{stat.value}</strong>
+              <span>{stat.label}</span>
             </div>
           );
         })}
@@ -1364,24 +1147,15 @@ function ProfilePage() {
         <button
           type="button"
           className="pf-link-row"
-          onClick={() =>
-            navigate(
-              config.actionPath
-            )
-          }
+          onClick={() => navigate(config.actionPath)}
         >
           <span className="pf-link-icon">
             <RoleIcon />
           </span>
 
           <span className="pf-link-text">
-            <strong>
-              {config.actionLabel}
-            </strong>
-
-            <small>
-              {config.tagline}
-            </small>
+            <strong>{config.actionLabel}</strong>
+            <small>{config.tagline}</small>
           </span>
 
           <FaChevronRight />
@@ -1390,24 +1164,15 @@ function ProfilePage() {
         <button
           type="button"
           className="pf-link-row"
-          onClick={() =>
-            navigate(
-              "/notifications"
-            )
-          }
+          onClick={() => navigate("/notifications")}
         >
           <span className="pf-link-icon">
             <FaBell />
           </span>
 
           <span className="pf-link-text">
-            <strong>
-              Notifications
-            </strong>
-
-            <small>
-              See what's new on your account
-            </small>
+            <strong>Notifications</strong>
+            <small>See what's new on your account</small>
           </span>
 
           <FaChevronRight />
@@ -1416,24 +1181,15 @@ function ProfilePage() {
         <button
           type="button"
           className="pf-link-row"
-          onClick={() =>
-            navigate(
-              "/settings"
-            )
-          }
+          onClick={() => navigate("/settings")}
         >
           <span className="pf-link-icon">
             <FaCog />
           </span>
 
           <span className="pf-link-text">
-            <strong>
-              Settings
-            </strong>
-
-            <small>
-              Manage your account preferences
-            </small>
+            <strong>Settings</strong>
+            <small>Manage your account preferences</small>
           </span>
 
           <FaChevronRight />
@@ -1450,23 +1206,15 @@ function ProfilePage() {
     <>
       <div className="pf-panel-head pf-panel-head-row">
         <div>
-          <h3>
-            Personal details
-          </h3>
-
-          <p>
-            The information linked
-            to your account.
-          </p>
+          <h3>Personal details</h3>
+          <p>The information linked to your account.</p>
         </div>
 
         {!isEditing && (
           <button
             type="button"
             className="pf-btn pf-btn-outline"
-            onClick={() =>
-              setIsEditing(true)
-            }
+            onClick={() => setIsEditing(true)}
           >
             <FaPencilAlt />
             Edit
@@ -1478,24 +1226,15 @@ function ProfilePage() {
         <div className="pf-image-setting">
           <div className="pf-image-setting-preview">
             {profileImage ? (
-              <img
-                src={profileImage}
-                alt={`${fullName} profile`}
-              />
+              <img src={profileImage} alt={`${fullName} profile`} />
             ) : (
               <FaUser />
             )}
           </div>
 
           <div className="pf-image-setting-content">
-            <strong>
-              Profile picture
-            </strong>
-
-            <span>
-              Choose a picture from
-              your device.
-            </span>
+            <strong>Profile picture</strong>
+            <span>Choose a picture from your device.</span>
 
             <div className="pf-image-actions">
               <label
@@ -1503,9 +1242,7 @@ function ProfilePage() {
                 className="pf-btn pf-btn-outline"
               >
                 <FaCamera />
-                {profileImage
-                  ? "Change picture"
-                  : "Upload picture"}
+                {profileImage ? "Change picture" : "Upload picture"}
               </label>
 
               <input
@@ -1513,18 +1250,14 @@ function ProfilePage() {
                 className="pf-hidden-file"
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
-                onChange={
-                  handleProfileImageChange
-                }
+                onChange={handleProfileImageChange}
               />
 
               {profileImage && (
                 <button
                   type="button"
                   className="pf-text-button"
-                  onClick={
-                    removeProfileImage
-                  }
+                  onClick={removeProfileImage}
                 >
                   Remove
                 </button>
@@ -1538,26 +1271,17 @@ function ProfilePage() {
             className="pf-cover-mini-preview"
             style={
               coverImage
-                ? {
-                    backgroundImage: `url("${coverImage}")`,
-                  }
+                ? { backgroundImage: `url("${coverImage}")` }
                 : undefined
             }
           >
-            {!coverImage && (
-              <FaCamera />
-            )}
+            {!coverImage && <FaCamera />}
           </div>
 
           <div className="pf-image-setting-content">
-            <strong>
-              Cover image
-            </strong>
-
+            <strong>Cover image</strong>
             <span>
-              Choose the background
-              image shown at the top
-              of your profile.
+              Choose the background image shown at the top of your profile.
             </span>
 
             <div className="pf-image-actions">
@@ -1566,9 +1290,7 @@ function ProfilePage() {
                 className="pf-btn pf-btn-outline"
               >
                 <FaCamera />
-                {coverImage
-                  ? "Change cover"
-                  : "Upload cover"}
+                {coverImage ? "Change cover" : "Upload cover"}
               </label>
 
               <input
@@ -1576,18 +1298,14 @@ function ProfilePage() {
                 className="pf-hidden-file"
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
-                onChange={
-                  handleCoverImageChange
-                }
+                onChange={handleCoverImageChange}
               />
 
               {coverImage && (
                 <button
                   type="button"
                   className="pf-text-button"
-                  onClick={
-                    removeCoverImage
-                  }
+                  onClick={removeCoverImage}
                 >
                   Remove
                 </button>
@@ -1598,88 +1316,56 @@ function ProfilePage() {
       </div>
 
       {imageMessage && (
-        <div className="pf-image-message">
-          {imageMessage}
-        </div>
+        <div className="pf-image-message">{imageMessage}</div>
       )}
 
       {isEditing ? (
-        <form
-          onSubmit={
-            handleSaveProfile
-          }
-        >
+        <form onSubmit={handleSaveProfile}>
           <div className="pf-form-grid">
             <div className="pf-form-group">
-              <label htmlFor="firstName">
-                First name
-              </label>
-
+              <label htmlFor="firstName">First name</label>
               <input
                 id="firstName"
                 name="firstName"
                 type="text"
-                value={
-                  editForm.firstName
-                }
-                onChange={
-                  handleEditChange
-                }
-              />
-            </div>
-
-            <div className="pf-form-group">
-              <label htmlFor="lastName">
-                Last name
-              </label>
-
-              <input
-                id="lastName"
-                name="lastName"
-                type="text"
-                value={
-                  editForm.lastName
-                }
-                onChange={
-                  handleEditChange
-                }
-              />
-            </div>
-
-            <div className="pf-form-group">
-              <label htmlFor="email">
-                Email address
-              </label>
-
-              <input
-                id="email"
-                name="email"
-                type="email"
-                value={
-                  editForm.email
-                }
-                onChange={
-                  handleEditChange
-                }
+                value={editForm.firstName}
+                onChange={handleEditChange}
                 required
               />
             </div>
 
             <div className="pf-form-group">
-              <label htmlFor="mobile">
-                Mobile number
-              </label>
+              <label htmlFor="lastName">Last name</label>
+              <input
+                id="lastName"
+                name="lastName"
+                type="text"
+                value={editForm.lastName}
+                onChange={handleEditChange}
+                required
+              />
+            </div>
 
+            <div className="pf-form-group">
+              <label htmlFor="email">Email address</label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                value={editForm.email}
+                onChange={handleEditChange}
+                required
+              />
+            </div>
+
+            <div className="pf-form-group">
+              <label htmlFor="mobile">Mobile number</label>
               <input
                 id="mobile"
                 name="mobile"
                 type="tel"
-                value={
-                  editForm.mobile
-                }
-                onChange={
-                  handleEditChange
-                }
+                value={editForm.mobile}
+                onChange={handleEditChange}
               />
             </div>
           </div>
@@ -1688,9 +1374,15 @@ function ProfilePage() {
             <button
               type="button"
               className="pf-btn pf-btn-outline"
-              onClick={() =>
-                setIsEditing(false)
-              }
+              onClick={() => {
+                setIsEditing(false);
+                setEditForm({
+                  firstName: user.firstName || "",
+                  lastName: user.lastName || "",
+                  email: user.email || "",
+                  mobile: getPhone(user),
+                });
+              }}
             >
               Cancel
             </button>
@@ -1705,39 +1397,12 @@ function ProfilePage() {
         </form>
       ) : (
         <div className="pf-fields">
-          <Field
-            label="First name"
-            value={
-              user.firstName
-            }
-          />
-
-          <Field
-            label="Last name"
-            value={
-              user.lastName
-            }
-          />
-
-          <Field
-            label="Email"
-            value={user.email}
-          />
-
-          <Field
-            label="Mobile"
-            value={phone}
-          />
-
-          <Field
-            label="Account type"
-            value={config.label}
-          />
-
-          <Field
-            label="Location"
-            value={addressText}
-          />
+          <Field label="First name" value={user.firstName} />
+          <Field label="Last name" value={user.lastName} />
+          <Field label="Email" value={user.email} />
+          <Field label="Mobile" value={phone} />
+          <Field label="Account type" value={config.label} />
+          <Field label="Location" value={addressText} />
         </div>
       )}
     </>
@@ -1751,24 +1416,14 @@ function ProfilePage() {
     <>
       <div className="pf-panel-head pf-panel-head-row">
         <div>
-          <h3>
-            Saved addresses
-          </h3>
-
-          <p>
-            Addresses you can use
-            at checkout.
-          </p>
+          <h3>Saved addresses</h3>
+          <p>Addresses you can use at checkout.</p>
         </div>
 
         <button
           type="button"
           className="pf-btn pf-btn-outline"
-          onClick={() =>
-            navigate(
-              "/addresses"
-            )
-          }
+          onClick={() => navigate("/addresses")}
         >
           Manage
           <FaChevronRight />
@@ -1780,74 +1435,44 @@ function ProfilePage() {
           <FaMapMarkerAlt />
 
           <div>
-            <strong>
-              No saved addresses yet
-            </strong>
-
-            <p>
-              Add an address to check
-              out faster.
-            </p>
+            <strong>No saved addresses yet</strong>
+            <p>Add an address to check out faster.</p>
           </div>
 
           <button
             type="button"
             className="pf-btn pf-btn-primary"
-            onClick={() =>
-              navigate(
-                "/addresses"
-              )
-            }
+            onClick={() => navigate("/addresses")}
           >
             Add address
           </button>
         </div>
       ) : (
         <div className="pf-address-list">
-          {addresses.map(
-            (
-              address,
-              index
-            ) => (
-              <div
-                className="pf-address"
-                key={address.id}
-              >
-                <span className="pf-address-icon">
-                  <FaMapMarkerAlt />
-                </span>
+          {addresses.map((address, index) => (
+            <div className="pf-address" key={address.id}>
+              <span className="pf-address-icon">
+                <FaMapMarkerAlt />
+              </span>
 
-                <div>
-                  <strong>
-                    {address.label}
+              <div>
+                <strong>
+                  {address.label}
 
-                    {index === 0 && (
-                      <span className="pf-tag">
-                        Default
-                      </span>
-                    )}
-                  </strong>
-
-                  <p>
-                    {address.street}
-                  </p>
-
-                  <p>
-                    {address.city},{" "}
-                    {
-                      address.postalCode
-                    }
-                  </p>
-
-                  {address.phone && (
-                    <small>
-                      {address.phone}
-                    </small>
+                  {index === 0 && (
+                    <span className="pf-tag">Default</span>
                   )}
-                </div>
+                </strong>
+
+                <p>{address.street}</p>
+                <p>
+                  {address.city}, {address.postalCode}
+                </p>
+
+                {address.phone && <small>{address.phone}</small>}
               </div>
-            )
-          )}
+            </div>
+          ))}
         </div>
       )}
     </>
@@ -1860,14 +1485,8 @@ function ProfilePage() {
   const preferences = (
     <>
       <div className="pf-panel-head">
-        <h3>
-          Preferences
-        </h3>
-
-        <p>
-          Choose how AutoMarket
-          keeps in touch.
-        </p>
+        <h3>Preferences</h3>
+        <p>Choose how AutoMarket keeps in touch.</p>
       </div>
 
       <div className="pf-toggle-row">
@@ -1876,31 +1495,21 @@ function ProfilePage() {
         </span>
 
         <span className="pf-link-text">
-          <strong>
-            Account notifications
-          </strong>
-
-          <small>
-            Receive important updates
-            about your account
-          </small>
+          <strong>Account notifications</strong>
+          <small>Receive important updates about your account</small>
         </span>
 
         <button
           type="button"
           role="switch"
-          aria-checked={
-            notificationsEnabled
-          }
+          aria-checked={notificationsEnabled}
           aria-label="Account notifications"
           className={
             notificationsEnabled
               ? "pf-toggle pf-toggle-on"
               : "pf-toggle"
           }
-          onClick={
-            toggleNotifications
-          }
+          onClick={toggleNotifications}
         >
           <span />
         </button>
@@ -1908,27 +1517,18 @@ function ProfilePage() {
 
       <div className="pf-danger">
         <div>
-          <h4>
-            Delete account
-          </h4>
+          <h4>Delete account</h4>
 
           <p>
-            Permanently remove your
-            AutoMarket account and
-            saved details from this
-            browser. This can't be
-            undone.
+            Remove your saved profile information from this browser.
+            This local action does not delete your MySQL account.
           </p>
         </div>
 
         <button
           type="button"
           className="pf-btn pf-btn-danger-outline"
-          onClick={() =>
-            setShowDeleteModal(
-              true
-            )
-          }
+          onClick={() => setShowDeleteModal(true)}
         >
           <FaTrash />
           Delete account
@@ -1937,14 +1537,10 @@ function ProfilePage() {
     </>
   );
 
-  const panels: Record<
-    Section,
-    ReactElement
-  > = {
+  const panels: Record<Section, ReactElement> = {
     overview,
     details,
-    addresses:
-      addressesSection,
+    addresses: addressesSection,
     preferences,
   };
 
@@ -1960,10 +1556,6 @@ function ProfilePage() {
           : "pf-page"
       }
     >
-      {/* =================================================
-          COVER IMAGE
-      ================================================= */}
-
       <div
         className={
           coverImage
@@ -1991,9 +1583,7 @@ function ProfilePage() {
             className="pf-cover-action"
           >
             <FaCamera />
-            {coverImage
-              ? "Change cover"
-              : "Add cover"}
+            {coverImage ? "Change cover" : "Add cover"}
           </label>
 
           <input
@@ -2001,18 +1591,14 @@ function ProfilePage() {
             className="pf-hidden-file"
             type="file"
             accept="image/jpeg,image/png,image/webp"
-            onChange={
-              handleCoverImageChange
-            }
+            onChange={handleCoverImageChange}
           />
 
           {coverImage && (
             <button
               type="button"
               className="pf-cover-remove"
-              onClick={
-                removeCoverImage
-              }
+              onClick={removeCoverImage}
             >
               Remove
             </button>
@@ -2020,17 +1606,10 @@ function ProfilePage() {
         </div>
       </div>
 
-      {/* =================================================
-          IDENTITY
-      ================================================= */}
-
       <header className="pf-identity">
         <div className="pf-profile-photo">
           {profileImage ? (
-            <img
-              src={profileImage}
-              alt={`${fullName} profile`}
-            />
+            <img src={profileImage} alt={`${fullName} profile`} />
           ) : (
             <div className="pf-profile-placeholder">
               <FaUser />
@@ -2050,21 +1629,14 @@ function ProfilePage() {
             className="pf-hidden-file"
             type="file"
             accept="image/jpeg,image/png,image/webp"
-            onChange={
-              handleProfileImageChange
-            }
+            onChange={handleProfileImageChange}
           />
         </div>
 
         <div className="pf-identity-text">
           <div className="pf-name-row">
-            <h2>
-              {fullName}
-            </h2>
-
-            <span className="pf-role">
-              {config.label}
-            </span>
+            <h2>{fullName}</h2>
+            <span className="pf-role">{config.label}</span>
           </div>
 
           <div className="pf-meta">
@@ -2095,9 +1667,7 @@ function ProfilePage() {
           <button
             type="button"
             className="pf-btn pf-btn-outline"
-            onClick={
-              startEditing
-            }
+            onClick={startEditing}
           >
             <FaPencilAlt />
             Edit profile
@@ -2106,71 +1676,40 @@ function ProfilePage() {
           <button
             type="button"
             className="pf-btn pf-btn-primary"
-            onClick={() =>
-              navigate(
-                config.actionPath
-              )
-            }
+            onClick={() => navigate(config.actionPath)}
           >
             {config.actionLabel}
           </button>
         </div>
       </header>
 
-      {/* =================================================
-          IMAGE MESSAGE
-      ================================================= */}
-
       {imageMessage && (
-        <div className="pf-image-toast">
-          {imageMessage}
-        </div>
+        <div className="pf-image-toast">{imageMessage}</div>
       )}
 
-      {/* =================================================
-          MENU + CONTENT
-      ================================================= */}
-
       <div className="pf-layout">
-        <nav
-          className="pf-nav"
-          aria-label="Account sections"
-        >
-          {sections.map(
-            ({
-              id,
-              label,
-              icon: Icon,
-            }) => (
-              <button
-                key={id}
-                type="button"
-                className={
-                  section === id
-                    ? "pf-nav-item active"
-                    : "pf-nav-item"
-                }
-                aria-current={
-                  section === id
-                    ? "page"
-                    : undefined
-                }
-                onClick={() =>
-                  setSection(id)
-                }
-              >
-                <Icon />
-                {label}
-              </button>
-            )
-          )}
+        <nav className="pf-nav" aria-label="Account sections">
+          {sections.map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              type="button"
+              className={
+                section === id
+                  ? "pf-nav-item active"
+                  : "pf-nav-item"
+              }
+              aria-current={section === id ? "page" : undefined}
+              onClick={() => setSection(id)}
+            >
+              <Icon />
+              {label}
+            </button>
+          ))}
 
           <button
             type="button"
             className="pf-nav-item pf-nav-signout"
-            onClick={
-              handleLogout
-            }
+            onClick={handleLogout}
           >
             <FaSignOutAlt />
             Sign out
@@ -2182,55 +1721,35 @@ function ProfilePage() {
         </section>
       </div>
 
-      {/* =================================================
-          DELETE MODAL
-      ================================================= */}
-
       {showDeleteModal && (
         <div
           className="pf-modal-overlay"
-          onMouseDown={() =>
-            setShowDeleteModal(
-              false
-            )
-          }
+          onMouseDown={() => setShowDeleteModal(false)}
         >
           <div
             className="pf-modal"
             role="dialog"
             aria-modal="true"
             aria-labelledby="pf-delete-title"
-            onMouseDown={(
-              event
-            ) =>
-              event.stopPropagation()
-            }
+            onMouseDown={(event) => event.stopPropagation()}
           >
             <div className="pf-modal-icon">
               <FaTrash />
             </div>
 
-            <h2 id="pf-delete-title">
-              Delete your account?
-            </h2>
+            <h2 id="pf-delete-title">Delete your account?</h2>
 
             <p>
-              Your AutoMarket details
-              will be removed from
-              this browser and you'll
-              be signed out. This
-              can't be undone.
+              Your saved profile information will be removed from this
+              browser and you will be signed out. This does not delete
+              your account from the server.
             </p>
 
             <div className="pf-modal-actions">
               <button
                 type="button"
                 className="pf-btn pf-btn-outline"
-                onClick={() =>
-                  setShowDeleteModal(
-                    false
-                  )
-                }
+                onClick={() => setShowDeleteModal(false)}
               >
                 Keep my account
               </button>
@@ -2238,11 +1757,9 @@ function ProfilePage() {
               <button
                 type="button"
                 className="pf-btn pf-btn-danger"
-                onClick={
-                  handleDeleteAccount
-                }
+                onClick={handleDeleteAccount}
               >
-                Delete account
+                Delete local profile
               </button>
             </div>
           </div>
