@@ -9,7 +9,7 @@ function RegisterPage() {
 
     const [formData, setFormData] = useState({
         firstName: "",
-        lastName: "",
+        lastName: "", 
         email: "",
         mobile: "",
         password: "",
