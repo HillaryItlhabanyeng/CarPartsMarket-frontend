@@ -126,7 +126,7 @@ const LoginPage: React.FC = () => {
                     </div>
 
                     <div className="Loginform-group">
-                        <label htmlFor="password">Password</label>
+                        <label htmlFor="password">Passwordd</label>
                         <div className="Login-input-wrapper">
                             <FaLock />
                             <input

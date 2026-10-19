@@ -97,7 +97,7 @@ function RegisterPage() {
                     alt="AutoMarket Logo"
                 />
                 <h1 className="logoTitle">
-                    <span>Auto</span>Market
+                    <span>Auto</span>Markets
                 </h1>
 
                 <div className="logoButtons">
