@@ -9,7 +9,7 @@ function RegisterPage() {
 
     const [formData, setFormData] = useState({
         firstName: "",
-        lastName: "",
+        lastName: "", 
         email: "",
         mobile: "",
         password: "",
@@ -97,7 +97,7 @@ function RegisterPage() {
                     alt="AutoMarket Logo"
                 />
                 <h1 className="logoTitle">
-                    <span>Auto</span>Market
+                    <span>Auto</span>Markets
                 </h1>
 
                 <div className="logoButtons">

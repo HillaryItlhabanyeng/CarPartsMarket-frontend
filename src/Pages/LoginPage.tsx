@@ -26,7 +26,7 @@ const LoginPage: React.FC = () => {
 
         if (!email.trim()) {
             alert("Please enter your email address.");
-            return;
+            return; 
         }
 
         const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
@@ -147,7 +147,7 @@ const LoginPage: React.FC = () => {
                     </div>
 
                     <div className="Loginform-group">
-                        <label htmlFor="password">Password</label>
+                        <label htmlFor="password">Passwordd</label>
                         <div className="Login-input-wrapper">
                             <FaLock />
                             <input

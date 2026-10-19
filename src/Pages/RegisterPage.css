@@ -1,74 +1,31 @@
-/* .RegisterContainer{
-  position: relative;
-  min-height: 90vh;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  overflow: hidden;
-  
-  background-image: url(backgnd1.jpg);
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-position: center;
-} */
-
-/* .RegisterContainer::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: url(backgnd1.jpg);
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-position: center;
-  filter: grayscale(30%) brightness(30%);
-  z-index: 0;
-} */
-
-/* .RegisterContainer > * {
-  position: relative;
-  z-index: 1;
-} */
-
 .RegisterContainer {
     display: flex;
     min-height: 100vh;
-    /* background-image: linear-gradient(45deg, #162b3a, #162b3a, #166ba8); */
-    /* background-color: #162b3a; */
     background-image: url("Picture1.jpg");
     background-repeat: no-repeat;
     background-size: cover;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     align-items: center;
-    /* justify-content: center; */
-    /* padding: 20px; */
 }
 
 /* Card */
 .Register-card {
-  /* position: absolute; */
     width: 600px;
-  padding: 40px 50px;
-  background: #fff;
-  /* backdrop-filter: blur(12px); */
-  /* -webkit-backdrop-filter: blur(12px); */
-  border: 1px solid rgba(157, 115, 56, 0.5);
-  border-radius: 30px 0px 0px 30px;
-  box-sizing: border-box;
-  margin-left: 56%;
-  /* right: 0%; */
-      margin-top: 20px;
+    padding: 40px 50px;
+    background: #fff;
+    border: 1px solid rgba(157, 115, 56, 0.5);
+    border-radius: 30px 0px 0px 30px;
+    box-sizing: border-box;
+    margin-left: 56%;
+    margin-top: 20px;
     margin-bottom: 20px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
 }
 
 .Registerlogo-card {
     position: absolute;
     width: 600px;
-    /* height: 105vh; */
-    /* padding: 35px; */
     background: transparent;
-    /* background-image: url(); */
     border-radius: 0px 150px 150px 0px;
     box-sizing: border-box;
     display: flex;
@@ -76,40 +33,7 @@
     align-items: left;
     justify-content: left;
     left: 0px;
-    /* box-shadow: 0px 0px 10px 10px rgb(34, 33, 33); */
 }
-
-/* .Registerlogo1-card {
-    position: absolute;
-    width: 250px;
-    height: 250px;
-    padding: 35px;
-    background: #a67b5b;
-    border-radius: 150px 150px 150px 150px;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    left: 0px;
-    box-shadow: 0px 0px 10px 10px rgb(255, 130, 12);
-} */
-
-/* .Registerlogo2-card {
-    position: absolute;
-    width: 200px;
-    height: 200px;
-    padding: 35px;
-    background: #9d7338;
-    border-radius: 150px 150px 150px 150px;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    left: 100px;
-    box-shadow: 0px 0px 10px 10px rgb(255, 130, 12);
-} */
 
 /* Heading */
 .Register-card h1 {
@@ -196,14 +120,12 @@
 
 .checkboxes label {
     display: flex;
-    /* align-items: center; */
     margin-bottom: 8px;
 }
 
 .label-text {
     margin-left: 8px;
     color: #000;
-    /* Gap between checkbox and text */
 }
 
 .signin-link {
@@ -212,7 +134,7 @@
 
 }
 
-.signin-link span{
+.signin-link span {
     text-align: left;
     color: #9d7338;
     cursor: pointer;
@@ -239,20 +161,17 @@
 
 .RegisterButton:hover {
     background: #967859;
-    /* color: #000; */
-    /* border: 1px solid #9d7338; */
     transform: translateY(-2px);
-    /* box-shadow: 0 4px 15px rgba(209, 106, 16, 0.4); */
 }
 
 .RegisterButton:active {
     transform: translateY(0);
 }
 
-.logoButtons{
-  display: flex;
-  flex-direction: column;
-  width: 500px;
+.logoButtons {
+    display: flex;
+    flex-direction: column;
+    width: 500px;
 }
 
 /* Button */
@@ -278,34 +197,33 @@
 .RegisterLogoButton:hover {
     background: #967859;
     transform: translateY(-2px);
-    /* box-shadow: 0 4px 15px rgba(209, 106, 16, 0.4); */
 }
 
-.registerLogo{
-  height: 200px;
-  width: 250px;
-  margin-left: 140px;
+.registerLogo {
+    height: 200px;
+    width: 250px;
+    margin-left: 140px;
 }
 
-.logoTitle{
-  color: #fff;
-  margin-left: 130px;
-  font-size: 50px;
-  margin-top: 0px;
+.logoTitle {
+    color: #fff;
+    margin-left: 130px;
+    font-size: 50px;
+    margin-top: 0px;
 }
 
-.logoTitle span{
+.logoTitle span {
     color: #9d7338;
 }
 
-.bottomButtons{
+.bottomButtons {
     display: flex;
     flex-direction: row;
     justify-content: center;
-        gap: 15px;
+    gap: 15px;
 }
 
-.RegisterBottomButton1{
+.RegisterBottomButton1 {
     background-color: #9d7338;
     border: none;
     border-radius: 15px;
@@ -314,7 +232,7 @@
     cursor: pointer;
 }
 
-.RegisterBottomButton2{
+.RegisterBottomButton2 {
     background-color: none;
     border: 2px solid #9d7338;
     border-radius: 15px;
@@ -322,62 +240,6 @@
     height: 20px;
     cursor: pointer;
 }
-/* 
-.vertical-line {
-    position: absolute;
-    top: 0%;
-    left: 76%;
-    width: 5px;
-    height: 60%;
-    background: #a67b5b;
-    margin: 0 10px;
-    flex-shrink: 0;
-} */
-
-/* .vertical-line1 {
-    position: absolute;
-    top: 0%;
-    left: 73%;
-    width: 5px;
-    height: 60%;
-    background: #d4d4d3;
-    margin: 0 10px;
-    flex-shrink: 0;
-} */
-
-/* .vertical-line2 {
-    position: absolute;
-    top: 0%;
-    left: 70%;
-    width: 5px;
-    height: 60%;
-    background: #a67b5b;
-    margin: 0 10px;
-    flex-shrink: 0;
-} */
-
-/* Logo Card */
-/* .Registerlogoicon {
-    width: 150px;
-    height: 150px;
-    object-fit: contain;
-    margin-bottom: 20px;
-} */
-
-/* .welcome-text {
-  color: #ececec;
-  font-size: 28px;
-  font-weight: 700;
-  margin: 10px 0 5px 0;
-  text-align: center;
-} */
-
-/* .welcome-subtext {
-    color: #a0b8c8;
-    font-size: 16px;
-    text-align: center;
-    margin: 0;
-} */
 
 /* ====================== Responsive ====================== */
 
