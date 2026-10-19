@@ -24,7 +24,8 @@ function AddressPage() {
     const handleSubmit = (e: React.SubmitEvent) => {
         e.preventDefault();
         console.log('Registration data:', formData);
-        navigate("/address");
+        window.localStorage.setItem("automarketAddress", JSON.stringify(formData));
+        navigate("/login");
     };
 
     const handleSignIn = () => {

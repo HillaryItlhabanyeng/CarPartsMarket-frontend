@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-// @ts-expect-error - SideNav.jsx has no type declarations
-import SideNav from "../Components/SideNav";
+import SideNavigation from "../Components/SideNavigation";
 
 import "./SettingsPage.css";
 
@@ -93,7 +92,7 @@ const SettingsPage: React.FC = () => {
 
   const handleDeleteAccount = () => {
     const confirmed = window.confirm(
-      "Are you sure you want to delete your UniTrade account? This action cannot be undone."
+      "Are you sure you want to delete your AutoMarket account? This action cannot be undone."
     );
 
     if (confirmed) {
@@ -159,7 +158,7 @@ const SettingsPage: React.FC = () => {
           SIDE NAVIGATION
       ===================================================== */}
 
-      <SideNav />
+      <SideNavigation />
 
       {/* =====================================================
           PAGE CONTENT
@@ -239,7 +238,7 @@ const SettingsPage: React.FC = () => {
                   <h2>General</h2>
 
                   <p>
-                    Manage your general UniTrade preferences.
+                    Manage your general AutoMarket preferences.
                   </p>
                 </div>
 
@@ -253,7 +252,7 @@ const SettingsPage: React.FC = () => {
                   <strong>Language</strong>
 
                   <span>
-                    Choose the language used by your UniTrade
+                    Choose the language used by your AutoMarket
                     account.
                   </span>
                 </div>
@@ -330,7 +329,7 @@ const SettingsPage: React.FC = () => {
                   <h2>Account</h2>
 
                   <p>
-                    Manage your UniTrade account information.
+                    Manage your AutoMarket account information.
                   </p>
                 </div>
 
@@ -406,7 +405,7 @@ const SettingsPage: React.FC = () => {
                   <h2>Notifications</h2>
 
                   <p>
-                    Choose how UniTrade keeps you updated.
+                    Choose how AutoMarket keeps you updated.
                   </p>
                 </div>
 
@@ -535,7 +534,7 @@ const SettingsPage: React.FC = () => {
                   <h2>Appearance</h2>
 
                   <p>
-                    Customize how UniTrade looks on your device.
+                    Customize how AutoMarket looks on your device.
                   </p>
                 </div>
 
@@ -706,7 +705,7 @@ const SettingsPage: React.FC = () => {
                 </h2>
 
                 <p>
-                  These actions affect your UniTrade account.
+                  These actions affect your AutoMarket account.
                 </p>
 
               </div>
