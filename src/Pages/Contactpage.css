@@ -30,7 +30,7 @@
   background-size: cover;
   background-position: center;
   filter: grayscale(30%) brightness(30%);
-  z-index: 0; /* Places it behind content */
+  z-index: 0;
 }
 
 .ct-page > * {
@@ -39,9 +39,7 @@
 }
  
 .ct-page a {
-  /* color: #2fb5a0; */
   text-decoration: none;
-  /* font-weight: 600; */
 }
 
 /* ---------- Heading ---------- */
@@ -162,8 +160,9 @@
   width: 36px;
   height: 36px;
   flex-shrink: 0;
-  background: #e6f7f4;
-  color: #a67b5b;
+  background: #a67b5b;
+  color: #fff;
+  /* color: #a67b5b; */
   border-radius: 50%;
   display: flex;
   align-items: center;
