@@ -13,6 +13,7 @@ import { partCategories } from "../data/partCategories";
 import { carBrands } from "../data/carBrands";
 
 import "./MarketPlacePage.css";
+import Footer from "../Components/Footer";
 
 interface Listing {
   id: number | string;
@@ -650,7 +651,9 @@ function MarketPlacePage() {
             </div>
           )}
         </main>
+        <Footer />
       </div>
+
     </div>
   );
 }

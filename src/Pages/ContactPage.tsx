@@ -4,6 +4,7 @@ import "./Contactpage.css";
 import {
     FaMapPin, FaClock, FaEnvelope, FaPhone
 } from "react-icons/fa";
+import Footer from "../Components/Footer";
 
 export default function ContactPage() {
   const [form, setForm] = useState({
@@ -19,15 +20,16 @@ export default function ContactPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Hook up to your backend / email service here
     console.log("Contact form submitted:", form);
   };
 
   return (
     <div className="ct-page">
-      <Navbar />
 
-      {/* Heading */}
+      <div className="ut-page-header">
+        <Navbar />
+      </div>
+
       <section className="ct-heading">
         <h1>CONTACT US</h1>
         <p>
@@ -148,6 +150,8 @@ export default function ContactPage() {
           </p>
         </div>
       </section>
+
+      <Footer />
     </div>
   );
 }

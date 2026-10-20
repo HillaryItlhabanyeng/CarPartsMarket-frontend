@@ -8,8 +8,8 @@
   position: sticky;
   top: 0;
   z-index: 1000;
-  background-color: #f2f2f2; /* Adjust this to match your page background */
-  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1); /* Optional: adds a subtle shadow */
+  background-color: #f2f2f2;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .ut-hero {
