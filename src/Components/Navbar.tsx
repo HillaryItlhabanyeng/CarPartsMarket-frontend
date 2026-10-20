@@ -14,7 +14,6 @@ import {
   FiUsers,
   FiBarChart2,
   FiClipboard,
-  FiHeart,
 } from "react-icons/fi";
 
 import { useCart } from "./useCart";
@@ -570,7 +569,7 @@ export default function Navbar({
 
               {isLoggedIn && (
                 <NavLink to="/wishlist">
-                  <FiHeart />
+                  {/* <FiHeart /> */}
                   <span>Wishlist</span>
                 </NavLink>
               )}

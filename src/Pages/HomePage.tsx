@@ -82,16 +82,18 @@ export default function HomePage() {
   const hero = heroContent[mode];
 
   const handlePrimaryAction = () => {
-    // if (mode === "buyer") {
-    //   navigate("/login");
-    // } else {
-    navigate("/list-product");
-    // }
+    if (mode === "buyer") {
+      navigate("/shop");
+    } else {
+      navigate("/list-product");
+    }
   };
 
   return (
     <div className="ut-page">
+      <div className="ut-page-header">
       <Navbar />
+      </div>
 
       <section className={`ut-hero ${mode === "seller" ? "seller-mode" : ""}`}>
         {/* Buy/Sell Toggle Switch */}
