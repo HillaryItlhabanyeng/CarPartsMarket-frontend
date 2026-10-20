@@ -5,7 +5,7 @@ import {
   type ReactNode,
 } from "react";
 import type { CartItem } from "./CartContext.types";
-import { CART_STORAGE_KEY, loadCart } from "./CartContext.types";
+import { getCartStorageKey, loadCart } from "./CartContext.types";
 
 interface CartContextType {
   items: CartItem[];
@@ -26,8 +26,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
  
   useEffect(() => {
-    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+    localStorage.setItem(getCartStorageKey(), JSON.stringify(items));
   }, [items]);
+
+  useEffect(() => {
+    const refreshCart = () => setItems(loadCart());
+    window.addEventListener("automarket-user-updated", refreshCart);
+
+    return () => {
+      window.removeEventListener("automarket-user-updated", refreshCart);
+    };
+  }, []);
 
   const addItem = (item: Omit<CartItem, "quantity">, qty = 1) => {
     setItems((prev) => {

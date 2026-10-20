@@ -46,6 +46,7 @@ import AdminListingsPage from "./Pages/AdminListingsPage";
 import AdminOrdersPage from "./Pages/AdminOrdersPage";
 import SellerOrdersPage from "./Pages/SellerOrdersPage";
 import ShippingPage from "./Pages/ShippingPage";
+import ProtectedRoute from "./Components/ProtectedRoute";
 
 
 function App() {
@@ -108,10 +109,10 @@ function App() {
         <Route path="/product-details" element={<ProductDetailsPage />} />
 
         {/* Admin */}
-        <Route path="/admin" element={<AdminPage />} />
-        <Route path="/admin/users" element={<AdminUsersPage />} />
-        <Route path="/admin/listings" element={<AdminListingsPage />} />
-        <Route path="/admin/orders" element={<AdminOrdersPage />} />
+        <Route path="/admin" element={<ProtectedRoute allowedRoles={["admin"]}><AdminPage /></ProtectedRoute>} />
+        <Route path="/admin/users" element={<ProtectedRoute allowedRoles={["admin"]}><AdminUsersPage /></ProtectedRoute>} />
+        <Route path="/admin/listings" element={<ProtectedRoute allowedRoles={["admin"]}><AdminListingsPage /></ProtectedRoute>} />
+        <Route path="/admin/orders" element={<ProtectedRoute allowedRoles={["admin"]}><AdminOrdersPage /></ProtectedRoute>} />
         <Route path="/shipping" element={<ShippingPage />} />
 
         {/* Reviews */}

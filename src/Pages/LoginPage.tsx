@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import type { FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { upsertUser } from "../Components/userStore";
+import { useAuth } from "../Components/useAuth";
 import { loginUser } from "../api/authService";
 
 import "./LoginPage.css";
@@ -12,6 +13,7 @@ const ROLE_OPTIONS = ["Buyer", "Seller", "Admin"] as const;
 
 const LoginPage: React.FC = () => {
     const navigate = useNavigate();
+    const { login } = useAuth();
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -49,7 +51,8 @@ const LoginPage: React.FC = () => {
 
         try {
             const res = await loginUser({ email: normalizedEmail, password });
-            const { userid, firstName, lastName, email: returnedEmail, role: backendRole } = res.data;
+            const { userid, firstName, lastName, email: responseEmail, role: backendRole } = res.data;
+            const returnedEmail = responseEmail || normalizedEmail;
 
             // Buyers and sellers are interchangeable; only admin is restricted.
             const chosenRole = selectedRole.toLowerCase();
@@ -63,8 +66,8 @@ const LoginPage: React.FC = () => {
                 return;
             }
 
-            const role = chosenRole;
-            const userName = firstName && lastName ? `${firstName} ${lastName}` : returnedEmail.split("@")[0];
+            const role = chosenRole as "buyer" | "seller" | "admin";
+            const userName = firstName && lastName ? `${firstName} ${lastName}` : returnedEmail;
 
             const currentUser = {
                 id: userid,
@@ -75,6 +78,14 @@ const LoginPage: React.FC = () => {
                 mobile: "",
                 role,
             };
+
+            login({
+                userid: String(userid),
+                firstName: firstName || "",
+                lastName: lastName || "",
+                email: returnedEmail,
+                role,
+            });
 
             upsertUser({
                 email: returnedEmail,
@@ -88,6 +99,7 @@ const LoginPage: React.FC = () => {
 
             window.localStorage.setItem("automarketUser", JSON.stringify(currentUser));
             window.localStorage.setItem("marketplace_current_user", JSON.stringify(currentUser));
+            window.dispatchEvent(new Event("automarket-user-updated"));
 
             if (rememberMe) {
                 window.localStorage.setItem("automarketRememberMe", "true");
@@ -102,7 +114,7 @@ const LoginPage: React.FC = () => {
             } else if (role === "buyer") {
                 navigate("/shop");
             } else if (role === "admin") {
-                navigate("/home");
+                navigate("/admin");
             }
         } catch (err: any) {
             if (err.response?.status === 401) {

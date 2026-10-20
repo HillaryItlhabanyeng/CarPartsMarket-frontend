@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "./useAuth";
 
 import {
   FiHome,
@@ -107,6 +108,7 @@ type SideNavigationProps = {
 export default function SideNavigation({ role: roleOverride }: SideNavigationProps = {}) {
   const navigate = useNavigate();
   const location = useLocation();
+  const { logout } = useAuth();
 
   const [user, setUser] = useState<CurrentUser | null>(() =>
     getStoredUser()
@@ -200,6 +202,8 @@ export default function SideNavigation({ role: roleOverride }: SideNavigationPro
     localStorage.removeItem("marketRole");
     localStorage.removeItem("token");
     localStorage.removeItem("authToken");
+    logout();
+    window.dispatchEvent(new Event("automarket-user-updated"));
 
     navigate("/login");
   };

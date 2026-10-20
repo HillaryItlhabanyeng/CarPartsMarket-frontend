@@ -12,10 +12,23 @@ export interface CartItem {
 
 export const CART_STORAGE_KEY = "unitrade_cart";
 
+export function getCartStorageKey(): string {
+  try {
+    const rawUser = localStorage.getItem("marketplace_current_user");
+    const user = rawUser ? JSON.parse(rawUser) : null;
+    const email = String(user?.email ?? "").trim().toLowerCase();
+
+    return email ? `${CART_STORAGE_KEY}:${email}` : `${CART_STORAGE_KEY}:guest`;
+  } catch {
+    return `${CART_STORAGE_KEY}:guest`;
+  }
+}
+
 export function loadCart(): CartItem[] {
   try {
-    const raw = localStorage.getItem(CART_STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
+    const raw = localStorage.getItem(getCartStorageKey());
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
   } catch {
     return [];
   }

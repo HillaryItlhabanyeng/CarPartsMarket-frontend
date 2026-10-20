@@ -1222,6 +1222,15 @@ function ProfilePage() {
         )}
       </div>
 
+      {role === "admin" && !isEditing && (
+        <div className="pf-image-message">
+          Your email is your login username. Add your preferred name to personalize your admin profile.
+          <button type="button" className="pf-text-button" onClick={startEditing}>
+            Set preferred name
+          </button>
+        </div>
+      )}
+
       <div className="pf-image-settings">
         <div className="pf-image-setting">
           <div className="pf-image-setting-preview">
@@ -1399,7 +1408,7 @@ function ProfilePage() {
         <div className="pf-fields">
           <Field label="First name" value={user.firstName} />
           <Field label="Last name" value={user.lastName} />
-          <Field label="Email" value={user.email} />
+          <Field label={role === "admin" ? "Login username" : "Email"} value={user.email} />
           <Field label="Mobile" value={phone} />
           <Field label="Account type" value={config.label} />
           <Field label="Location" value={addressText} />
