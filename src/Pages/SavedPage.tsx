@@ -3,6 +3,7 @@ import Navbar from "../Components/Navbar";
 import { useSaved } from "../Components/useSaved";
 import { useCart } from "../Components/useCart";
 import "./SavedPage.css";
+import Footer from "../Components/Footer";
 
 export default function SavedPage() {
   const { savedItems, removeSaved } = useSaved();
@@ -20,7 +21,9 @@ export default function SavedPage() {
 
   return (
     <div className="sv-page">
+      <div className="savedNavbar">
       <Navbar />
+      </div>
 
       <main className="sv-main">
         <div className="sv-page-header">
@@ -99,6 +102,8 @@ export default function SavedPage() {
           </div>
         )}
       </main>
+
+      <Footer />
     </div>
   );
 }

@@ -30,10 +30,15 @@ export default function CategoriesPage() {
 
     return (
         <div className="categoryContainer">
+            <div className="categoryNavbar">
             <Navbar />
+            </div>
 
             {/* Category Section */}
             <section className="categorySection">
+                <div className="categorySectionTitle">
+                    <h2>Categories</h2>
+                </div>
                 <div className="categoryCardsCollection">
                     {partCategories.map((name) => (
                         <div className="categoryCardss" key={name}>
