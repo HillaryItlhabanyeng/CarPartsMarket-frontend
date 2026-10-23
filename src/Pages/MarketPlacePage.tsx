@@ -66,8 +66,8 @@ interface LegacyListingInput {
   sold?: boolean;
 }
 
-// const API_URL = "http://localhost:8080/carparts/getall";
-const API_URL = "http://localhost:8080/carparts/approved";
+
+const API_URL = "http://localhost:8081/carparts/approved";
 
 const ALL_CATEGORIES = "All Categories";
 const ALL_BRANDS = "All Brands";
@@ -91,12 +91,7 @@ function safeString(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
 }
 
-/*
-  FIX: the backend only sends categoryId (a number), but the category
-  filter compares category NAMES. This maps id 1 -> partCategories[0],
-  id 2 -> partCategories[1], and so on. The category table IDs in MySQL
-  must follow the same order as partCategories for the names to match.
-*/
+
 function categoryNameFromId(categoryId: unknown): string {
   const id = Number(categoryId);
 
