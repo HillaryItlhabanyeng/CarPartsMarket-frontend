@@ -4,7 +4,7 @@
 import { addNotification } from "./notificationStore";
 
 export type StoredListing = {
-  id: number;
+  id: string | number;
   title: string;
   description?: string;
   seller: string;

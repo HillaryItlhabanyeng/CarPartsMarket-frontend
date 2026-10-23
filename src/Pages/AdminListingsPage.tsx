@@ -1,61 +1,141 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { FaCheck, FaTimes, FaTrash } from "react-icons/fa";
 
 import AdminShell from "../Components/AdminShell";
 import AdminListingRow from "../Components/AdminListingRow";
-import {
-  approveListing,
-  declineListing,
-  getApprovedListings,
-  getPendingListings,
-  removeApprovedListing,
-  type StoredListing,
-} from "../Components/adminStore";
+import api from "../api/axiosInstance";
 import { partCategories } from "../data/partCategories";
 
 type ListingsTab = "pending" | "live";
 
-// Review new seller submissions and manage the listings buyers can already see.
+// --- Shape returned by the backend /carparts endpoints ---
+type CarPart = {
+  carPartId: string;
+  partName: string;
+  description: string;
+  price: number;
+  stockQuantity: number;
+  model: string;
+  categoryId: number;
+  sellerId: string;
+  status: string;
+};
+
+// --- Shape AdminListingRow expects (loosely mirrors StoredListing) ---
+type StoredListing = {
+  id: string | number;
+  title: string;
+  description: string;
+  location: string;
+  category: string;
+  brand: string;
+  condition: string;
+  price: number;
+  quantity: number;
+  seller: string;
+  sellerEmail: string;
+  submitted: string;
+  createdAt: string;
+  image: string;
+  sold?: boolean;
+};
+
+const categoryNameFromId = (id: number): string => {
+  // 1-based mapping — matches the order of partCategories on the seller form
+  if (id > 0 && id <= partCategories.length) {
+    return partCategories[id - 1];
+  }
+  return "Uncategorized";
+};
+
+const toStoredListing = (p: CarPart): StoredListing => ({
+  id: String(p.carPartId ?? ""),
+  title: p.partName,
+  description: p.description ?? "",
+  location: "",
+  category: categoryNameFromId(p.categoryId),
+  brand: p.model ?? "",
+  condition: "",
+  price: p.price ?? 0,
+  quantity: p.stockQuantity ?? 0,
+  seller: p.sellerId ?? "Seller",
+  sellerEmail: "",
+  submitted: "Pending",
+  createdAt: new Date().toISOString(),
+  image: "",
+  sold: false,
+});
+
 export default function AdminListingsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const tab: ListingsTab = searchParams.get("tab") === "live" ? "live" : "pending";
 
-  const [pending, setPending] = useState<StoredListing[]>(() => getPendingListings());
-  const [approved, setApproved] = useState<StoredListing[]>(() => getApprovedListings());
+  const [pending, setPending] = useState<StoredListing[]>([]);
+  const [approved, setApproved] = useState<StoredListing[]>([]);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All Categories");
   const [notice, setNotice] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const showNotice = (message: string) => {
     setNotice(message);
     window.setTimeout(() => setNotice(""), 2800);
   };
 
-  const refresh = () => {
-    setPending(getPendingListings());
-    setApproved(getApprovedListings());
-  };
-
-  const handleApprove = (listing: StoredListing) => {
-    approveListing(listing);
-    refresh();
-    showNotice(`${listing.title} is now visible in the marketplace.`);
-  };
-
-  const handleDecline = (listing: StoredListing) => {
-    declineListing(listing);
-    refresh();
-    showNotice(`${listing.title} was declined and returned to the seller.`);
-  };
-
-  const handleRemove = (listing: StoredListing) => {
-    if (!window.confirm(`Remove "${listing.title}" from the marketplace? The seller will be notified.`)) {
-      return;
+  const loadListings = async () => {
+    setLoading(true);
+    try {
+      const [pendingRes, approvedRes] = await Promise.all([
+        api.get<CarPart[]>("/carparts/pending"),
+        api.get<CarPart[]>("/carparts/approved"),
+      ]);
+      setPending(pendingRes.data.map(toStoredListing));
+      setApproved(approvedRes.data.map(toStoredListing));
+    } catch (err) {
+      console.error("Failed to load listings:", err);
+      showNotice("Could not load listings from the server.");
+    } finally {
+      setLoading(false);
     }
-    removeApprovedListing(listing);
-    refresh();
-    showNotice(`${listing.title} was removed from the marketplace.`);
+  };
+
+  useEffect(() => {
+    loadListings();
+  }, []);
+
+  const handleApprove = async (listing: StoredListing) => {
+    try {
+      await api.put(`/carparts/${listing.id}/approve`);
+      await loadListings();
+      showNotice(`${listing.title} is now visible in the marketplace.`);
+    } catch (err) {
+      console.error("Approve failed:", err);
+      showNotice("Could not approve this listing.");
+    }
+  };
+
+  const handleDecline = async (listing: StoredListing) => {
+    try {
+      await api.put(`/carparts/${listing.id}/decline`);
+      await loadListings();
+      showNotice(`${listing.title} was declined.`);
+    } catch (err) {
+      console.error("Decline failed:", err);
+      showNotice("Could not decline this listing.");
+    }
+  };
+
+  const handleRemove = async (listing: StoredListing) => {
+    if (!window.confirm(`Remove "${listing.title}" from the marketplace?`)) return;
+    try {
+      await api.delete(`/carparts/delete/${listing.id}`);
+      await loadListings();
+      showNotice(`${listing.title} was removed.`);
+    } catch (err) {
+      console.error("Delete failed:", err);
+      showNotice("Could not remove this listing.");
+    }
   };
 
   const visible = useMemo(() => {
@@ -118,7 +198,9 @@ export default function AdminListingsPage() {
           </div>
         </div>
 
-        {visible.length === 0 ? (
+        {loading ? (
+          <div className="adm-empty">Loading listings...</div>
+        ) : visible.length === 0 ? (
           <div className="adm-empty">
             {tab === "pending"
               ? "No listings are waiting for review."
@@ -133,15 +215,27 @@ export default function AdminListingsPage() {
               actions={
                 tab === "pending" ? (
                   <>
-                    <button type="button" className="adm-btn adm-btn-primary" onClick={() => handleApprove(listing)}>
+                    <button
+                      type="button"
+                      className="adm-btn adm-btn-primary"
+                      onClick={() => handleApprove(listing)}
+                    >
                       <FaCheck /> Approve listing
                     </button>
-                    <button type="button" className="adm-btn adm-btn-danger" onClick={() => handleDecline(listing)}>
+                    <button
+                      type="button"
+                      className="adm-btn adm-btn-danger"
+                      onClick={() => handleDecline(listing)}
+                    >
                       <FaTimes /> Decline
                     </button>
                   </>
                 ) : (
-                  <button type="button" className="adm-btn adm-btn-danger" onClick={() => handleRemove(listing)}>
+                  <button
+                    type="button"
+                    className="adm-btn adm-btn-danger"
+                    onClick={() => handleRemove(listing)}
+                  >
                     <FaTrash /> Remove listing
                   </button>
                 )

@@ -1,7 +1,6 @@
 // import React from 'react';
 import './ProductListingPage.css';
 import { useNavigate } from "react-router-dom";
-// import { useNavigate, useLocation } from "react-router-dom";
 import SideNavigation from "../Components/SideNavigation";
 import { FaCog } from "react-icons/fa";
 import ImageUploader from "../Components/ImageUploader";
@@ -11,6 +10,7 @@ import { addNotification, ADMIN_NOTIFICATION_EMAIL } from "../Components/notific
 import { partCategories } from "../data/partCategories";
 import { carBrands } from "../data/carBrands";
 import { useState } from "react";
+import api from "../api/axiosInstance"; //added code
 
 type StoredUser = {
   name?: string;
@@ -45,7 +45,7 @@ function ProductListingPage() {
   const [photos, setPhotos] = useState<File[]>([]);
   const initials = getInitials(readCurrentUser());
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const formData = new FormData(event.currentTarget);
@@ -70,56 +70,80 @@ function ProductListingPage() {
 
     const currentUser = readCurrentUser();
 
-    const pendingProducts = (() => {
-      try {
-        const raw = window.localStorage.getItem("marketplace_pending_products");
-        const parsed = raw ? JSON.parse(raw) : [];
-        return Array.isArray(parsed) ? parsed : [];
-      } catch {
-        return [];
-      }
-    })();
-
-    // photos[0] is the main image; the buyer side shows it exactly as uploaded
-    const images = await Promise.all(photos.map(fileToDataUrl));
-
-    const product = {
-      id: Date.now(),
-      title,
-      description,
-      location,
-      category,
-      brand,
-      condition,
-      price,
-      quantity,
-      seller: currentUser?.name || "Seller",
-      sellerEmail: currentUser?.email || "",
-      submitted: "Just now",
-      createdAt: new Date().toISOString(),
-      image: images[0],
-      images,
+    const categoryIdMap: Record<string, number> = {
+      Engine: 1, Brakes: 2, Suspension: 3, Electrical: 4, Body: 5,
+      Transmission: 6, Cooling: 7, Exhaust: 8, Interior: 9, Wheels: 10,
     };
+    const categoryId = categoryIdMap[category] ?? 1;
+    const model = brand || "Unspecified";
 
-    try {
-      window.localStorage.setItem(
-        "marketplace_pending_products",
-        JSON.stringify([product, ...pendingProducts])
-      );
-    } catch {
-      alert("Your photos are too large to save. Try fewer or smaller photos.");
+    const sellerId =
+      (currentUser as any)?.id ||
+      (currentUser as any)?.userid ||
+      currentUser?.email ||
+      "";
+
+    if (!sellerId) {
+      alert("Your session has expired. Please log in again.");
+      navigate("/login");
       return;
     }
 
-    addNotification({
-      type: "Listing",
-      title: "New listing needs approval",
-      body: `${product.seller} submitted ${product.title} for review.`,
-      recipientEmail: ADMIN_NOTIFICATION_EMAIL,
-    });
+    // const payload = {
+    //   partName: title,
+    //   description,
+    //   price,
+    //   stockQuantity: quantity,
+    //   model,
+    //   categoryId,
+    //   sellerId,
+    // };
 
-    alert("Your product has been submitted for admin approval.");
-    navigate("/my-listings");
+    // try {
+    //   await api.post("/carparts/create", payload);
+
+        // Convert only the first uploaded photo to a data URL.
+    // If the encoded string is too big, skip it so we don't bloat the DB.
+    let imageDataUrl = "";
+    try {
+      const dataUrl = await fileToDataUrl(photos[0]);
+      // ~700,000 chars ≈ 500 KB of base64
+      if (dataUrl.length <= 700_000) {
+        imageDataUrl = dataUrl;
+      } else {
+        console.warn("First photo is too large to store (>500KB). Skipping image.");
+      }
+    } catch (err) {
+      console.warn("Could not convert photo to data URL:", err);
+    }
+
+    const payload = {
+      partName: title,
+      description,
+      price,
+      stockQuantity: quantity,
+      model,
+      categoryId,
+      sellerId,
+      image: imageDataUrl,     // ← NEW
+    };
+
+    try {
+      await api.post("/carparts/create", payload);
+
+      addNotification({
+        type: "Listing",
+        title: "New listing needs approval",
+        body: `${currentUser?.name || "Seller"} submitted ${title} for review.`,
+        recipientEmail: ADMIN_NOTIFICATION_EMAIL,
+      });
+
+      alert("Your product has been submitted for admin approval.");
+      navigate("/my-listings");
+    } catch (err) {
+      console.error("Listing submission failed:", err);
+      alert("Could not submit listing. Please try again.");
+    }
   };
 
   return (

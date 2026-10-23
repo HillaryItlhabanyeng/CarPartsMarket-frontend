@@ -42,6 +42,7 @@ interface BackendCarPart {
   model?: string | null;
   categoryId?: number | string | null;
   sellerId?: string | null;
+  image?: string | null;
 }
 
 interface LegacyListingInput {
@@ -65,7 +66,8 @@ interface LegacyListingInput {
   sold?: boolean;
 }
 
-const API_URL = "http://localhost:8080/carparts/getall";
+// const API_URL = "http://localhost:8080/carparts/getall";
+const API_URL = "http://localhost:8080/carparts/approved";
 
 const ALL_CATEGORIES = "All Categories";
 const ALL_BRANDS = "All Brands";
@@ -74,9 +76,10 @@ const ALL_CONDITIONS = "All Conditions";
 const categories = [ALL_CATEGORIES, ...partCategories];
 const conditions = [
   ALL_CONDITIONS,
+  "Like New",
   "New",
   "Used",
-  "Refurbished",
+  "Fair",
 ];
 
 function safeNumber(value: unknown, fallback = 0): number {
@@ -125,10 +128,7 @@ function loadApprovedListings(): Listing[] {
       )
       .map((item, index) => ({
         id: item.id ?? `local-${index}`,
-        title:
-          safeString(item.title) ||
-          safeString(item.partName) ||
-          "Untitled part",
+        title: safeString(item.title) || safeString(item.partName) || "Untitled part",
         description: safeString(item.description),
         price: safeNumber(item.price),
         brand: safeString(item.brand),
@@ -165,14 +165,15 @@ function normalizeBackendListing(
     price: safeNumber(item.price),
     brand: safeString(item.model),
     categoryId: item.categoryId ?? undefined,
-    category: categoryNameFromId(item.categoryId), // FIX
+    category: categoryNameFromId(item.categoryId),
     quantity: safeNumber(item.stockQuantity),
     seller: safeString(item.sellerId),
 
-    // The current backend entity does not supply these fields.
+    // Backend does not supply these yet.
     condition: "",
     location: "",
-    image: "",
+
+    image: safeString(item.image),   // ← NEW — was hard-coded to ""
   };
 }
 
@@ -558,15 +559,17 @@ function MarketPlacePage() {
     } else if (sort === "price-high") {
       result.sort((a, b) => b.price - a.price);
     } else if (sort === "newest") {
-      result.sort((a, b) => {
-        const dateA = Date.parse(a.createdAt ?? "");
-        const dateB = Date.parse(b.createdAt ?? "");
+      // result.sort((a, b) => {
+      //   const dateA = Date.parse(a.createdAt ?? "");
+      //   const dateB = Date.parse(b.createdAt ?? "");
 
-        const validA = Number.isFinite(dateA) ? dateA : 0;
-        const validB = Number.isFinite(dateB) ? dateB : 0;
+      //   const validA = Number.isFinite(dateA) ? dateA : 0;
+      //   const validB = Number.isFinite(dateB) ? dateB : 0;
 
-        return validB - validA;
-      });
+      //   return validB - validA;
+      // });
+
+      result.reverse();
     }
 
     return result;
