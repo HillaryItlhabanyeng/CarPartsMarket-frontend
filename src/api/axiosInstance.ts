@@ -7,4 +7,18 @@ const api = axios.create({
   },
 });
 
+
+
+api.interceptors.response.use(
+  (res) => res,
+  (error) => {
+    if (error.response?.status === 401 && !window.location.pathname.includes("/login")) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("marketplace_current_user");
+      window.location.href = "/login";
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default api;

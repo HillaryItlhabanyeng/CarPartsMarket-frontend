@@ -1,4 +1,3 @@
-// import React from 'react';
 import './ProductListingPage.css';
 import { useNavigate } from "react-router-dom";
 import SideNavigation from "../Components/SideNavigation";
@@ -10,7 +9,7 @@ import { addNotification, ADMIN_NOTIFICATION_EMAIL } from "../Components/notific
 import { partCategories } from "../data/partCategories";
 import { carBrands } from "../data/carBrands";
 import { useState } from "react";
-import api from "../api/axiosInstance"; //added code
+import api from "../api/axiosInstance";
 
 type StoredUser = {
   name?: string;
@@ -45,7 +44,7 @@ function ProductListingPage() {
   const [photos, setPhotos] = useState<File[]>([]);
   const initials = getInitials(readCurrentUser());
 
-    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const formData = new FormData(event.currentTarget);
@@ -56,7 +55,6 @@ function ProductListingPage() {
     const brand = String(formData.get("brand") || "").trim();
     const price = Number(String(formData.get("price") || "0"));
     const quantity = Number(String(formData.get("quantity") || "0"));
-    const condition = String(formData.get("condition") || "Used").trim();
 
     if (!title || !description || !location || !category || !price || !quantity) {
       alert("Please complete all required listing fields before submitting.");
@@ -89,25 +87,10 @@ function ProductListingPage() {
       return;
     }
 
-    // const payload = {
-    //   partName: title,
-    //   description,
-    //   price,
-    //   stockQuantity: quantity,
-    //   model,
-    //   categoryId,
-    //   sellerId,
-    // };
-
-    // try {
-    //   await api.post("/carparts/create", payload);
-
-        // Convert only the first uploaded photo to a data URL.
-    // If the encoded string is too big, skip it so we don't bloat the DB.
+    // Convert the first photo to a data URL, skip it if it's too large
     let imageDataUrl = "";
     try {
       const dataUrl = await fileToDataUrl(photos[0]);
-      // ~700,000 chars ≈ 500 KB of base64
       if (dataUrl.length <= 700_000) {
         imageDataUrl = dataUrl;
       } else {
@@ -125,11 +108,11 @@ function ProductListingPage() {
       model,
       categoryId,
       sellerId,
-      image: imageDataUrl,     // ← NEW
+      image: imageDataUrl,
     };
 
     try {
-      await api.post("/carparts/create", payload);
+  await api.post("/carparts/create", payload);
 
       addNotification({
         type: "Listing",
@@ -265,6 +248,6 @@ function ProductListingPage() {
       </main>
     </div>
   );
-};
+}
 
 export default ProductListingPage;

@@ -2,18 +2,21 @@ import "./RegisterPage.css";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { upsertUser } from "../Components/userStore";
-import { registerBuyer } from "../api/authService"; 
+import { registerBuyer, registerSeller } from "../api/authService";
+import { partCategories } from "../data/partCategories";
 
 function RegisterPage() {
     const navigate = useNavigate();
 
     const [formData, setFormData] = useState({
         firstName: "",
-        lastName: "", 
+        lastName: "",
         email: "",
         mobile: "",
         password: "",
         confirmPassword: "",
+        role: "",
+        partCategory: "",
     });
 
     const [error, setError] = useState<string | null>(null);
@@ -37,24 +40,33 @@ function RegisterPage() {
             return;
         }
 
+        if (!formData.role) {
+            alert("Please choose whether you want to buy or sell.");
+            return;
+        }
+
         setLoading(true);
         try {
-            // 1. Save to backend
-            const { data } = await registerBuyer({
+            const common = {
                 firstName: formData.firstName.trim(),
                 lastName: formData.lastName.trim(),
                 email: formData.email.trim(),
-                password: formData.password,          
-                buyingPart: "Engine",                 
-            });
+                password: formData.password,
+            };
+            const part = formData.partCategory || "Various";
 
-            
+            // Call the right endpoint for the chosen role
+            const { data } =
+                formData.role === "seller"
+                    ? await registerSeller({ ...common, sellingPart: part })
+                    : await registerBuyer({ ...common, buyingPart: part });
+
             const user = {
-                firstName: data.firstName ?? formData.firstName.trim(),
-                lastName: data.lastName ?? formData.lastName.trim(),
-                email: data.email ?? formData.email.trim(),
+                firstName: data.firstName ?? common.firstName,
+                lastName: data.lastName ?? common.lastName,
+                email: data.email ?? common.email,
                 mobile: formData.mobile.trim(),
-                role: "buyer",
+                role: formData.role,
             };
 
             localStorage.setItem("automarketUser", JSON.stringify(user));
@@ -65,9 +77,6 @@ function RegisterPage() {
                 mobile: user.mobile,
             });
 
-            console.log("Registered:", data);
-
-            // 3. Continue
             navigate("/address");
         } catch (err: any) {
             console.error(
@@ -97,11 +106,10 @@ function RegisterPage() {
                     alt="AutoMarket Logo"
                 />
                 <h1 className="logoTitle">
-                    <span>Auto</span>Markets
+                    <span>Auto</span>Market
                 </h1>
 
                 <div className="logoButtons">
-                    {/* type="button" so they don't submit the form */}
                     <button
                         type="button"
                         className="RegisterLogoButton"
@@ -172,6 +180,40 @@ function RegisterPage() {
                                 onChange={handleChange}
                                 required
                             />
+                        </div>
+                    </div>
+
+                    {/* Account type + part category */}
+                    <div className="RegisterformRow">
+                        <div className="Registerform-group">
+                            <label htmlFor="role">Account Type</label>
+                            <select
+                                id="role"
+                                name="role"
+                                value={formData.role}
+                                onChange={handleChange}
+                                required
+                            >
+                                <option value="" disabled>Select account type</option>
+                                <option value="buyer">Buyer</option>
+                                <option value="seller">Seller</option>
+                            </select>
+                        </div>
+                        <div className="Registerform-group">
+                            <label htmlFor="partCategory">
+                                {formData.role === "seller" ? "Main Parts You Sell" : "Main Parts You Need"}
+                            </label>
+                            <select
+                                id="partCategory"
+                                name="partCategory"
+                                value={formData.partCategory}
+                                onChange={handleChange}
+                            >
+                                <option value="">Various</option>
+                                {partCategories.map((item) => (
+                                    <option key={item} value={item}>{item}</option>
+                                ))}
+                            </select>
                         </div>
                     </div>
 

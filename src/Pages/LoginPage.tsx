@@ -28,7 +28,7 @@ const LoginPage: React.FC = () => {
 
         if (!email.trim()) {
             alert("Please enter your email address.");
-            return; 
+            return;
         }
 
         const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
@@ -51,22 +51,20 @@ const LoginPage: React.FC = () => {
 
         try {
             const res = await loginUser({ email: normalizedEmail, password });
-            const { userid, firstName, lastName, email: responseEmail, role: backendRole } = res.data;
+            
+            const { userid, firstName, lastName, email: responseEmail, role: backendRole, token } = res.data;
             const returnedEmail = responseEmail || normalizedEmail;
 
-            // Buyers and sellers are interchangeable; only admin is restricted.
+            
             const chosenRole = selectedRole.toLowerCase();
             const accountRole = String(backendRole).toLowerCase();
-            if (chosenRole === "admin" && accountRole !== "admin") {
-                setError("This account is not an admin account.");
-                return;
-            }
-            if (accountRole === "admin" && chosenRole !== "admin") {
-                setError("Admin accounts must log in as Admin.");
+            if (chosenRole !== accountRole) {
+                const label = accountRole.charAt(0).toUpperCase() + accountRole.slice(1);
+                setError(`This is a ${label} account. Please select ${label} as your role.`);
                 return;
             }
 
-            const role = chosenRole as "buyer" | "seller" | "admin";
+            const role = accountRole as "buyer" | "seller" | "admin";
             const userName = firstName && lastName ? `${firstName} ${lastName}` : returnedEmail;
 
             const currentUser = {
@@ -97,6 +95,7 @@ const LoginPage: React.FC = () => {
                 loggedIn: true,
             });
 
+            window.localStorage.setItem("token", token); // CHANGED
             window.localStorage.setItem("automarketUser", JSON.stringify(currentUser));
             window.localStorage.setItem("marketplace_current_user", JSON.stringify(currentUser));
             window.dispatchEvent(new Event("automarket-user-updated"));
@@ -106,8 +105,6 @@ const LoginPage: React.FC = () => {
             } else {
                 window.localStorage.removeItem("automarketRememberMe");
             }
-
-            console.log("Logged in user:", currentUser);
 
             if (role === "seller") {
                 navigate("/list-product");
@@ -159,7 +156,7 @@ const LoginPage: React.FC = () => {
                     </div>
 
                     <div className="Loginform-group">
-                        <label htmlFor="password">Passwordd</label>
+                        <label htmlFor="password">Password</label> {/* CHANGED: typo */}
                         <div className="Login-input-wrapper">
                             <FaLock />
                             <input

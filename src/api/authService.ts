@@ -1,6 +1,10 @@
 import api from "./axiosInstance";
 import type { User } from "../Components/AuthContext.types";
 
+export interface LoginResponse extends User {
+  token : string;
+}
+
 export interface LoginRequest {
   email: string;
   password: string;
@@ -33,7 +37,7 @@ export interface RegisterAdminRequest {
 }
 
 export const loginUser = (credentials: LoginRequest) =>
-  api.post<User>("/api/auth/login", credentials);
+  api.post<LoginResponse>("/api/auth/login", credentials);
 
 export const registerBuyer = (data: RegisterBuyerRequest) =>
   api.post<User>("/api/auth/register/buyer", data);
@@ -43,3 +47,4 @@ export const registerSeller = (data: RegisterSellerRequest) =>
 
 export const registerAdmin = (data: RegisterAdminRequest) =>
   api.post<User>("/api/auth/register/admin", data);
+
