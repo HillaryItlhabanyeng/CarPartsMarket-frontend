@@ -463,6 +463,47 @@
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
 }
 
+/* WISHLIST HEART */
+
+.wishlistButton {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+
+  width: 36px;
+  height: 36px;
+  padding: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #a67b5b;
+  font-size: 15px;
+  cursor: pointer;
+
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.15s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.wishlistButton:hover {
+  transform: scale(1.08);
+}
+
+.wishlistButton:focus-visible {
+  outline: 2px solid #a67b5b;
+  outline-offset: 2px;
+}
+
+.wishlistButton.saved {
+  background: #a67b5b;
+  color: #ffffff;
+}
+
 .listingContent {
   padding: 17px;
 }

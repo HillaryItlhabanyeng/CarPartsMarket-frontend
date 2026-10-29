@@ -13,7 +13,7 @@
 .order-back-btn {
   background: none;
   border: none;
-  color: #14b8a6;
+  color: #a67b5b;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -182,4 +182,27 @@
 
 .back-to-buying-btn:hover {
   background: #0d9488;
+}
+
+.back-to-buying-btn,
+.mark-shipped-btn {
+  margin-top: 18px;
+  padding: 11px 20px;
+  border: none;
+  border-radius: 8px;
+  background: #a67b5b;
+  color: #ffffff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.back-to-buying-btn:hover,
+.mark-shipped-btn:hover {
+  background: #8f6549;
+}
+
+.order-detail-discount {
+  color: #2e7d4f;
+  font-weight: 600;
 }

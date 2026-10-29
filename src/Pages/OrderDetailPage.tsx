@@ -4,6 +4,16 @@ import { useOrders } from "../Components/useOrders";
 import { addNotification } from "../Components/notificationStore";
 import "./OrderDetailPage.css";
 
+// NEW: who is viewing this order
+function readCurrentUser(): { email?: string; role?: string } | null {
+  try {
+    const raw = localStorage.getItem("marketplace_current_user");
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
 export default function OrderDetailPage() {
   const { reference } = useParams<{ reference: string }>();
   const navigate = useNavigate();
@@ -37,6 +47,17 @@ export default function OrderDetailPage() {
       </div>
     );
   }
+
+  // NEW: only the seller (or an admin) can mark the order as shipped, never the buyer
+  const currentUser = readCurrentUser();
+  const email = currentUser?.email?.trim().toLowerCase() ?? "";
+  const role = currentUser?.role?.toLowerCase() ?? "";
+  const isBuyerOfOrder = !!email && order.buyerEmail?.toLowerCase() === email;
+  const sellsItemInOrder = order.items.some(
+    (item) => item.sellerEmail?.toLowerCase() === email
+  );
+  const canMarkShipped =
+    !isBuyerOfOrder && (sellsItemInOrder || role === "seller" || role === "admin");
 
   return (
     <div className="order-detail-page">
@@ -85,14 +106,24 @@ export default function OrderDetailPage() {
             <span>Delivery</span>
             <span>{formatCurrency(order.deliveryFee)}</span>
           </div>
+
+          {/* NEW: discount from a coupon */}
+          {order.discount !== undefined && order.discount > 0 && (
+            <div className="order-detail-row">
+              <span>Discount{order.couponCode ? ` (${order.couponCode})` : ""}</span>
+              <span className="order-detail-discount">-{formatCurrency(order.discount)}</span>
+            </div>
+          )}
+
           <div className="order-detail-row total">
             <span>Total Paid</span>
             <span>{formatCurrency(order.total)}</span>
           </div>
         </div>
 
-        {order.status !== "SHIPPED" && order.status !== "DELIVERED" && (
-          <button className="back-to-buying-btn" onClick={handleMarkAsShipped}>
+        {/* CHANGED: sellers/admins only, with its own class */}
+        {canMarkShipped && order.status !== "SHIPPED" && order.status !== "DELIVERED" && (
+          <button className="mark-shipped-btn" onClick={handleMarkAsShipped}>
             Mark order as shipped
           </button>
         )}

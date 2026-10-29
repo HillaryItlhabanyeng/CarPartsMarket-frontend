@@ -3,7 +3,13 @@ import type { Order, OrderItem } from "./OrdersContext.types";
 
 type OrdersContextType = {
   orders: Order[];
-  addOrder: (items: OrderItem[], deliveryFee: number, buyerEmail?: string) => Order;
+  addOrder: (
+    items: OrderItem[],
+    deliveryFee: number,
+    buyerEmail?: string,
+    discount?: number,
+    couponCode?: string
+  ) => Order;
   markOrderShipped: (reference: string) => Order | undefined;
   getOrder: (reference: string) => Order | undefined;
 };
@@ -12,8 +18,7 @@ const OrdersContext = createContext<OrdersContextType | undefined>(undefined);
 
 export { OrdersContext };
 
-// Orders are kept in localStorage so a seller can see what buyers ordered from them
-// (there is no backend, so this is the shared "database" in the browser).
+
 const ORDERS_STORAGE_KEY = "marketplace_orders";
 
 function loadOrders(): Order[] {
@@ -57,14 +62,22 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
     saveOrders(orders);
   }, [orders]);
 
-  const addOrder = (items: OrderItem[], deliveryFee: number, buyerEmail?: string) => {
+  const addOrder = (
+    items: OrderItem[],
+    deliveryFee: number,
+    buyerEmail?: string,
+    discount = 0,
+    couponCode?: string
+  ) => {
     const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
     const newOrder: Order = {
       reference: generateReference(),
       items,
       subtotal,
       deliveryFee,
-      total: subtotal + deliveryFee,
+      discount,
+      couponCode,
+      total: Math.max(0, subtotal + deliveryFee - discount),
       status: "PENDING",
       buyerEmail,
       date: new Date().toLocaleString("en-ZA", {

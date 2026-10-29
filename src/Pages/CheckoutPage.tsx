@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../Components/Navbar";
 import { useCart } from "../Components/useCart";
+import { calculateDiscount, loadAppliedCoupon } from "../data/coupons"; // NEW
 import "./CheckoutPage.css";
 
 interface ShippingInfo {
@@ -21,7 +22,6 @@ interface FormErrors {
 type PaymentMethod = "payfast" | "card" | "other";
 
 const DELIVERY_FEE = 50;
-const DISCOUNT = 0;
 
 function CheckoutPage() {
   const navigate = useNavigate();
@@ -38,7 +38,11 @@ function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] =
     useState<PaymentMethod>("payfast");
 
-  const total = subtotal + DELIVERY_FEE - DISCOUNT;
+  // CHANGED: use the coupon applied in the cart
+  const appliedCoupon = loadAppliedCoupon();
+  const delivery = items.length > 0 ? DELIVERY_FEE : 0;
+  const discount = calculateDiscount(appliedCoupon, subtotal, delivery);
+  const total = Math.max(0, subtotal + delivery - discount);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -93,11 +97,17 @@ function CheckoutPage() {
 
     if (!validate()) return;
 
+    // CHANGED: pass the pricing on so later steps show the same totals
     sessionStorage.setItem(
       "checkoutShipping",
       JSON.stringify({
         shipping,
         paymentMethod,
+        couponCode: appliedCoupon?.code ?? null,
+        subtotal,
+        delivery,
+        discount,
+        total,
       })
     );
 
@@ -332,15 +342,17 @@ function CheckoutPage() {
 
             <div className="summary-row">
               <span>Delivery</span>
-              <span>{formatCurrency(DELIVERY_FEE)}</span>
+              <span>{formatCurrency(delivery)}</span>
             </div>
 
+            {/* CHANGED: real discount, with the coupon code */}
             <div className="summary-row discount">
-              <span>Discount</span>
-              <span>{formatCurrency(-DISCOUNT)}</span>
+              <span>
+                Discount{appliedCoupon && discount > 0 ? ` (${appliedCoupon.code})` : ""}
+              </span>
+              <span>{formatCurrency(-discount)}</span>
             </div>
 
-            {/* TOTAL - matches .apply-btn / .checkout-continue brown via CSS var(--primary) */}
             <div className="summary-total">
               <span>Total</span>
               <span>{formatCurrency(total)}</span>
@@ -353,7 +365,6 @@ function CheckoutPage() {
               <p>Your payment is encrypted and secure.</p>
             </div>
 
-            {/* PROCEED BUTTON */}
             <button
               type="button"
               className="proceed-checkout-btn"

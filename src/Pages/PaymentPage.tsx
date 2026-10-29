@@ -6,9 +6,13 @@ import { useCart } from "../Components/useCart";
 import { useOrders } from "../Components/useOrders";
 import { FaCcVisa } from "react-icons/fa";
 import { addNotification, getCurrentUser } from "../Components/notificationStore";
+import {
+  calculateDiscount,
+  loadAppliedCoupon,
+  saveAppliedCoupon,
+  DELIVERY_FEE,
+} from "../data/coupons"; // NEW
 import "./PaymentPage.css";
-
-const DELIVERY_FEE = 50;
 
 export default function PaymentPage() {
   const navigate = useNavigate();
@@ -20,8 +24,11 @@ export default function PaymentPage() {
   const [cvv, setCvv] = useState("");
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
+  // CHANGED: same pricing as the cart and checkout
+  const appliedCoupon = loadAppliedCoupon();
   const delivery = items.length > 0 ? DELIVERY_FEE : 0;
-  const total = subtotal + delivery;
+  const discount = calculateDiscount(appliedCoupon, subtotal, delivery);
+  const total = Math.max(0, subtotal + delivery - discount);
 
   const formatCurrency = (value: number) => `R${value.toFixed(2)}`;
 
@@ -67,54 +74,56 @@ export default function PaymentPage() {
   };
 
   const handlePayNow = () => {
-  if (items.length === 0) return;
-  if (!validate()) return;
+    if (items.length === 0) return;
+    if (!validate()) return;
 
-  const orderItems = items.map((i) => ({
-    id: i.id,
-    name: i.name,
-    price: i.price,
-    quantity: i.quantity,
-    imageUrl: i.imageUrl,
-    category: i.category,
-    seller: i.seller,
-    sellerEmail: i.sellerEmail,
-  }));
+    const orderItems = items.map((i) => ({
+      id: i.id,
+      name: i.name,
+      price: i.price,
+      quantity: i.quantity,
+      imageUrl: i.imageUrl,
+      category: i.category,
+      seller: i.seller,
+      sellerEmail: i.sellerEmail,
+    }));
 
-  const currentUser = getCurrentUser();
-  const newOrder = addOrder(orderItems, delivery, currentUser?.email);
-  const registeredUsers = (() => {
-    try {
-      const raw = window.localStorage.getItem("marketplace_users");
-      const parsed = raw ? JSON.parse(raw) : [];
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return [];
-    }
-  })();
+    const currentUser = getCurrentUser();
+    const newOrder = addOrder(orderItems, delivery, currentUser?.email, discount, appliedCoupon?.code);
+    const registeredUsers = (() => {
+      try {
+        const raw = window.localStorage.getItem("marketplace_users");
+        const parsed = raw ? JSON.parse(raw) : [];
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    })();
 
-  items.forEach((item) => {
-    const seller = registeredUsers.find(
-      (user: { name?: string; email?: string }) =>
-        user.name?.toLowerCase() === item.seller?.toLowerCase()
-    );
+    items.forEach((item) => {
+      const seller = registeredUsers.find(
+        (user: { name?: string; email?: string }) =>
+          user.name?.toLowerCase() === item.seller?.toLowerCase()
+      );
+      addNotification({
+        type: "Order",
+        title: "A buyer wants to buy your car part",
+        body: `${item.quantity} x ${item.name} was ordered. Order ${newOrder.reference} is awaiting fulfilment.`,
+        recipientEmail: item.sellerEmail || seller?.email,
+      });
+    });
     addNotification({
       type: "Order",
-      title: "A buyer wants to buy your car part",
-      body: `${item.quantity} x ${item.name} was ordered. Order ${newOrder.reference} is awaiting fulfilment.`,
-      recipientEmail: item.sellerEmail || seller?.email,
+      title: "Payment completed",
+      body: `Your payment of ${formatCurrency(total)} for order ${newOrder.reference} was successful.`, // CHANGED: shows amount paid
+      recipientEmail: currentUser?.email,
     });
-  });
-  addNotification({
-    type: "Order",
-    title: "Payment completed",
-    body: `Your payment for order ${newOrder.reference} was successful.`,
-    recipientEmail: currentUser?.email,
-  });
-  clearCart();
 
-  navigate("/checkout/confirmation", { state: { reference: newOrder.reference } });
-};
+    clearCart();
+    saveAppliedCoupon(null); // NEW: coupon is used up with this order
+
+    navigate("/checkout/confirmation", { state: { reference: newOrder.reference } });
+  };
 
   return (
     <>
@@ -153,6 +162,23 @@ export default function PaymentPage() {
                 </div>
               ))
             )}
+
+            {/* NEW: delivery + discount lines */}
+            {items.length > 0 && (
+              <div className="order-line">
+                <span>Delivery</span>
+                <span>{formatCurrency(delivery)}</span>
+              </div>
+            )}
+            {discount > 0 && (
+              <div className="order-line">
+                <span>Discount{appliedCoupon ? ` (${appliedCoupon.code})` : ""}</span>
+                <span style={{ color: "#2e7d4f", fontWeight: 600 }}>
+                  -{formatCurrency(discount)}
+                </span>
+              </div>
+            )}
+
             <div className="order-line total">
               <span>Total</span>
               <span>{formatCurrency(total)}</span>

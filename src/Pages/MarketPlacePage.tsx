@@ -7,11 +7,14 @@ import {
   FaMapMarkerAlt,
   FaSearch,
   FaSlidersH,
+  FaHeart,     
+  FaRegHeart,  
 } from "react-icons/fa";
 
 import Navbar from "../Components/Navbar";
 import { partCategories } from "../data/partCategories";
 import { carBrands } from "../data/carBrands";
+import { useSaved } from "../Components/useSaved"; 
 
 import "./MarketPlacePage.css";
 import Footer from "../Components/Footer";
@@ -66,7 +69,6 @@ interface LegacyListingInput {
   sold?: boolean;
 }
 
-
 const API_URL = "http://localhost:8081/carparts/approved";
 
 const ALL_CATEGORIES = "All Categories";
@@ -91,7 +93,6 @@ function safeString(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
 }
 
-
 function categoryNameFromId(categoryId: unknown): string {
   const id = Number(categoryId);
 
@@ -100,7 +101,7 @@ function categoryNameFromId(categoryId: unknown): string {
   return partCategories[id - 1] ?? "";
 }
 
-/* ---------- Legacy local listings ---------- */
+
 
 function loadApprovedListings(): Listing[] {
   try {
@@ -168,7 +169,7 @@ function normalizeBackendListing(
     condition: "",
     location: "",
 
-    image: safeString(item.image),   // ← NEW — was hard-coded to ""
+    image: safeString(item.image),
   };
 }
 
@@ -397,6 +398,8 @@ function MarketPlacePage() {
   const [brand, setBrand] = useState(ALL_BRANDS);
   const [sort, setSort] = useState("newest");
 
+  const { toggleSaved, isSaved } = useSaved(); // NEW
+
   const [searchParams] = useSearchParams();
 
   const [category, setCategory] = useState(() => {
@@ -554,16 +557,6 @@ function MarketPlacePage() {
     } else if (sort === "price-high") {
       result.sort((a, b) => b.price - a.price);
     } else if (sort === "newest") {
-      // result.sort((a, b) => {
-      //   const dateA = Date.parse(a.createdAt ?? "");
-      //   const dateB = Date.parse(b.createdAt ?? "");
-
-      //   const validA = Number.isFinite(dateA) ? dateA : 0;
-      //   const validB = Number.isFinite(dateB) ? dateB : 0;
-
-      //   return validB - validA;
-      // });
-
       result.reverse();
     }
 
@@ -788,99 +781,125 @@ function MarketPlacePage() {
 
           {showResults && filteredListings.length > 0 && (
             <div className="listingGrid">
-              {filteredListings.map((listing) => (
-                <article
-                  className="listingCard"
-                  key={listing.id}
-                >
-                  <div className="listingImageWrapper">
-                    {listing.image ? (
-                      <img
-                        src={listing.image}
-                        alt={listing.title}
-                        className="listingImage"
-                      />
-                    ) : (
-                      <div className="noImage">
-                        No Image
-                      </div>
-                    )}
+              {filteredListings.map((listing) => {
+                const saved = isSaved(String(listing.id)); // NEW
 
-                    {listing.condition && (
-                      <span className="conditionBadge">
-                        {listing.condition}
-                      </span>
-                    )}
-                  </div>
+                return (
+                  <article
+                    className="listingCard"
+                    key={listing.id}
+                  >
+                    <div className="listingImageWrapper">
+                      {listing.image ? (
+                        <img
+                          src={listing.image}
+                          alt={listing.title}
+                          className="listingImage"
+                        />
+                      ) : (
+                        <div className="noImage">
+                          No Image
+                        </div>
+                      )}
 
-                  <div className="listingContent">
-                    {listing.category && (
-                      <span className="listingCategory">
-                        {listing.category}
-                      </span>
-                    )}
+                      {listing.condition && (
+                        <span className="conditionBadge">
+                          {listing.condition}
+                        </span>
+                      )}
 
-                    <h3>{listing.title}</h3>
-
-                    {listing.brand && (
-                      <p className="listingBrand">
-                        {listing.brand}
-                      </p>
-                    )}
-
-                    {listing.description && (
-                      <p className="listingDescription">
-                        {listing.description}
-                      </p>
-                    )}
-
-                    {listing.location && (
-                      <p className="listingLocation">
-                        <FaMapMarkerAlt />
-                        {listing.location}
-                      </p>
-                    )}
-
-                    <div className="listingBottom">
-                      <strong className="listingPrice">
-                        R{" "}
-                        {listing.price.toLocaleString("en-ZA", {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        })}
-                      </strong>
-
-                      <Link
-                        to={`/product/${listing.id}`}
-                        state={{
-                          product: {
-                            id: listing.id,
+                      {/* NEW: save to wishlist */}
+                      <button
+                        type="button"
+                        className={`wishlistButton${saved ? " saved" : ""}`}
+                        onClick={() =>
+                          toggleSaved({
+                            id: String(listing.id),
                             name: listing.title,
-                            category: listing.category || "",
-                            categoryId: listing.categoryId,
                             price: listing.price,
-                            image: listing.image || "",
-                            brand: listing.brand,
-                            description: listing.description,
-                            seller: listing.seller,
-                            sellerEmail: listing.sellerEmail,
-                            available: listing.quantity,
-                          },
-                        }}
-                        className="viewPartButton"
+                            location: listing.location,
+                            imageUrl: listing.image || "",
+                          })
+                        }
+                        aria-label={
+                          saved
+                            ? `Remove ${listing.title} from wishlist`
+                            : `Save ${listing.title} to wishlist`
+                        }
+                        title={saved ? "Remove from wishlist" : "Save to wishlist"}
                       >
-                        View Part
-                      </Link>
+                        {saved ? <FaHeart /> : <FaRegHeart />}
+                      </button>
                     </div>
-                  </div>
-                </article>
-              ))}
+
+                    <div className="listingContent">
+                      {listing.category && (
+                        <span className="listingCategory">
+                          {listing.category}
+                        </span>
+                      )}
+
+                      <h3>{listing.title}</h3>
+
+                      {listing.brand && (
+                        <p className="listingBrand">
+                          {listing.brand}
+                        </p>
+                      )}
+
+                      {listing.description && (
+                        <p className="listingDescription">
+                          {listing.description}
+                        </p>
+                      )}
+
+                      {listing.location && (
+                        <p className="listingLocation">
+                          <FaMapMarkerAlt />
+                          {listing.location}
+                        </p>
+                      )}
+
+                      <div className="listingBottom">
+                        <strong className="listingPrice">
+                          R{" "}
+                          {listing.price.toLocaleString("en-ZA", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
+                        </strong>
+
+                        <Link
+                          to={`/product/${listing.id}`}
+                          state={{
+                            product: {
+                              id: listing.id,
+                              name: listing.title,
+                              category: listing.category || "",
+                              categoryId: listing.categoryId,
+                              price: listing.price,
+                              image: listing.image || "",
+                              brand: listing.brand,
+                              description: listing.description,
+                              seller: listing.seller,
+                              sellerEmail: listing.sellerEmail,
+                              available: listing.quantity,
+                            },
+                          }}
+                          className="viewPartButton"
+                        >
+                          View Part
+                        </Link>
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
             </div>
           )}
         </main>
         <Footer />
       </div>
-
     </div>
   );
 }

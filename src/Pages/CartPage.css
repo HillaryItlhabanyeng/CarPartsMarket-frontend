@@ -274,6 +274,48 @@
   box-shadow: 0 0 0 3px rgba(166, 123, 91, 0.12);
 }
 
+/* COUPONS */
+
+.coupon-applied {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px dashed #a67b5b;
+  border-radius: 8px;
+  background: rgba(166, 123, 91, 0.08);
+  color: #273142;
+  font-size: 14px;
+}
+
+.coupon-remove {
+  border: none;
+  background: none;
+  color: #a67b5b;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.coupon-message {
+  margin: 10px 0 0;
+  font-size: 13px;
+}
+
+.coupon-message.success {
+  color: #2e7d4f;
+}
+
+.coupon-message.error {
+  color: #c44d4d;
+}
+
+.discount-amount {
+  color: #2e7d4f;
+  font-weight: 600;
+}
+
 /* ================================================================
    APPLY BUTTON
    ================================================================ */

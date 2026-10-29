@@ -71,9 +71,19 @@ export default function ConfirmationPage() {
               <span>{formatCurrency(order.subtotal)}</span>
             </div>
             <div className="summary-row">
-              <span>Delivery</span>
-              <span>{formatCurrency(order.deliveryFee)}</span>
-            </div>
+  <span>Delivery</span>
+  <span>{formatCurrency(order.deliveryFee)}</span>
+</div>
+
+{order.discount !== undefined && order.discount > 0 && (
+  <div className="summary-row">
+    <span>Discount{order.couponCode ? ` (${order.couponCode})` : ""}</span>
+    <span style={{ color: "#2e7d4f", fontWeight: 600 }}>
+      -{formatCurrency(order.discount)}
+    </span>
+  </div>
+)}
+
             <div className="summary-row total">
               <span>Total Paid</span>
               <span>{formatCurrency(order.total)}</span>

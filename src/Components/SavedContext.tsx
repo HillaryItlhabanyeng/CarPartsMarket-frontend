@@ -1,4 +1,4 @@
-import { createContext, useState, type ReactNode } from "react";
+import { createContext, useEffect, useState, type ReactNode } from "react";
 import type { SavedItem } from "./SavedContext.types";
 
 type SavedContextType = {
@@ -12,8 +12,44 @@ const SavedContext = createContext<SavedContextType | undefined>(undefined);
 
 export { SavedContext };
 
+const SAVED_STORAGE_KEY = "automarket_wishlist";
+
+
+function getSavedStorageKey(): string {
+  try {
+    const raw = localStorage.getItem("marketplace_current_user");
+    const user = raw ? JSON.parse(raw) : null;
+    const email = String(user?.email ?? "").trim().toLowerCase();
+    return email ? `${SAVED_STORAGE_KEY}:${email}` : `${SAVED_STORAGE_KEY}:guest`;
+  } catch {
+    return `${SAVED_STORAGE_KEY}:guest`;
+  }
+}
+
+function loadSaved(): SavedItem[] {
+  try {
+    const raw = localStorage.getItem(getSavedStorageKey());
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
 export function SavedProvider({ children }: { children: ReactNode }) {
-  const [savedItems, setSavedItems] = useState<SavedItem[]>([]);
+  const [savedItems, setSavedItems] = useState<SavedItem[]>(loadSaved);
+
+  
+  useEffect(() => {
+    localStorage.setItem(getSavedStorageKey(), JSON.stringify(savedItems));
+  }, [savedItems]);
+
+  
+  useEffect(() => {
+    const refresh = () => setSavedItems(loadSaved());
+    window.addEventListener("automarket-user-updated", refresh);
+    return () => window.removeEventListener("automarket-user-updated", refresh);
+  }, []);
 
   const toggleSaved = (item: SavedItem) => {
     setSavedItems((prev) => {

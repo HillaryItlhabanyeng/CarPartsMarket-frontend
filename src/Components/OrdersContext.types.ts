@@ -14,6 +14,8 @@ export type Order = {
   items: OrderItem[];
   subtotal: number;
   deliveryFee: number;
+  discount?: number;
+  couponCode?: string;
   total: number;
   status: "PENDING" | "PAID" | "SHIPPED" | "DELIVERED" | "CANCELLED";
   buyerEmail?: string;
