@@ -30,38 +30,77 @@
   box-shadow: 0 4px 20px rgba(15, 42, 74, 0.08);
 }
 
+/* PAYMENT METHOD PANELS */
+
 .payfast-header {
-  background: linear-gradient(135deg, #d8c3a5, #c2a978);
-  color: #1a1a1a;
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 20px 24px;
 }
 
 .payfast-icon {
-  font-size: 22px;
-  background: #fff;
-  color: #1e3a5f;
-  border-radius: 6px;
-  padding: 8px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 4px;
+  font-size: 30px;
+  color: #172235;
 }
 
-.payfast-title {
-  font-size: 15px;
+.payment-header-logo {
+  height: 26px;
+  width: auto;
+}
+
+.change-method-btn {
+  margin-left: auto;
+  border: none;
+  background: none;
+  color: #a67b5b;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.method-panel {
+  margin: 16px 0;
+  padding: 16px;
+  border: 1px solid #e2e5ea;
+  border-radius: 10px;
+  background: #fafafa;
+  color: #273142;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.method-panel-center {
+  text-align: center;
+}
+
+.method-panel-title {
+  margin: 0 0 10px;
   font-weight: 700;
-  margin: 0;
 }
 
-.payfast-subtitle {
+.method-panel-note {
+  margin: 10px 0 0;
+  color: #7a8290;
   font-size: 12px;
-  color: #5c4a33;
-  margin: 2px 0 0 0;
 }
 
+.bank-details {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px 16px;
+}
+
+.bank-details span {
+  color: #7a8290;
+}
+
+.qr-placeholder {
+  font-size: 110px;
+  color: #172235;
+}
 .amount-due-section {
   text-align: center;
   padding: 24px;

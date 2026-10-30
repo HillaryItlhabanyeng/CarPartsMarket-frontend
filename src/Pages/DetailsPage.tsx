@@ -6,12 +6,25 @@ import { useCart } from "../Components/useCart";
 import { calculateDiscount, loadAppliedCoupon, DELIVERY_FEE } from "../data/coupons";
 import "./DetailsPage.css";
 
+
+// Reads what the buyer entered on the checkout page
+function readCheckoutShipping() {
+    try {
+        const raw = sessionStorage.getItem("checkoutShipping");
+        return raw ? JSON.parse(raw)?.shipping ?? {} : {};
+    } catch {
+        return {};
+    }
+}
+
+
 export default function DetailsPage() {
     const navigate = useNavigate();
     const { items, subtotal } = useCart();
-    const [fullName, setFullName] = useState("");
-    const [phone, setPhone] = useState("");
-    const [email, setEmail] = useState("");
+    const saved = readCheckoutShipping();
+const [fullName, setFullName] = useState<string>(saved.fullName ?? "");
+const [phone, setPhone] = useState<string>(saved.phoneNumber ?? "");
+const [email, setEmail] = useState<string>(saved.emailAddress ?? "");
 
     
     const appliedCoupon = loadAppliedCoupon();

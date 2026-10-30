@@ -1,5 +1,4 @@
-// Works out which orders belong to a seller ("Orders Received").
-// An order can hold items from several sellers, so each row only carries this seller's items.
+
 import type { Order, OrderItem } from "./OrdersContext.types";
 
 export type SellerOrderRow = {
@@ -8,17 +7,20 @@ export type SellerOrderRow = {
   status: Order["status"];
   buyer: string;
   items: OrderItem[];
-  // Sum of this seller's items only (delivery fee excluded)
+  
   subtotal: number;
 };
 
-type SellerIdentity = { name?: string; email?: string } | null;
+type SellerIdentity = { id?: string | number; name?: string; email?: string } | null;
 
-const sameText = (a?: string, b?: string) =>
-  !!a && !!b && a.trim().toLowerCase() === b.trim().toLowerCase();
+const sameText = (a?: string | number, b?: string | number) =>
+  a !== undefined && b !== undefined && a !== null && b !== null &&
+  String(a).trim() !== "" &&
+  String(a).trim().toLowerCase() === String(b).trim().toLowerCase();
 
 const isSellersItem = (item: OrderItem, seller: SellerIdentity) =>
   sameText(item.sellerEmail, seller?.email) ||
+  sameText(item.seller, seller?.id) ||
   (!item.sellerEmail && sameText(item.seller, seller?.name));
 
 export function getSellerOrderRows(orders: Order[], seller: SellerIdentity): SellerOrderRow[] {

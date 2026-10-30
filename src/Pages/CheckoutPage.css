@@ -239,32 +239,101 @@
    PAYMENT OPTIONS
    ========================================================= */
 
+/* PAYMENT METHODS */
+
 .payment-options {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 12px;
-  margin-bottom: 24px;
 }
 
 .payment-option {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 15px;
-  border: 1px solid #dddddd;
-  border-radius: 8px;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 1px solid #e2e5ea;
+  border-radius: 10px;
+  background: #ffffff;
   cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
 .payment-option:hover {
-  background: rgba(166, 123, 91, 0.05);
+  border-color: #c9a98f;
+}
+
+.payment-option.selected {
   border-color: #a67b5b;
+  background: rgba(166, 123, 91, 0.05);
+  box-shadow: 0 0 0 2px rgba(166, 123, 91, 0.15);
 }
 
 .payment-option input {
+  margin: 0;
   accent-color: #a67b5b;
 }
 
+.payment-option-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.payment-option-label {
+  color: #172235;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.payment-option-desc {
+  margin-top: 2px;
+  color: #7a8290;
+  font-size: 13px;
+}
+
+.payment-option-icons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #172235;
+  font-size: 28px;
+}
+
+.payment-option-icons .icon-visa {
+  color: #1a1f71;
+}
+
+.payment-option-icons .icon-mastercard {
+  color: #eb001b;
+}
+
+.payment-logo {
+  height: 22px;
+  width: auto;
+}
+
+.checkout-continue {
+  margin-top: 20px;
+  padding: 12px 22px;
+  border: none;
+  border-radius: 8px;
+  background: #a67b5b;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.checkout-continue:hover:not(:disabled) {
+  background: #8f6549;
+}
+
+.checkout-continue:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 /* =========================================================
    ORDER SUMMARY
    ========================================================= */

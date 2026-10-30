@@ -1,8 +1,15 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../Components/Navbar";
 import { useCart } from "../Components/useCart";
-import { calculateDiscount, loadAppliedCoupon } from "../data/coupons"; // NEW
+import { calculateDiscount, loadAppliedCoupon, DELIVERY_FEE } from "../data/coupons";
+import {
+  FaCcVisa,
+  FaCcMastercard,
+  FaUniversity,
+  FaMoneyBillWave,
+  FaQrcode,
+} from "react-icons/fa";
 import "./CheckoutPage.css";
 
 interface ShippingInfo {
@@ -19,9 +26,57 @@ interface FormErrors {
   deliveryLocation?: string;
 }
 
-type PaymentMethod = "payfast" | "card" | "other";
+type PaymentMethod = "payfast" | "card" | "eft" | "snapscan" | "cod";
 
-const DELIVERY_FEE = 50;
+const PAYMENT_OPTIONS: {
+  value: PaymentMethod;
+  label: string;
+  description: string;
+  icon: ReactNode;
+}[] = [
+  {
+    value: "payfast",
+    label: "PayFast",
+    description: "Cards, Instant EFT and more",
+    icon: (
+      <img
+        src="/payfast-logo.png"
+        alt=""
+        className="payment-logo"
+        onError={(e) => (e.currentTarget.style.display = "none")}
+      />
+    ),
+  },
+  {
+    value: "card",
+    label: "Debit / Credit Card",
+    description: "Visa or Mastercard",
+    icon: (
+      <>
+        <FaCcVisa className="icon-visa" />
+        <FaCcMastercard className="icon-mastercard" />
+      </>
+    ),
+  },
+  {
+    value: "eft",
+    label: "EFT / Bank Transfer",
+    description: "Pay from your bank using your order reference",
+    icon: <FaUniversity />,
+  },
+  {
+    value: "snapscan",
+    label: "SnapScan / Zapper",
+    description: "Scan a QR code with your phone",
+    icon: <FaQrcode />,
+  },
+  {
+    value: "cod",
+    label: "Cash on Delivery",
+    description: "Pay when your part arrives",
+    icon: <FaMoneyBillWave />,
+  },
+];
 
 function CheckoutPage() {
   const navigate = useNavigate();
@@ -38,7 +93,7 @@ function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] =
     useState<PaymentMethod>("payfast");
 
-  // CHANGED: use the coupon applied in the cart
+  // Use the coupon applied in the cart
   const appliedCoupon = loadAppliedCoupon();
   const delivery = items.length > 0 ? DELIVERY_FEE : 0;
   const discount = calculateDiscount(appliedCoupon, subtotal, delivery);
@@ -97,7 +152,7 @@ function CheckoutPage() {
 
     if (!validate()) return;
 
-    // CHANGED: pass the pricing on so later steps show the same totals
+    // Pass the pricing on so later steps show the same totals
     sessionStorage.setItem(
       "checkoutShipping",
       JSON.stringify({
@@ -156,7 +211,6 @@ function CheckoutPage() {
 
               <div className="checkout-form-group">
                 <label htmlFor="fullName">Full Name</label>
-
                 <input
                   id="fullName"
                   name="fullName"
@@ -166,19 +220,13 @@ function CheckoutPage() {
                   onChange={handleChange}
                   className={errors.fullName ? "error" : ""}
                 />
-
                 {errors.fullName && (
-                  <span className="checkout-error">
-                    {errors.fullName}
-                  </span>
+                  <span className="checkout-error">{errors.fullName}</span>
                 )}
               </div>
 
               <div className="checkout-form-group">
-                <label htmlFor="emailAddress">
-                  Email Address
-                </label>
-
+                <label htmlFor="emailAddress">Email Address</label>
                 <input
                   id="emailAddress"
                   name="emailAddress"
@@ -188,19 +236,13 @@ function CheckoutPage() {
                   onChange={handleChange}
                   className={errors.emailAddress ? "error" : ""}
                 />
-
                 {errors.emailAddress && (
-                  <span className="checkout-error">
-                    {errors.emailAddress}
-                  </span>
+                  <span className="checkout-error">{errors.emailAddress}</span>
                 )}
               </div>
 
               <div className="checkout-form-group">
-                <label htmlFor="phoneNumber">
-                  Phone Number
-                </label>
-
+                <label htmlFor="phoneNumber">Phone Number</label>
                 <input
                   id="phoneNumber"
                   name="phoneNumber"
@@ -210,19 +252,13 @@ function CheckoutPage() {
                   onChange={handleChange}
                   className={errors.phoneNumber ? "error" : ""}
                 />
-
                 {errors.phoneNumber && (
-                  <span className="checkout-error">
-                    {errors.phoneNumber}
-                  </span>
+                  <span className="checkout-error">{errors.phoneNumber}</span>
                 )}
               </div>
 
               <div className="checkout-form-group">
-                <label htmlFor="deliveryLocation">
-                  Delivery Location
-                </label>
-
+                <label htmlFor="deliveryLocation">Delivery Location</label>
                 <input
                   id="deliveryLocation"
                   name="deliveryLocation"
@@ -230,15 +266,10 @@ function CheckoutPage() {
                   placeholder="Enter location"
                   value={shipping.deliveryLocation}
                   onChange={handleChange}
-                  className={
-                    errors.deliveryLocation ? "error" : ""
-                  }
+                  className={errors.deliveryLocation ? "error" : ""}
                 />
-
                 {errors.deliveryLocation && (
-                  <span className="checkout-error">
-                    {errors.deliveryLocation}
-                  </span>
+                  <span className="checkout-error">{errors.deliveryLocation}</span>
                 )}
               </div>
             </section>
@@ -248,50 +279,25 @@ function CheckoutPage() {
               <h2>2. Payment Method</h2>
 
               <div className="payment-options">
-                <label
-                  className={`payment-option ${
-                    paymentMethod === "payfast" ? "selected" : ""
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    value="payfast"
-                    checked={paymentMethod === "payfast"}
-                    onChange={() => setPaymentMethod("payfast")}
-                  />
-                  <label>PayFast (Cards)</label>
-                </label>
-
-                <label
-                  className={`payment-option ${
-                    paymentMethod === "card" ? "selected" : ""
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    value="card"
-                    checked={paymentMethod === "card"}
-                    onChange={() => setPaymentMethod("card")}
-                  />
-                  <label>Debit / Credit Card</label>
-                </label>
-
-                <label
-                  className={`payment-option ${
-                    paymentMethod === "other" ? "selected" : ""
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    value="other"
-                    checked={paymentMethod === "other"}
-                    onChange={() => setPaymentMethod("other")}
-                  />
-                  <label>Other Payment Methods</label>
-                </label>
+                {PAYMENT_OPTIONS.map((option) => (
+                  <label
+                    key={option.value}
+                    className={`payment-option ${paymentMethod === option.value ? "selected" : ""}`}
+                  >
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value={option.value}
+                      checked={paymentMethod === option.value}
+                      onChange={() => setPaymentMethod(option.value)}
+                    />
+                    <span className="payment-option-text">
+                      <span className="payment-option-label">{option.label}</span>
+                      <span className="payment-option-desc">{option.description}</span>
+                    </span>
+                    <span className="payment-option-icons">{option.icon}</span>
+                  </label>
+                ))}
               </div>
 
               <button
@@ -304,6 +310,7 @@ function CheckoutPage() {
               </button>
             </section>
           </div>
+          {/* end LEFT SIDE */}
 
           {/* RIGHT SIDE */}
           <aside className="order-summary">
@@ -334,8 +341,7 @@ function CheckoutPage() {
 
             <div className="summary-row">
               <span>
-                Subtotal ({items.length} item
-                {items.length !== 1 ? "s" : ""})
+                Subtotal ({items.length} item{items.length !== 1 ? "s" : ""})
               </span>
               <span>{formatCurrency(subtotal)}</span>
             </div>
@@ -345,7 +351,6 @@ function CheckoutPage() {
               <span>{formatCurrency(delivery)}</span>
             </div>
 
-            {/* CHANGED: real discount, with the coupon code */}
             <div className="summary-row discount">
               <span>
                 Discount{appliedCoupon && discount > 0 ? ` (${appliedCoupon.code})` : ""}

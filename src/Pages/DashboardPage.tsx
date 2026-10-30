@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import SideNavigation from "../Components/SideNavigation";
@@ -6,6 +7,7 @@ import NotificationBell from "../Components/NotificationBell";
 import { getSellerOrderRows } from "../Components/sellerOrders";
 import { useOrders } from "../Components/useOrders";
 import { useSaved } from "../Components/useSaved";
+import api from "../api/axiosInstance";
 
 import "../Components/DashboardShell.css";
 import "./DashboardPage.css";
@@ -18,6 +20,9 @@ import {
   FaHeart,
   FaMapMarkerAlt,
   FaPlus,
+  FaTruck,
+  FaCheckCircle,
+  FaWallet,
 } from "react-icons/fa";
 
 type CurrentUser = {
@@ -33,6 +38,12 @@ type PendingProduct = {
   sold?: boolean;
 };
 
+// What the backend returns for /carparts/seller/{id}
+type BackendCarPart = {
+  carPartId?: string;
+  status?: string | null;
+};
+
 function readFromStorage<T>(key: string, fallback: T): T {
   try {
     const raw = window.localStorage.getItem(key);
@@ -42,6 +53,9 @@ function readFromStorage<T>(key: string, fallback: T): T {
     return fallback;
   }
 }
+
+const formatCurrency = (value: number) =>
+  `R${value.toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 function DashboardPage() {
   const navigate = useNavigate();
@@ -53,62 +67,73 @@ function DashboardPage() {
     null
   );
   const isSeller = currentUser?.role?.toLowerCase() === "seller";
-  const pendingProducts = readFromStorage<PendingProduct[]>(
-    "marketplace_pending_products",
-    []
-  );
-  const approvedProducts = readFromStorage<PendingProduct[]>(
-    "marketplace_approved_products",
-    []
-  );
+  const sellerId = currentUser?.id;
 
-  // Only this user's own listings, the same rule the My Listings page uses
+  // Listings saved in the backend
+  const [myParts, setMyParts] = useState<BackendCarPart[]>([]);
+
+  useEffect(() => {
+    if (!sellerId) return;
+    let cancelled = false;
+
+    api
+      .get<BackendCarPart[]>(`/carparts/seller/${sellerId}`)
+      .then((res) => {
+        if (!cancelled) setMyParts(Array.isArray(res.data) ? res.data : []);
+      })
+      .catch((err) => console.error("Could not load your listings:", err));
+
+    return () => {
+      cancelled = true;
+    };
+  }, [sellerId]);
+
+  // Older listings that were saved in the browser
+  const pendingProducts = readFromStorage<PendingProduct[]>("marketplace_pending_products", []);
+  const approvedProducts = readFromStorage<PendingProduct[]>("marketplace_approved_products", []);
+
   const email = currentUser?.email?.toLowerCase();
   const isMine = (product: PendingProduct) =>
     !email || product.sellerEmail?.toLowerCase() === email;
-  const myPending = pendingProducts.filter(isMine);
-  // Sold items stay in My Listings as "Sold" but are no longer active
-  const myApproved = approvedProducts.filter(isMine).filter((product) => !product.sold);
+  const myLocalPending = pendingProducts.filter(isMine);
+  const myLocalApproved = approvedProducts.filter(isMine).filter((product) => !product.sold);
 
-  const stats = [
-    {
-      label: "Active Listings",
-      value: myApproved.length,
-      icon: <FaBoxOpen />,
-      onClick: () => navigate("/my-listings"),
-    },
-    {
-      label: "Pending Approval",
-      value: myPending.length,
-      icon: <FaClock />,
-      onClick: () => navigate("/my-listings"),
-    },
-    // Sellers see the orders buyers placed for their items; buyers see their own purchases
-    isSeller
-      ? {
-          label: "Orders Received",
-          value: getSellerOrderRows(orders, currentUser).length,
-          icon: <FaShoppingBag />,
-          onClick: () => navigate("/seller-orders"),
-        }
-      : {
+  const hasStatus = (part: BackendCarPart, status: string) =>
+    (part.status ?? "").toUpperCase() === status;
+
+  const activeCount =
+    myParts.filter((p) => hasStatus(p, "APPROVED")).length + myLocalApproved.length;
+  const pendingCount =
+    myParts.filter((p) => hasStatus(p, "PENDING")).length + myLocalPending.length;
+
+  // Orders containing this seller's parts
+  const sellerRows = isSeller ? getSellerOrderRows(orders, currentUser) : [];
+  const toShipCount = sellerRows.filter((r) => r.status === "PENDING" || r.status === "PAID").length;
+  const shippedCount = sellerRows.filter((r) => r.status === "SHIPPED" || r.status === "DELIVERED").length;
+  const earnings = sellerRows
+    .filter((r) => r.status !== "CANCELLED")
+    .reduce((sum, r) => sum + r.subtotal, 0);
+
+  const stats = isSeller
+    ? [
+        { label: "Active Listings", value: activeCount, icon: <FaBoxOpen />, onClick: () => navigate("/my-listings") },
+        { label: "Pending Approval", value: pendingCount, icon: <FaClock />, onClick: () => navigate("/my-listings") },
+        { label: "Orders Received", value: sellerRows.length, icon: <FaShoppingBag />, onClick: () => navigate("/seller-orders") },
+        { label: "To Ship", value: toShipCount, icon: <FaTruck />, onClick: () => navigate("/seller-orders") },
+        { label: "Shipped", value: shippedCount, icon: <FaCheckCircle />, onClick: () => navigate("/seller-orders") },
+        { label: "Earnings", value: formatCurrency(earnings), icon: <FaWallet />, onClick: () => navigate("/seller-orders") },
+      ]
+    : [
+        { label: "Active Listings", value: activeCount, icon: <FaBoxOpen />, onClick: () => navigate("/my-listings") },
+        { label: "Pending Approval", value: pendingCount, icon: <FaClock />, onClick: () => navigate("/my-listings") },
+        {
           label: "My Orders",
-          value: orders.filter((order) => order.buyerEmail?.toLowerCase() === currentUser?.email?.toLowerCase()).length,
+          value: orders.filter((order) => order.buyerEmail?.toLowerCase() === email).length,
           icon: <FaShoppingBag />,
           onClick: () => navigate("/orders"),
         },
-    // Wishlists belong to buyers, so sellers don't get one
-    ...(isSeller
-      ? []
-      : [
-          {
-            label: "Wishlist",
-            value: savedItems.length,
-            icon: <FaHeart />,
-            onClick: () => navigate("/wishlist"),
-          },
-        ]),
-  ];
+        { label: "Wishlist", value: savedItems.length, icon: <FaHeart />, onClick: () => navigate("/wishlist") },
+      ];
 
   const quickActions = [
     { label: "List a Product", onClick: () => navigate("/list-product") },

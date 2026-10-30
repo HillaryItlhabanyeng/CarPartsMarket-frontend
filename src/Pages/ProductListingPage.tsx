@@ -55,6 +55,7 @@ function ProductListingPage() {
     const brand = String(formData.get("brand") || "").trim();
     const price = Number(String(formData.get("price") || "0"));
     const quantity = Number(String(formData.get("quantity") || "0"));
+    const condition = String(formData.get("condition") || "Used").trim();
 
     if (!title || !description || !location || !category || !price || !quantity) {
       alert("Please complete all required listing fields before submitting.");
@@ -68,11 +69,7 @@ function ProductListingPage() {
 
     const currentUser = readCurrentUser();
 
-    const categoryIdMap: Record<string, number> = {
-      Engine: 1, Brakes: 2, Suspension: 3, Electrical: 4, Body: 5,
-      Transmission: 6, Cooling: 7, Exhaust: 8, Interior: 9, Wheels: 10,
-    };
-    const categoryId = categoryIdMap[category] ?? 1;
+    const categoryId = partCategories.indexOf(category) + 1;
     const model = brand || "Unspecified";
 
     const sellerId =
@@ -108,6 +105,7 @@ function ProductListingPage() {
       model,
       categoryId,
       sellerId,
+      partCondition: condition,
       image: imageDataUrl,
     };
 

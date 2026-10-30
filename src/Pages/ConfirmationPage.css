@@ -196,3 +196,37 @@
     background: #f9f9f9;
     border-color: #c2a978;
 }
+
+/* EFT BANK DETAILS */
+
+.eft-details-box {
+  margin: 0 0 18px;
+  padding: 16px;
+  border: 1px dashed #a67b5b;
+  border-radius: 10px;
+  background: rgba(166, 123, 91, 0.05);
+  text-align: left;
+  font-size: 14px;
+}
+
+.eft-details-title {
+  margin: 0 0 10px;
+  color: #172235;
+  font-weight: 700;
+}
+
+
+.eft-details-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px 16px;
+}
+
+.eft-details-grid span {
+  color: #7a8290;
+}
+
+.status-badge.awaiting {
+  background: #fff4e5;
+  color: #b26a00;
+}

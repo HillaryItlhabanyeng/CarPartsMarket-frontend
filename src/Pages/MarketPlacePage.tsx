@@ -45,6 +45,7 @@ interface BackendCarPart {
   model?: string | null;
   categoryId?: number | string | null;
   sellerId?: string | null;
+  partCondition?: string | null;
   image?: string | null;
 }
 
@@ -165,8 +166,8 @@ function normalizeBackendListing(
     quantity: safeNumber(item.stockQuantity),
     seller: safeString(item.sellerId),
 
-    // Backend does not supply these yet.
-    condition: "",
+    
+    condition: safeString(item.partCondition),
     location: "",
 
     image: safeString(item.image),
