@@ -17,6 +17,16 @@
   min-height: 100vh;
 }
 
+.listing-payout-note {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-left: 3px solid #a67b5b;
+  border-radius: 6px;
+  background: rgba(166, 123, 91, 0.08);
+  color: #273142;
+  font-size: 13px;
+}
+
 /* =========================================================
    TOP HEADER
 ========================================================= */

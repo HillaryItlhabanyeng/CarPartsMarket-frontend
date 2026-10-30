@@ -5,26 +5,39 @@ import { FaClock, FaCog, FaMoneyBillWave, FaShoppingBag, FaTruck } from "react-i
 import SideNavigation from "../Components/SideNavigation";
 import UserInitialsBadge from "../Components/UserInitialsBadge";
 import NotificationBell from "../Components/NotificationBell";
-import { getCurrentUser } from "../Components/notificationStore";
 import { getSellerOrderRows } from "../Components/sellerOrders";
 import { useOrders } from "../Components/useOrders";
 import type { Order } from "../Components/OrdersContext.types";
+import { commissionLabel } from "../data/commission";
 
 import "../Components/DashboardShell.css";
 import "./SellerOrdersPage.css";
 
 type StatusFilter = "All" | Order["status"];
 
+type CurrentUser = { id?: string; name?: string; email?: string } | null;
+
 const statusFilters: StatusFilter[] = ["All", "PENDING", "PAID", "SHIPPED", "DELIVERED", "CANCELLED"];
 
 const statusLabel = (status: string) => status.charAt(0) + status.slice(1).toLowerCase();
-const formatCurrency = (value: number) => `R${value.toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const formatCurrency = (value: number) =>
+  `R${value.toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+// Includes the seller's ID, which backend parts use to identify the seller
+function readCurrentUser(): CurrentUser {
+  try {
+    const raw = window.localStorage.getItem("marketplace_current_user");
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
 
 // Seller side: the orders buyers have placed for this seller's items.
 export default function SellerOrdersPage() {
   const navigate = useNavigate();
   const { orders, markOrderShipped } = useOrders();
-  const currentUser = getCurrentUser();
+  const [currentUser] = useState<CurrentUser>(readCurrentUser);
 
   const rows = useMemo(() => getSellerOrderRows(orders, currentUser), [orders, currentUser]);
   const [filter, setFilter] = useState<StatusFilter>("All");
@@ -32,15 +45,17 @@ export default function SellerOrdersPage() {
 
   const countIn = (...statuses: Order["status"][]) =>
     rows.filter((row) => statuses.includes(row.status)).length;
+
+  // What the seller receives after AutoMarket's commission
   const earnings = rows
     .filter((row) => row.status !== "CANCELLED")
-    .reduce((sum, row) => sum + row.subtotal, 0);
+    .reduce((sum, row) => sum + row.payout, 0);
 
   const stats = [
     { label: "Orders Received", value: rows.length, icon: <FaShoppingBag /> },
     { label: "Awaiting Shipping", value: countIn("PENDING", "PAID"), icon: <FaClock /> },
     { label: "Shipped / Delivered", value: countIn("SHIPPED", "DELIVERED"), icon: <FaTruck /> },
-    { label: "Earnings", value: formatCurrency(earnings), icon: <FaMoneyBillWave /> },
+    { label: `Earnings (after ${commissionLabel} fee)`, value: formatCurrency(earnings), icon: <FaMoneyBillWave /> },
   ];
 
   return (
@@ -125,9 +140,21 @@ export default function SellerOrdersPage() {
                       </div>
                     ))}
 
+                    {/* Sale, fee and payout for this order */}
+                    <div className="so-payout-breakdown">
+                      <div>
+                        <span>Sale total</span>
+                        <span>{formatCurrency(row.subtotal)}</span>
+                      </div>
+                      <div>
+                        <span>AutoMarket fee ({commissionLabel})</span>
+                        <span>-{formatCurrency(row.commission)}</span>
+                      </div>
+                    </div>
+
                     <div className="so-order-foot">
                       <span>
-                        Your total <strong>{formatCurrency(row.subtotal)}</strong>
+                        You receive <strong>{formatCurrency(row.payout)}</strong>
                       </span>
                       {(status === "PENDING" || status === "PAID") && (
                         <button type="button" className="so-ship-btn" onClick={() => markOrderShipped(row.reference)}>

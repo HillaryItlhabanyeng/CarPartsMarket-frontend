@@ -8,6 +8,7 @@ import { getSellerOrderRows } from "../Components/sellerOrders";
 import { useOrders } from "../Components/useOrders";
 import { useSaved } from "../Components/useSaved";
 import api from "../api/axiosInstance";
+import { commissionLabel } from "../data/commission";
 
 import "../Components/DashboardShell.css";
 import "./DashboardPage.css";
@@ -110,9 +111,11 @@ function DashboardPage() {
   const sellerRows = isSeller ? getSellerOrderRows(orders, currentUser) : [];
   const toShipCount = sellerRows.filter((r) => r.status === "PENDING" || r.status === "PAID").length;
   const shippedCount = sellerRows.filter((r) => r.status === "SHIPPED" || r.status === "DELIVERED").length;
+
+  // What the seller receives after AutoMarket's commission
   const earnings = sellerRows
     .filter((r) => r.status !== "CANCELLED")
-    .reduce((sum, r) => sum + r.subtotal, 0);
+    .reduce((sum, r) => sum + r.payout, 0);
 
   const stats = isSeller
     ? [
@@ -121,7 +124,12 @@ function DashboardPage() {
         { label: "Orders Received", value: sellerRows.length, icon: <FaShoppingBag />, onClick: () => navigate("/seller-orders") },
         { label: "To Ship", value: toShipCount, icon: <FaTruck />, onClick: () => navigate("/seller-orders") },
         { label: "Shipped", value: shippedCount, icon: <FaCheckCircle />, onClick: () => navigate("/seller-orders") },
-        { label: "Earnings", value: formatCurrency(earnings), icon: <FaWallet />, onClick: () => navigate("/seller-orders") },
+        {
+          label: `Earnings (after ${commissionLabel} fee)`,
+          value: formatCurrency(earnings),
+          icon: <FaWallet />,
+          onClick: () => navigate("/seller-orders"),
+        },
       ]
     : [
         { label: "Active Listings", value: activeCount, icon: <FaBoxOpen />, onClick: () => navigate("/my-listings") },

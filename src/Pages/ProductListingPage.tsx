@@ -8,6 +8,7 @@ import { fileToDataUrl } from "../Components/imageUtils";
 import { addNotification, ADMIN_NOTIFICATION_EMAIL } from "../Components/notificationStore";
 import { partCategories } from "../data/partCategories";
 import { carBrands } from "../data/carBrands";
+import { commissionLabel, sellerPayout } from "../data/commission"; // NEW
 import { useState } from "react";
 import api from "../api/axiosInstance";
 
@@ -42,7 +43,10 @@ function getInitials(user: StoredUser | null): string {
 function ProductListingPage() {
   const navigate = useNavigate();
   const [photos, setPhotos] = useState<File[]>([]);
+  const [priceInput, setPriceInput] = useState(""); // NEW
   const initials = getInitials(readCurrentUser());
+
+  const enteredPrice = Number(priceInput); // NEW
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -110,7 +114,7 @@ function ProductListingPage() {
     };
 
     try {
-  await api.post("/carparts/create", payload);
+      await api.post("/carparts/create", payload);
 
       addNotification({
         type: "Listing",
@@ -225,13 +229,29 @@ function ProductListingPage() {
                   <div className="listing-price-stock-row">
                     <div className="listing-form-group">
                       <label>Price</label>
-                      <input type="number" name="price" className="listing-form-input" min="1" />
+                      {/* NEW: tracks the price so the payout note updates as they type */}
+                      <input
+                        type="number"
+                        name="price"
+                        className="listing-form-input"
+                        min="1"
+                        value={priceInput}
+                        onChange={(e) => setPriceInput(e.target.value)}
+                      />
                     </div>
                     <div className="listing-form-group">
                       <label>Quantity</label>
                       <input type="number" name="quantity" className="listing-form-input" min="1" />
                     </div>
                   </div>
+
+                  {/* NEW: what the seller receives after the commission */}
+                  {enteredPrice > 0 && (
+                    <p className="listing-payout-note">
+                      You'll receive <strong>R{sellerPayout(enteredPrice).toFixed(2)}</strong> per item
+                      after AutoMarket's {commissionLabel} fee.
+                    </p>
+                  )}
                 </div>
               </div>
 

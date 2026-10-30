@@ -1,6 +1,15 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaBoxOpen, FaCheck, FaClock, FaShoppingBag, FaTimes, FaUser, FaUsers } from "react-icons/fa";
+import {
+  FaBoxOpen,
+  FaCheck,
+  FaClock,
+  FaShoppingBag,
+  FaTimes,
+  FaUser,
+  FaUsers,
+  FaWallet, // NEW
+} from "react-icons/fa";
 
 import AdminShell from "../Components/AdminShell";
 import AdminListingRow from "../Components/AdminListingRow";
@@ -14,6 +23,7 @@ import {
 } from "../Components/adminStore";
 import { getCurrentUser } from "../Components/notificationStore";
 import { useOrders } from "../Components/useOrders";
+import { commissionOn } from "../data/commission"; // NEW
 
 type MemberRecord = {
   id?: number | string;
@@ -36,6 +46,10 @@ const readMembers = (): MemberRecord[] => {
 
 const memberName = (member: MemberRecord) =>
   member.name?.trim() || `${member.firstName ?? ""} ${member.lastName ?? ""}`.trim() || "A new member";
+
+// NEW
+const formatCurrency = (value: number) =>
+  `R${value.toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 // Admin Dashboard: an at-a-glance overview. Detail lives on the Users, Listings and Orders pages,
 // which are reached from the shared sidebar like every other section of the app.
@@ -75,11 +89,18 @@ export default function AdminPage() {
 
   const liveCount = approved.filter((listing) => !listing.sold).length;
 
+  // NEW: AutoMarket's earnings, commission on each sale minus coupon discounts it absorbed
+  const platformRevenue = orders
+    .filter((order) => order.status !== "CANCELLED")
+    .reduce((sum, order) => sum + commissionOn(order.subtotal) - (order.discount ?? 0), 0);
+
   const stats = [
     { label: "Members", value: members.length, icon: <FaUsers />, to: "/admin/users" },
     { label: "Live Listings", value: liveCount, icon: <FaBoxOpen />, to: "/admin/listings?tab=live" },
     { label: "Pending Approval", value: pending.length, icon: <FaClock />, to: "/admin/listings" },
     { label: "Orders", value: orders.length, icon: <FaShoppingBag />, to: "/admin/orders" },
+    // NEW
+    { label: "Platform Revenue", value: formatCurrency(platformRevenue), icon: <FaWallet />, to: "/admin/orders" },
   ];
 
   const activity = [
