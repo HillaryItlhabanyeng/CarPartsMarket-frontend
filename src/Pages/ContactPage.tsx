@@ -1,10 +1,12 @@
 import React, { useState } from "react";
+import axios from "axios";
 import Navbar from "../Components/Navbar";
 import "./Contactpage.css";
 import {
     FaMapPin, FaClock, FaEnvelope, FaPhone
 } from "react-icons/fa";
 import Footer from "../Components/Footer";
+import { sendContactMessage } from "../api/reviewService";
 
 export default function ContactPage() {
   const [form, setForm] = useState({
@@ -18,9 +20,24 @@ export default function ContactPage() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [errorMsg, setErrorMsg] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Contact form submitted:", form);
+    setStatus("sending");
+    try {
+      await sendContactMessage(form);
+      setForm({ fullName: "", email: "", subject: "", message: "" });
+      setStatus("sent");
+    } catch (err) {
+      setErrorMsg(
+        axios.isAxiosError(err) && typeof err.response?.data === "string"
+          ? err.response.data
+          : "Could not send your message. Please try again."
+      );
+      setStatus("error");
+    }
   };
 
   return (
@@ -49,6 +66,7 @@ export default function ContactPage() {
               <input
                 type="text"
                 name="fullName"
+                required
                 placeholder="Full Name"
                 value={form.fullName}
                 onChange={handleChange}
@@ -60,6 +78,7 @@ export default function ContactPage() {
               <input
                 type="email"
                 name="email"
+                required
                 placeholder="Email Address"
                 value={form.email}
                 onChange={handleChange}
@@ -71,6 +90,7 @@ export default function ContactPage() {
               <input
                 type="text"
                 name="subject"
+                required
                 placeholder="Subject"
                 value={form.subject}
                 onChange={handleChange}
@@ -81,6 +101,7 @@ export default function ContactPage() {
               <span className="ct-field-icon"></span>
               <textarea
                 name="message"
+                required
                 placeholder="Your message"
                 rows={5}
                 value={form.message}
@@ -88,8 +109,17 @@ export default function ContactPage() {
               />
             </label>
 
-            <button type="submit" className="ct-submit">
-              <span></span> Send Message
+            {status === "sent" && (
+              <p role="status" style={{ color: "#1e7e34", margin: 0 }}>
+                Thanks! Your message has been sent. We'll reply by email.
+              </p>
+            )}
+            {status === "error" && (
+              <p role="alert" style={{ color: "#c0392b", margin: 0 }}>{errorMsg}</p>
+            )}
+
+            <button type="submit" className="ct-submit" disabled={status === "sending"}>
+              <span></span> {status === "sending" ? "Sending..." : "Send Message"}
             </button>
           </form>
         </div>

@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 import Navbar from "../Components/Navbar";
 import "./RatingsreviewsPage.css";
+import { getAllReviews, type ReviewDTO } from "../api/reviewService";
 
 import {
   FaChevronDown,
@@ -34,114 +35,37 @@ interface Review {
 }
 
 /* =========================================================
-   REVIEW DATA
+   REVIEW DATA (loaded from the backend)
 ========================================================= */
 
-const REVIEWS: Review[] = [
-  {
-    id: "r1",
-    name: "Lerato M.",
-    role: "buyer",
-    image: "/Lerato.png",
-    initials: "LM",
-    avatarColor: "#f0b64c",
-    date: "2 days ago",
-    rating: 5,
-    title: "Great quality and fast delivery!",
-    body:
-      "The laptop was in excellent condition and the seller was friendly. Highly recommend!",
-    item: "HP EliteBook 840 G5",
-  },
+const AVATAR_COLORS = ["#f0b64c", "#6c8ec9", "#c97fb0", "#5aa9a3", "#e08a6b", "#8b7fd9"];
 
-  {
-    id: "r2",
-    name: "Wazeer J.",
-    role: "seller",
-    image: "/Wazeer.png",
-    initials: "WJ",
-    avatarColor: "#6c8ec9",
-    date: "3 days ago",
-    rating: 4,
-    title: "Smooth transaction",
-    body:
-      "Buyer was responsive and the payment was processed quickly. Great experience overall.",
-  },
+const timeAgo = (iso: string): string => {
+  const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+  if (days < 1) return "Today";
+  if (days === 1) return "Yesterday";
+  if (days < 7) return `${days} days ago`;
+  if (days < 30) return `${Math.floor(days / 7)} week${days >= 14 ? "s" : ""} ago`;
+  return new Date(iso).toLocaleDateString();
+};
 
-  {
-    id: "r3",
-    name: "Ayesha D.",
-    role: "buyer",
-    image: "/Ayesha.png",
-    initials: "AD",
-    avatarColor: "#c97fb0",
-    date: "1 week ago",
-    rating: 5,
-    title: "Exactly as described",
-    body:
-      "The product matched the description perfectly. Very happy with my purchase.",
-    item: "Wireless Headphones",
-  },
-
-  {
-    id: "r4",
-    name: "Thabo N.",
-    role: "seller",
-    image: "/Thabo.png",
-    initials: "TN",
-    avatarColor: "#5aa9a3",
-    date: "1 week ago",
-    rating: 4,
-    title: "Reliable buyer",
-    body:
-      "Paid on time and picked up promptly. Would gladly sell to again.",
-  },
-
-  {
-    id: "r5",
-    name: "Naledi K.",
-    role: "buyer",
-    image: "/Naledi.png",
-    initials: "NK",
-    avatarColor: "#e08a6b",
-    date: "2 weeks ago",
-    rating: 3,
-    title: "Good, but delivery took a while",
-    body:
-      "Item was fine and as described, just took a bit longer to arrive than expected.",
-    item: "Scientific Calculator",
-  },
-
-  {
-    id: "r6",
-    name: "Sipho R.",
-    role: "seller",
-    image: "/Sipho.png",
-    initials: "SR",
-    avatarColor: "#8b7fd9",
-    date: "3 weeks ago",
-    rating: 5,
-    title: "Excellent buyer to work with",
-    body:
-      "Clear communication throughout and collected the item the same day.",
-  },
-];
-
-/* =========================================================
-   RATING SUMMARY
-========================================================= */
-
-const OVERALL_RATING = 4.7;
-const TOTAL_REVIEWS_COUNT = 128;
-const BUYER_REVIEWS_COUNT = 96;
-const SELLER_REVIEWS_COUNT = 32;
-
-const RATING_BREAKDOWN = [
-  { stars: 5, percent: 82 },
-  { stars: 4, percent: 12 },
-  { stars: 3, percent: 4 },
-  { stars: 2, percent: 1 },
-  { stars: 1, percent: 1 },
-];
+const toReview = (r: ReviewDTO, index: number): Review => ({
+  id: r.reviewId,
+  name: r.reviewerName,
+  role: r.reviewerRole === "seller" ? "seller" : "buyer",
+  image: "",
+  initials: r.reviewerName
+    .split(" ")
+    .map((w) => w[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase(),
+  avatarColor: AVATAR_COLORS[index % AVATAR_COLORS.length],
+  date: timeAgo(r.createdAt),
+  rating: r.rating,
+  title: r.title,
+  body: r.comment,
+});
 
 const REVIEWS_PER_PAGE = 3;
 
@@ -207,7 +131,7 @@ const AvatarImg: FC<AvatarImgProps> = ({
 }) => {
   const [failed, setFailed] = useState(false);
 
-  if (failed) {
+  if (failed || !src) {
     return (
       <div
         className={fallbackClassName}
@@ -243,22 +167,29 @@ const RatingsReviewsPage: FC = () => {
 
   const [page, setPage] = useState(1);
 
-  const [isLoading, setIsLoading] =
-    useState(true);
-
-  /* =======================================================
-     LOADING EFFECT
-  ======================================================= */
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      setIsLoading(false);
-    }, 500);
-
-    return () => {
-      window.clearTimeout(timer);
-    };
+    getAllReviews()
+      .then((res) => setReviews(res.data.map(toReview)))
+      .catch(() => setLoadError(true))
+      .finally(() => setIsLoading(false));
   }, []);
+
+  const totalCount = reviews.length;
+  const buyerCount = reviews.filter((r) => r.role === "buyer").length;
+  const sellerCount = totalCount - buyerCount;
+  const overallRating = totalCount
+    ? reviews.reduce((sum, r) => sum + r.rating, 0) / totalCount
+    : 0;
+  const ratingBreakdown = [5, 4, 3, 2, 1].map((stars) => ({
+    stars,
+    percent: totalCount
+      ? Math.round((reviews.filter((r) => r.rating === stars).length / totalCount) * 100)
+      : 0,
+  }));
 
   /* =======================================================
      FILTER + SORT REVIEWS
@@ -269,7 +200,7 @@ const RatingsReviewsPage: FC = () => {
   ======================================================= */
 
   const filteredReviews = useMemo<Review[]>(() => {
-    let list = [...REVIEWS];
+    let list = [...reviews];
 
     /* Filter by buyer/seller */
     if (activeTab === "buyers") {
@@ -309,7 +240,7 @@ const RatingsReviewsPage: FC = () => {
     }
 
     return list;
-  }, [activeTab, sortOrder]);
+  }, [reviews, activeTab, sortOrder]);
 
   /* =======================================================
      PAGINATION
@@ -400,12 +331,12 @@ const RatingsReviewsPage: FC = () => {
             type="button"
             className="write-review-btn"
             onClick={() =>
-              navigate("/write-review")
+              navigate("/shop")
             }
           >
             <FaStar size={13} />
 
-            Write a Review
+            Find a part to review
           </button>
 
         </div>
@@ -427,22 +358,22 @@ const RatingsReviewsPage: FC = () => {
             </h2>
 
             <div className="rating-summary-score">
-              {OVERALL_RATING.toFixed(1)}
+              {overallRating.toFixed(1)}
             </div>
 
             <StarRow
-              rating={OVERALL_RATING}
+              rating={overallRating}
               size={22}
             />
 
             <p className="rating-summary-count">
               Based on{" "}
-              {TOTAL_REVIEWS_COUNT} reviews
+              {totalCount} reviews
             </p>
 
             <div className="rating-breakdown">
 
-              {RATING_BREAKDOWN.map(
+              {ratingBreakdown.map(
                 (row) => (
                   <div
                     className="rating-breakdown-row"
@@ -504,7 +435,7 @@ const RatingsReviewsPage: FC = () => {
                   }
                 >
                   All Reviews(
-                  {TOTAL_REVIEWS_COUNT})
+                  {totalCount})
                 </button>
 
                 <button
@@ -519,7 +450,7 @@ const RatingsReviewsPage: FC = () => {
                   }
                 >
                   From Buyers(
-                  {BUYER_REVIEWS_COUNT})
+                  {buyerCount})
                 </button>
 
                 <button
@@ -534,7 +465,7 @@ const RatingsReviewsPage: FC = () => {
                   }
                 >
                   From Sellers(
-                  {SELLER_REVIEWS_COUNT})
+                  {sellerCount})
                 </button>
 
               </div>
@@ -629,7 +560,9 @@ const RatingsReviewsPage: FC = () => {
 
                 {pageReviews.length === 0 && (
                   <p className="review-empty">
-                    No reviews found.
+                    {loadError
+                      ? "Could not load reviews. Is the backend running?"
+                      : "No reviews yet. Open a part and be the first to review it."}
                   </p>
                 )}
 
