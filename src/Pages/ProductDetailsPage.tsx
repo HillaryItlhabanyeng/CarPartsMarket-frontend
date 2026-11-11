@@ -2,6 +2,7 @@ import { useLocation, useNavigate, useParams, Link } from "react-router-dom";
 import { useState } from "react";
 import Navbar from "../Components/Navbar";
 import Footer from "../Components/Footer";
+import PartReviews from "../Components/PartReviews";
 import { useCart } from "../Components/useCart";
 import { findLiveListing, toDetailsProduct } from "../Components/marketListings";
 import "./ProductDetailsPage.css";
@@ -220,13 +221,7 @@ export default function ProductDetailsPage() {
           </div>
         </div>
 
-        {/* Reviews Section */}
-        <div className="reviewsSection">
-          <div className="reviewsHeader">
-            <h3>Reviews</h3>
-          </div>
-          <p className="reviewComment">No reviews yet for this part.</p>
-        </div>
+        <PartReviews carPartId={String(product.id)} />
       </div>
 
       <Footer />
