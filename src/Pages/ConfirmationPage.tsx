@@ -11,17 +11,33 @@ type ConfirmationState = {
 export default function ConfirmationPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { getOrder } = useOrders();
+  const { getOrder, loading } = useOrders();
 
   const state = location.state as ConfirmationState;
   const reference = state?.reference;
-  const paymentMethod = state?.paymentMethod;
   const order = reference ? getOrder(reference) : undefined;
+
+  // Use the method from checkout, or fall back to the one saved on the order
+  const paymentMethod = state?.paymentMethod ?? order?.paymentMethod;
 
   // EFT and cash on delivery haven't been paid yet
   const awaitingPayment = paymentMethod === "eft" || paymentMethod === "cod";
 
   const formatCurrency = (value: number) => `R${value.toFixed(2)}`;
+
+  // Still loading orders from the server (e.g. after a page refresh)
+  if (!order && loading) {
+    return (
+      <>
+        <Navbar showLinks={false} />
+        <div className="confirmation-page">
+          <div className="confirmation-card">
+            <p>Loading your order...</p>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   if (!order) {
     return (

@@ -17,6 +17,7 @@ export type Order = {
   discount?: number;
   couponCode?: string;
   total: number;
+  paymentMethod?: string;
   status: "PENDING" | "PAID" | "SHIPPED" | "DELIVERED" | "CANCELLED";
   buyerEmail?: string;
   date: string;

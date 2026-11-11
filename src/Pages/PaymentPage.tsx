@@ -46,16 +46,18 @@ function readPaymentMethod(): PaymentMethod {
 export default function PaymentPage() {
   const navigate = useNavigate();
   const { items, subtotal, clearCart } = useCart();
-  const { addOrder } = useOrders();
+  const { placeOrder: submitOrder } = useOrders(); // CHANGED: saves to the backend
 
   const [method] = useState<PaymentMethod>(readPaymentMethod);
   const [processing, setProcessing] = useState(false);
+  const [payError, setPayError] = useState(""); // NEW
 
   const [cardNumber, setCardNumber] = useState("");
   const [expiry, setExpiry] = useState("");
   const [cvv, setCvv] = useState("");
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
+  // Shown on the page; the backend recalculates the real total
   const appliedCoupon = loadAppliedCoupon();
   const delivery = items.length > 0 ? DELIVERY_FEE : 0;
   const discount = calculateDiscount(appliedCoupon, subtotal, delivery);
@@ -105,87 +107,80 @@ export default function PaymentPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const placeOrder = () => {
-    const orderItems = items.map((i) => ({
-      id: i.id,
-      name: i.name,
-      price: i.price,
-      quantity: i.quantity,
-      imageUrl: i.imageUrl,
-      category: i.category,
-      seller: i.seller,
-      sellerEmail: i.sellerEmail,
-    }));
+  // CHANGED: sends only part IDs, quantities, coupon and payment method to the backend
+  const placeOrder = async () => {
+    setPayError("");
 
-    const currentUser = getCurrentUser();
-    const newOrder = addOrder(orderItems, delivery, currentUser?.email, discount, appliedCoupon?.code);
+    try {
+      const newOrder = await submitOrder({
+        items: items.map((i) => ({ carPartId: String(i.id), quantity: i.quantity })),
+        couponCode: appliedCoupon?.code ?? null,
+        paymentMethod: method,
+      });
 
-    const registeredUsers = (() => {
-      try {
-        const raw = window.localStorage.getItem("marketplace_users");
-        const parsed = raw ? JSON.parse(raw) : [];
-        return Array.isArray(parsed) ? parsed : [];
-      } catch {
-        return [];
-      }
-    })();
+      const currentUser = getCurrentUser();
 
-    items.forEach((item) => {
-      const seller = registeredUsers.find(
-        (user: { name?: string; email?: string }) =>
-          user.name?.toLowerCase() === item.seller?.toLowerCase()
-      );
+      items.forEach((item) => {
+        addNotification({
+          type: "Order",
+          title: "A buyer wants to buy your car part",
+          body: `${item.quantity} x ${item.name} was ordered. Order ${newOrder.reference} is awaiting fulfilment.`,
+          recipientEmail: item.sellerEmail,
+        });
+      });
+
+      // Buyer message depends on how they're paying (amount comes from the server)
+      const buyerMessage =
+        method === "eft"
+          ? {
+              title: "Order placed: awaiting EFT payment",
+              body: `Please pay ${formatCurrency(newOrder.total)} using reference ${newOrder.reference}.`,
+            }
+          : method === "cod"
+          ? {
+              title: "Order placed: cash on delivery",
+              body: `Please have ${formatCurrency(newOrder.total)} ready when order ${newOrder.reference} arrives.`,
+            }
+          : {
+              title: "Payment completed",
+              body: `Your payment of ${formatCurrency(newOrder.total)} for order ${newOrder.reference} was successful.`,
+            };
+
       addNotification({
         type: "Order",
-        title: "A buyer wants to buy your car part",
-        body: `${item.quantity} x ${item.name} was ordered. Order ${newOrder.reference} is awaiting fulfilment.`,
-        recipientEmail: item.sellerEmail || seller?.email,
+        ...buyerMessage,
+        recipientEmail: currentUser?.email,
       });
-    });
 
-    // Buyer message depends on how they're paying
-    const buyerMessage =
-      method === "eft"
-        ? {
-            title: "Order placed: awaiting EFT payment",
-            body: `Please pay ${formatCurrency(total)} using reference ${newOrder.reference}.`,
-          }
-        : method === "cod"
-        ? {
-            title: "Order placed: cash on delivery",
-            body: `Please have ${formatCurrency(total)} ready when order ${newOrder.reference} arrives.`,
-          }
-        : {
-            title: "Payment completed",
-            body: `Your payment of ${formatCurrency(total)} for order ${newOrder.reference} was successful.`,
-          };
+      clearCart();
+      saveAppliedCoupon(null);
 
-    addNotification({
-      type: "Order",
-      ...buyerMessage,
-      recipientEmail: currentUser?.email,
-    });
-
-    clearCart();
-    saveAppliedCoupon(null);
-
-    navigate("/checkout/confirmation", {
-      state: { reference: newOrder.reference, paymentMethod: method },
-    });
+      navigate("/checkout/confirmation", {
+        state: { reference: newOrder.reference, paymentMethod: method },
+      });
+    } catch (err: any) {
+      setProcessing(false);
+      setPayError(
+        typeof err.response?.data === "string"
+          ? err.response.data
+          : "Could not place your order. Please try again."
+      );
+    }
   };
 
+  // CHANGED: waits for the backend
   const handlePay = () => {
     if (items.length === 0 || processing) return;
     if (method === "card" && !validateCard()) return;
 
+    setProcessing(true);
+
     // Simulate the gateway taking a moment
     if (method === "payfast" || method === "snapscan") {
-      setProcessing(true);
-      setTimeout(placeOrder, 1500);
-      return;
+      setTimeout(() => void placeOrder(), 1500);
+    } else {
+      void placeOrder();
     }
-
-    placeOrder();
   };
 
   const headerIcon =
@@ -360,6 +355,8 @@ export default function PaymentPage() {
             </div>
           )}
 
+          {/* NEW: errors from the backend, e.g. "Only 1 of clutch left in stock" */}
+          {payError && <p className="field-error">{payError}</p>}
 
           <button
             className="pay-now-btn"

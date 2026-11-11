@@ -1,111 +1,154 @@
-import { createContext, useEffect, useState, type ReactNode } from "react";
-import type { Order, OrderItem } from "./OrdersContext.types";
+import { createContext, useCallback, useEffect, useState, type ReactNode } from "react";
+import api from "../api/axiosInstance";
+import { partCategories } from "../data/partCategories";
+import type { Order } from "./OrdersContext.types";
+
+export type PlaceOrderInput = {
+  items: { carPartId: string; quantity: number }[];
+  couponCode?: string | null;
+  paymentMethod: string;
+};
 
 type OrdersContextType = {
   orders: Order[];
-  addOrder: (
-    items: OrderItem[],
-    deliveryFee: number,
-    buyerEmail?: string,
-    discount?: number,
-    couponCode?: string
-  ) => Order;
-  markOrderShipped: (reference: string) => Order | undefined;
+  loading: boolean;
+  placeOrder: (input: PlaceOrderInput) => Promise<Order>;
+  markOrderShipped: (reference: string) => Promise<Order | undefined>;
   getOrder: (reference: string) => Order | undefined;
+  refreshOrders: () => Promise<void>;
 };
 
 const OrdersContext = createContext<OrdersContextType | undefined>(undefined);
 
 export { OrdersContext };
 
+// What the backend returns (OrderResponseDTO)
+type BackendOrder = {
+  reference: string;
+  date: string;
+  status: Order["status"];
+  buyerEmail?: string | null;
+  items: {
+    id: string;
+    name: string;
+    price: number;
+    quantity: number;
+    seller?: string | null;
+    category?: string | null; // categoryId
+    imageUrl?: string | null;
+  }[];
+  subtotal: number;
+  deliveryFee: number;
+  discount: number;
+  couponCode?: string | null;
+  total: number;
+  paymentMethod?: string | null;
+};
 
-const ORDERS_STORAGE_KEY = "marketplace_orders";
+// categoryId "3" -> "Electrical"
+function categoryName(id?: string | null): string | undefined {
+  const index = Number(id);
+  return Number.isInteger(index) && index >= 1 ? partCategories[index - 1] : undefined;
+}
 
-function loadOrders(): Order[] {
+function toOrder(o: BackendOrder): Order {
+  return {
+    reference: o.reference,
+    date: o.date,
+    status: o.status,
+    buyerEmail: o.buyerEmail ?? undefined,
+    items: o.items.map((i) => ({
+      id: i.id,
+      name: i.name,
+      price: i.price,
+      quantity: i.quantity,
+      seller: i.seller ?? undefined,
+      category: categoryName(i.category),
+      imageUrl: i.imageUrl ?? undefined,
+    })),
+    subtotal: o.subtotal,
+    deliveryFee: o.deliveryFee,
+    discount: o.discount,
+    couponCode: o.couponCode ?? undefined,
+    total: o.total,
+    paymentMethod: o.paymentMethod ?? undefined,
+  };
+}
+
+function readRole(): string {
   try {
-    const raw = window.localStorage.getItem(ORDERS_STORAGE_KEY);
-    const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? parsed : [];
+    const raw = localStorage.getItem("marketplace_current_user");
+    return String(raw ? JSON.parse(raw)?.role ?? "" : "").toLowerCase();
   } catch {
-    return [];
+    return "";
   }
 }
 
-function saveOrders(orders: Order[]) {
-  try {
-    window.localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(orders));
-  } catch {
-    // Listing photos are stored as data URLs and can fill the quota; keep the orders without them
-    try {
-      const slim = orders.map((order) => ({
-        ...order,
-        items: order.items.map((item) =>
-          item.imageUrl?.startsWith("data:") ? { ...item, imageUrl: undefined } : item
-        ),
-      }));
-      window.localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(slim));
-    } catch {
-      // storage unavailable: orders stay in memory for this session
-    }
-  }
-}
-
-function generateReference() {
-  const random = Math.random().toString(36).substring(2, 10).toUpperCase();
-  return `FR-${random}`;
+// Each role sees a different set of orders
+function ordersEndpoint(role: string): string | null {
+  if (role === "admin") return "/orders";
+  if (role === "seller") return "/orders/seller";
+  if (role === "buyer") return "/orders/mine";
+  return null;
 }
 
 export function OrdersProvider({ children }: { children: ReactNode }) {
-  const [orders, setOrders] = useState<Order[]>(() => loadOrders());
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
 
+  const refreshOrders = useCallback(async () => {
+    const endpoint = ordersEndpoint(readRole());
+    if (!endpoint || !localStorage.getItem("token")) {
+      setOrders([]);
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await api.get<BackendOrder[]>(endpoint);
+      setOrders(Array.isArray(res.data) ? res.data.map(toOrder) : []);
+    } catch (err) {
+      console.error("Could not load orders:", err);
+      setOrders([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Load on start, and again whenever someone logs in or out
   useEffect(() => {
-    saveOrders(orders);
-  }, [orders]);
+    void refreshOrders();
+    const onUserChange = () => void refreshOrders();
+    window.addEventListener("automarket-user-updated", onUserChange);
+    return () => window.removeEventListener("automarket-user-updated", onUserChange);
+  }, [refreshOrders]);
 
-  const addOrder = (
-    items: OrderItem[],
-    deliveryFee: number,
-    buyerEmail?: string,
-    discount = 0,
-    couponCode?: string
-  ) => {
-    const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
-    const newOrder: Order = {
-      reference: generateReference(),
-      items,
-      subtotal,
-      deliveryFee,
-      discount,
-      couponCode,
-      total: Math.max(0, subtotal + deliveryFee - discount),
-      status: "PENDING",
-      buyerEmail,
-      date: new Date().toLocaleString("en-ZA", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-    };
-    setOrders((prev) => [newOrder, ...prev]);
-    return newOrder;
+  const placeOrder = async (input: PlaceOrderInput) => {
+    const res = await api.post<BackendOrder>("/orders", input);
+    const order = toOrder(res.data);
+    setOrders((prev) => [order, ...prev]);
+    return order;
   };
 
-  const markOrderShipped = (reference: string) => {
-    const existing = orders.find((order) => order.reference === reference);
-    if (!existing) return undefined;
-
-    const shipped: Order = { ...existing, status: "SHIPPED" };
-    setOrders((prev) => prev.map((order) => (order.reference === reference ? shipped : order)));
-    return shipped;
+  const markOrderShipped = async (reference: string) => {
+    try {
+      const res = await api.put<BackendOrder>(`/orders/${reference}/ship`);
+      const shipped = toOrder(res.data);
+      setOrders((prev) => prev.map((o) => (o.reference === reference ? shipped : o)));
+      return shipped;
+    } catch (err) {
+      console.error("Could not mark order as shipped:", err);
+      return undefined;
+    }
   };
 
-  const getOrder = (reference: string) =>
-    orders.find((o) => o.reference === reference);
+  const getOrder = (reference: string) => orders.find((o) => o.reference === reference);
 
   return (
-    <OrdersContext.Provider value={{ orders, addOrder, markOrderShipped, getOrder }}>
+    <OrdersContext.Provider
+      value={{ orders, loading, placeOrder, markOrderShipped, getOrder, refreshOrders }}
+    >
       {children}
     </OrdersContext.Provider>
   );
